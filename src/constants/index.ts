@@ -136,6 +136,7 @@ const ROUTES = [
     protected: false,
     icon: "mdi-home",
     component: () => import("@/pages/Home.vue"),
+    isForMenu: true,
   },
   {
     path: "/about",
@@ -143,6 +144,7 @@ const ROUTES = [
     protected: false,
     icon: "mdi-information",
     component: () => import("@/pages/About.vue"),
+    isForMenu: true,
   },
   {
     path: "/dashboard",
@@ -150,14 +152,36 @@ const ROUTES = [
     protected: true,
     icon: "mdi-view-dashboard",
     component: () => import("@/pages/Dashboard.vue"),
+    isForMenu: false,
   },
   {
     path: "/:pathMatch(.*)*",
     name: "not-found",
     component: () => import("@/pages/NotFound.vue"),
+    protected: false,
+    isForMenu: false,
   },
 ];
 
 const PLACEHOLDER_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2363b3ed'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64 13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E`;
 
-export { RECIPE_API_URL, ROUTES, APP, LABELS, ABOUT_PAGE, PLACEHOLDER_IMAGE };
+// loading config
+const LOADING_CONFIG = {
+  items: [
+    { color: "blue", delay: 0 },
+    { color: "green", delay: -0.9 },
+    { color: "orange", delay: -0.8 },
+    { color: "red", delay: -0.7 },
+    { color: "purple", delay: -0.6 },
+  ],
+};
+
+export {
+  RECIPE_API_URL,
+  ROUTES,
+  APP,
+  LABELS,
+  ABOUT_PAGE,
+  PLACEHOLDER_IMAGE,
+  LOADING_CONFIG,
+};

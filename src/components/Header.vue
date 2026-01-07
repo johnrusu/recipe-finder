@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, type ComputedRef, type Ref } from "vue";
 import { useDisplay } from "vuetify";
+import { pathOr } from "ramda";
 
 // utils
-import { isNilOrEmpty, loadAsyncImage } from "@/utils";
+import { isNilOrEmpty, loadAsyncImage, isArrayNotEmpty } from "@/utils";
 
 // constants
 import { APP, LABELS, PLACEHOLDER_IMAGE } from "@/constants";
@@ -25,36 +26,45 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "onLogout"): void;
+  (e: "onLogin"): void;
 }>();
+
+// hooks
 const { xs } = useDisplay();
+
+// computed
 const user: ComputedRef<TUser | undefined> = computed(() => props.user);
+
+// ref
 const imageSrc: Ref<string> = ref(PLACEHOLDER_IMAGE);
 
 onMounted(() => {
-  if (!isNilOrEmpty(user.value?.picture)) {
-    const picture = user.value?.picture as string;
-    loadAsyncImage(picture).then((validImage) => {
-      imageSrc.value =
-        !isNilOrEmpty(picture) && validImage
-          ? (validImage?.src as string)
-          : PLACEHOLDER_IMAGE;
-    });
+  if (!isNilOrEmpty(user)) {
+    const picture: string = pathOr("", ["value"], user);
+    if (!isNilOrEmpty(picture)) {
+      loadAsyncImage(picture).then((validImage) => {
+        imageSrc.value =
+          !isNilOrEmpty(picture) && validImage
+            ? (validImage?.src as string)
+            : PLACEHOLDER_IMAGE;
+      });
+    }
   }
 });
 
 const handleLogout = () => {
   emit("onLogout");
 };
+
+const handleLogin = () => {
+  emit("onLogin");
+};
 </script>
 <template>
-  <v-app-bar v-if="!isNilOrEmpty(user)" elevation="2">
+  <v-app-bar elevation="2">
     <template v-slot:prepend>
       <v-app-bar-nav-icon>
-        <router-link
-          to="/"
-          class="text-white no-underline cursor-pointer"
-          :disabled="isDisabled"
-        >
+        <router-link to="/" class="text-white no-underline cursor-pointer">
           <img
             src="/favicons/favicon-32x32.png"
             :alt="APP.TITLE"
@@ -64,41 +74,49 @@ const handleLogout = () => {
           />
         </router-link>
       </v-app-bar-nav-icon>
-      <v-app-bar-title>{{ APP.TITLE }}</v-app-bar-title>
-      <div class="flex gap-2 ml-2" v-if="!xs">
-        <router-link
+      <div
+        class="flex gap-2 ml-2"
+        v-if="!xs && isArrayNotEmpty(routes as Array<any>)"
+      >
+        <v-btn
           v-for="(route, indexRoute) in routes"
           :key="`router-link-${indexRoute}`"
           :to="route.path"
-          component="v-btn"
           variant="text"
-          :icon="route.icon"
-          :disabled="isDisabled"
-        ></router-link>
+          :prepend-icon="route.icon"
+        >
+          {{ route.name }}
+        </v-btn>
       </div>
-      <v-btn v-if="xs">
-        <v-icon>mdi-dots-vertical</v-icon>
-        <v-menu class="hidden-md-and-up" activator="parent">
-          <v-list>
-            <v-list-item>
+      <template v-if="xs && isArrayNotEmpty(routes as Array<any>)">
+        <v-btn v-if="xs" icon="mdi-menu" variant="text"></v-btn>
+        <v-menu v-if="xs" activator="parent" location="bottom start">
+          <v-list class="pa-2" min-width="200">
+            <v-list-item
+              v-for="(route, indexRoute) in routes"
+              :key="`router-link-mobile-${indexRoute}`"
+              :to="route.path"
+              :prepend-icon="route.icon"
+              rounded="lg"
+              class="mb-1"
+            >
               <v-list-item-title>
-                <router-link
-                  v-for="(route, indexRoute) in routes"
-                  :key="`router-link-mobile-${indexRoute}`"
-                  :to="route.path"
-                  class="text-decoration-none"
-                >
-                  {{ route.name }}
-                </router-link>
+                {{ route.name }}
               </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
-      </v-btn>
+      </template>
     </template>
 
     <template #append>
-      <v-menu location="bottom">
+      <v-btn
+        v-if="isNilOrEmpty(user)"
+        @click="handleLogin"
+        prepend-icon="mdi-login"
+        >{{ LABELS.LOGIN }}</v-btn
+      >
+      <v-menu location="bottom" v-else>
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
@@ -106,7 +124,7 @@ const handleLogout = () => {
             prepend-icon="mdi-account-circle"
             :disabled="isDisabled"
           >
-            {{ user?.name || user?.email || LABELS.ACCOUNT }}
+            {{ user?.name || user?.email }}
           </v-btn>
         </template>
 
