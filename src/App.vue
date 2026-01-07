@@ -26,10 +26,7 @@
         @onLogin="handleLogin"
         :routes="menuRoutes"
       />
-      <v-container
-        fluid
-        class="flex flex-col flex-1 h-full wrapper-v-container"
-      >
+      <v-container fluid class="h-full">
         <Loading v-if="isLoading" :config="LOADING_CONFIG" />
         <router-view />
       </v-container>

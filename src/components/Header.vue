@@ -61,55 +61,55 @@ const handleLogin = () => {
 };
 </script>
 <template>
-  <v-app-bar elevation="2">
-    <template v-slot:prepend>
-      <v-app-bar-nav-icon>
-        <router-link to="/" class="text-white no-underline cursor-pointer">
-          <img
-            src="/favicons/favicon-32x32.png"
-            :alt="APP.TITLE"
-            width="32"
-            height="32"
-            loading="lazy"
-          />
-        </router-link>
-      </v-app-bar-nav-icon>
-      <div
-        class="flex gap-2 ml-2"
-        v-if="!xs && isArrayNotEmpty(routes as Array<any>)"
-      >
-        <v-btn
-          v-for="(route, indexRoute) in routes"
-          :key="`router-link-${indexRoute}`"
-          :to="route.path"
-          variant="text"
-          :prepend-icon="route.icon"
-        >
-          {{ route.name }}
-        </v-btn>
-      </div>
-      <template v-if="xs && isArrayNotEmpty(routes as Array<any>)">
-        <v-btn v-if="xs" icon="mdi-menu" variant="text"></v-btn>
-        <v-menu v-if="xs" activator="parent" location="bottom start">
-          <v-list class="pa-2" min-width="200">
-            <v-list-item
-              v-for="(route, indexRoute) in routes"
-              :key="`router-link-mobile-${indexRoute}`"
-              :to="route.path"
-              :prepend-icon="route.icon"
-              rounded="lg"
-              class="mb-1"
-            >
-              <v-list-item-title>
-                {{ route.name }}
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
+  <v-app-bar class="px-4">
+    <template #prepend>
+      <router-link to="/">
+        <img
+          src="/favicons/favicon-32x32.png"
+          :alt="APP.TITLE"
+          width="32"
+          height="32"
+          loading="lazy"
+        />
+      </router-link>
+      <span class="text-lg font-semibold ml-3">{{ APP.TITLE }}</span>
     </template>
+    <v-container
+      v-if="!xs && isArrayNotEmpty(routes as Array<any>)"
+      class="flex justify-center gap-2"
+    >
+      <v-btn
+        v-for="(route, indexRoute) in routes"
+        :key="`router-link-${indexRoute}`"
+        :to="route.path"
+        variant="text"
+        :prepend-icon="route.icon"
+      >
+        {{ route.name }}
+      </v-btn>
+    </v-container>
 
-    <template #append>
+    <template v-if="xs && isArrayNotEmpty(routes as Array<any>)">
+      <!-- Mobile menu -->
+      <v-btn icon="mdi-menu" variant="text"></v-btn>
+      <v-menu activator="parent" location="bottom start">
+        <v-list class="pa-2" min-width="200">
+          <v-list-item
+            v-for="(route, indexRoute) in routes"
+            :key="`router-link-mobile-${indexRoute}`"
+            :to="route.path"
+            :prepend-icon="route.icon"
+            rounded="lg"
+            class="mb-1"
+          >
+            <v-list-item-title>
+              {{ route.name }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+    <template #append v-if="isNilOrEmpty(user)">
       <v-btn
         v-if="isNilOrEmpty(user)"
         @click="handleLogin"
