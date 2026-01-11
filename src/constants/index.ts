@@ -6,6 +6,7 @@ const APP = {
 };
 
 const LABELS = {
+  ALL_RIGHTS_RESERVED: "All rights reserved.",
   LOGIN: "Log In",
   LOGOUT: "Log Out",
   HOME: "Home",

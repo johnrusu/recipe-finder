@@ -121,9 +121,11 @@ const handleLogin = () => {
 
         <v-card min-width="300">
           <v-card-text>
-            <span class="justify-end w-auto h-auto flex">
-              <v-btn icon="mdi-cog-outline" variant="text" />
-            </span>
+            <router-link to="/dashboard">
+              <span class="justify-end w-auto h-auto flex">
+                <v-btn icon="mdi-cog-outline" variant="text" />
+              </span>
+            </router-link>
             <div class="flex flex-col gap-4 items-center text-center">
               <v-avatar size="64" :image="imageSrc" />
               <div>

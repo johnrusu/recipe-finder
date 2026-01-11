@@ -8,3 +8,17 @@ body {
   min-height: 100vh;
   overflow-y: auto;
 }
+
+.home-page {
+  @apply flex flex-col h-full;
+}
+
+.about-page .v-list-item .v-list-item-title,
+.about-page .v-list-item .v-list-item-subtitle,
+.about-page .v-list-item .v-list-item__content {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  line-clamp: unset;
+  -webkit-line-clamp: unset;
+}

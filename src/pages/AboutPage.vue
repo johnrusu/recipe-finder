@@ -1,5 +1,5 @@
 <template>
-  <v-container class="about-container">
+  <v-container class="about-page">
     <h1 class="text-4xl font-bold text-center mb-8">
       {{ ABOUT_PAGE.TITLE }}
     </h1>
@@ -23,60 +23,54 @@
         <h2 class="text-2xl font-semibold mb-4">
           {{ ABOUT_PAGE.FEATURES.TITLE }}
         </h2>
-        <v-list class="bg-transparent">
-          <v-list-item>
+        <v-list>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.SECURE_AUTH.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.SECURE_AUTH.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-shield-lock </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.SECURE_AUTH.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.SECURE_AUTH.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.ANALYTICS.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.ANALYTICS.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-chart-bar </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.ANALYTICS.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.ANALYTICS.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.MODERN_UI.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.MODERN_UI.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-palette </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.MODERN_UI.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.MODERN_UI.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.RESPONSIVE.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.RESPONSIVE.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-devices </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.RESPONSIVE.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.RESPONSIVE.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.CUSTOM_CODES.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.CUSTOM_CODES.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-link-variant </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.CUSTOM_CODES.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.CUSTOM_CODES.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <v-list-item
+            :title="ABOUT_PAGE.FEATURES.USER_ISOLATION.TITLE"
+            :subtitle="ABOUT_PAGE.FEATURES.USER_ISOLATION.DESCRIPTION"
+          >
             <template #prepend>
               <v-icon color="primary"> mdi-lock </v-icon>
             </template>
-            <v-list-item-title class="">
-              <strong>{{ ABOUT_PAGE.FEATURES.USER_ISOLATION.TITLE }}:</strong>
-              {{ ABOUT_PAGE.FEATURES.USER_ISOLATION.DESCRIPTION }}
-            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -108,6 +102,7 @@
           <v-list-item
             v-for="(step, index) in ABOUT_PAGE.HOW_TO_USE.STEPS"
             :key="`how-to-step-${index}`"
+            :title="step"
           >
             <template #prepend>
               <div
@@ -116,9 +111,6 @@
                 <span class="font-bold">{{ index + 1 }}</span>
               </div>
             </template>
-            <v-list-item-title>
-              {{ step }}
-            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card-text>

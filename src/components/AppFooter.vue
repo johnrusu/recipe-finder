@@ -1,0 +1,13 @@
+<template>
+  <v-container class="footer-container">
+    <div v-html="footerContent" class="text-center"></div>
+  </v-container>
+</template>
+<script setup lang="ts">
+// constants
+import { APP, LABELS, ABOUT_PAGE } from "@/constants";
+
+const fullYear = new Date().getFullYear();
+const developer = ABOUT_PAGE.DEVELOPER.NAME;
+const footerContent = `&copy; ${fullYear} ${developer} -  <strong>${APP.TITLE}</strong>. ${LABELS.ALL_RIGHTS_RESERVED}`;
+</script>
