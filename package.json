@@ -10,8 +10,9 @@
     "lint": "eslint . --ext .ts,.tsx,.vue --fix",
     "format": "prettier --write .",
     "type-check": "vue-tsc --noEmit -p tsconfig.json",
-    "prepare": "husky install",
-    "test": "vitest run && playwright test"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test": "vitest run --passWithNoTests && playwright test"
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.5.0",
@@ -41,6 +42,7 @@
     "eslint-plugin-vue": "^10.6.2",
     "husky": "^9.1.7",
     "postcss": "^8.5.6",
+    "jsdom": "^27.2.0",
     "prettier": "^3.7.4",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",

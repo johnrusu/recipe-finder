@@ -60,7 +60,9 @@ const handleLogin = () => {
           loading="lazy"
         />
       </router-link>
-      <span class="text-lg font-semibold ml-3">{{ APP.TITLE }}</span>
+      <span class="text-lg font-semibold ml-3" data-test="header-app-title">{{
+        APP.TITLE
+      }}</span>
     </template>
     <v-container
       v-if="!xs && isArrayNotEmpty(routes as Array<any>)"
