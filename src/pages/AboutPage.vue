@@ -25,8 +25,8 @@
         </h2>
         <v-list class="bg-transparent">
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-shield-lock</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-shield-lock </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.SECURE_AUTH.TITLE }}:</strong>
@@ -34,8 +34,8 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-chart-bar</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-chart-bar </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.ANALYTICS.TITLE }}:</strong>
@@ -43,8 +43,8 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-palette</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-palette </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.MODERN_UI.TITLE }}:</strong>
@@ -52,8 +52,8 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-devices</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-devices </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.RESPONSIVE.TITLE }}:</strong>
@@ -61,8 +61,8 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-link-variant</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-link-variant </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.CUSTOM_CODES.TITLE }}:</strong>
@@ -70,8 +70,8 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <template v-slot:prepend>
-              <v-icon color="primary">mdi-lock</v-icon>
+            <template #prepend>
+              <v-icon color="primary"> mdi-lock </v-icon>
             </template>
             <v-list-item-title class="">
               <strong>{{ ABOUT_PAGE.FEATURES.USER_ISOLATION.TITLE }}:</strong>
@@ -109,7 +109,7 @@
             v-for="(step, index) in ABOUT_PAGE.HOW_TO_USE.STEPS"
             :key="`how-to-step-${index}`"
           >
-            <template v-slot:prepend>
+            <template #prepend>
               <div
                 class="bg-primary rounded-full w-8 h-8 flex items-center justify-center mr-3"
               >
@@ -135,11 +135,13 @@
             size="80"
             :image="ABOUT_PAGE.DEVELOPER.AVATAR"
             class="mb-4"
-          ></v-avatar>
+          />
           <p class="text-xl font-semibold mb-2">
             {{ ABOUT_PAGE.DEVELOPER.NAME }}
           </p>
-          <p class="mb-4">{{ ABOUT_PAGE.DEVELOPER.ROLE }}</p>
+          <p class="mb-4">
+            {{ ABOUT_PAGE.DEVELOPER.ROLE }}
+          </p>
         </div>
         <p class="mb-4">
           {{ ABOUT_PAGE.DEVELOPER.BIO_1 }}

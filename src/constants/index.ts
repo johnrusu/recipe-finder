@@ -135,7 +135,7 @@ const ROUTES = [
     name: "Home",
     protected: false,
     icon: "mdi-home",
-    component: () => import("@/pages/Home.vue"),
+    component: () => import("@/pages/HomePage.vue"),
     isForMenu: true,
   },
   {
@@ -143,7 +143,7 @@ const ROUTES = [
     name: "About",
     protected: false,
     icon: "mdi-information",
-    component: () => import("@/pages/About.vue"),
+    component: () => import("@/pages/AboutPage.vue"),
     isForMenu: true,
   },
   {
@@ -151,13 +151,13 @@ const ROUTES = [
     name: "Dashboard",
     protected: true,
     icon: "mdi-view-dashboard",
-    component: () => import("@/pages/Dashboard.vue"),
+    component: () => import("@/pages/DashboardPage.vue"),
     isForMenu: false,
   },
   {
     path: "/:pathMatch(.*)*",
     name: "not-found",
-    component: () => import("@/pages/NotFound.vue"),
+    component: () => import("@/pages/NotFoundPage.vue"),
     protected: false,
     isForMenu: false,
   },

@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, type ComputedRef, type Ref } from "vue";
+import { computed, type ComputedRef } from "vue";
 import { useDisplay } from "vuetify";
-import { pathOr } from "ramda";
 
 // utils
-import { isNilOrEmpty, loadAsyncImage, isArrayNotEmpty } from "@/utils";
+import { isNilOrEmpty, isArrayNotEmpty } from "@/utils";
 
 // constants
-import { APP, LABELS, PLACEHOLDER_IMAGE } from "@/constants";
+import { APP, LABELS } from "@/constants";
 
 // state
 import { useAppStore } from "@/stores";
+
+// composables
+import { useUserAvatar } from "@/composables/useUserAvatar";
 
 // types
 import type { TUser } from "@/types";
@@ -21,12 +23,12 @@ const isDisabled = computed(() => appStore.loading);
 
 const props = defineProps<{
   user?: TUser;
-  routes?: Array<{ name: string; path: string; [key: string]: any }>;
+  routes?: Array<{ name: string; path: string; icon?: string }>;
 }>();
 
 const emit = defineEmits<{
-  (e: "onLogout"): void;
-  (e: "onLogin"): void;
+  (e: "on-logout"): void;
+  (e: "on-login"): void;
 }>();
 
 // hooks
@@ -35,29 +37,15 @@ const { xs } = useDisplay();
 // computed
 const user: ComputedRef<TUser | undefined> = computed(() => props.user);
 
-// ref
-const imageSrc: Ref<string> = ref(PLACEHOLDER_IMAGE);
-
-onMounted(() => {
-  if (!isNilOrEmpty(user)) {
-    const picture: string = pathOr("", ["value"], user);
-    if (!isNilOrEmpty(picture)) {
-      loadAsyncImage(picture).then((validImage) => {
-        imageSrc.value =
-          !isNilOrEmpty(picture) && validImage
-            ? (validImage?.src as string)
-            : PLACEHOLDER_IMAGE;
-      });
-    }
-  }
-});
+// composables
+const { imageSrc } = useUserAvatar(user);
 
 const handleLogout = () => {
-  emit("onLogout");
+  emit("on-logout");
 };
 
 const handleLogin = () => {
-  emit("onLogin");
+  emit("on-login");
 };
 </script>
 <template>
@@ -91,7 +79,7 @@ const handleLogin = () => {
 
     <template v-if="xs && isArrayNotEmpty(routes as Array<any>)">
       <!-- Mobile menu -->
-      <v-btn icon="mdi-menu" variant="text"></v-btn>
+      <v-btn icon="mdi-menu" variant="text" />
       <v-menu activator="parent" location="bottom start">
         <v-list class="pa-2" min-width="200">
           <v-list-item
@@ -109,20 +97,21 @@ const handleLogin = () => {
         </v-list>
       </v-menu>
     </template>
-    <template #append v-if="isNilOrEmpty(user)">
+    <template #append>
       <v-btn
         v-if="isNilOrEmpty(user)"
-        @click="handleLogin"
         prepend-icon="mdi-login"
-        >{{ LABELS.LOGIN }}</v-btn
+        @click="handleLogin"
       >
-      <v-menu location="bottom" v-else>
+        {{ LABELS.LOGIN }}
+      </v-btn>
+      <v-menu v-else location="bottom">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
             variant="text"
-            prepend-icon="mdi-account-circle"
             :disabled="isDisabled"
+            prepend-icon="mdi-account-circle"
           >
             {{ user?.name || user?.email }}
           </v-btn>
@@ -130,16 +119,23 @@ const handleLogin = () => {
 
         <v-card min-width="300">
           <v-card-text>
+            <span class="justify-end w-auto h-auto flex">
+              <v-btn icon="mdi-cog-outline" variant="text" />
+            </span>
             <div class="flex flex-col gap-4 items-center text-center">
-              <v-avatar size="64" :image="imageSrc"></v-avatar>
+              <v-avatar size="64" :image="imageSrc" />
               <div>
-                <p class="font-semibold">{{ user?.name }}</p>
-                <p class="text-small">{{ user?.email }}</p>
+                <p class="font-semibold">
+                  {{ user?.name }}
+                </p>
+                <p class="text-small">
+                  {{ user?.email }}
+                </p>
               </div>
             </div>
           </v-card-text>
 
-          <v-divider></v-divider>
+          <v-divider />
 
           <v-card-actions>
             <v-btn

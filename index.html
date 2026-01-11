@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>Receipe Finder</title>
+    <title>recipe-finder Finder</title>
     <meta name="author" content="<%= author %>" />
     <meta name="description" content="<%= description %>" />
     <meta name="title" content="<%= title %>" />
@@ -101,17 +101,13 @@
     <script>
       // Redirect hack for Auth0 callback - must run before Vue app loads
       (function () {
-        const basePath = "/receipe-finder/";
+        const basePath = "/recipe-finder/";
 
         function handleRedirect() {
-          console.log("handleRedirect");
-          console.log("window.location.href:", window.location.href);
-          console.log("window.location.pathname:", window.location.pathname);
           if (
             window.location.pathname === "/" &&
             window.location.href === "https://johnrusu.github.io/"
           ) {
-            console.log("if condition met");
             window.location.replace(
               window.location.origin +
                 basePath +

@@ -12,7 +12,9 @@
           <h1 class="text-h3 font-weight-bold mb-4">
             {{ LABELS.NOT_FOUND_TITLE }}
           </h1>
-          <h2 class="text-h5 mb-4">{{ LABELS.NOT_FOUND_HEADING }}</h2>
+          <h2 class="text-h5 mb-4">
+            {{ LABELS.NOT_FOUND_HEADING }}
+          </h2>
 
           <p class="text-body-1 text-grey mb-6">
             {{ LABELS.NOT_FOUND_MESSAGE }}

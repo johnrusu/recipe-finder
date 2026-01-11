@@ -1,17 +1,17 @@
 <template>
   <div
-    class="loader"
     v-if="
       !isNilOrEmpty(props.config) &&
       props.config?.items &&
       isArrayNotEmpty(props.config.items)
     "
+    class="loader"
   >
     <span
       v-for="(item, index) in props.config?.items"
       :key="`loading-item-${index}`"
       :style="{ background: item.color, animationDelay: `${item.delay}s` }"
-    ></span>
+    />
   </div>
 </template>
 

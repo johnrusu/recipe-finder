@@ -42,7 +42,7 @@ export const isArrayNotEmpty = (array: unknown[]): boolean =>
 export const loadAsyncImage = (
   imageSrc: string = "",
   retries: number = 3,
-  delay: number = 1000,
+  delay: number = 1000
 ): Promise<HTMLImageElement | null> => {
   if (isNilOrEmpty(imageSrc)) {
     return Promise.resolve(null);
@@ -63,7 +63,7 @@ export const loadAsyncImage = (
         if (attemptsLeft > 0) {
           attemptsLeft -= 1;
           console.warn(
-            `Image load failed, retrying... (${attemptsLeft} attempts left)`,
+            `Image load failed, retrying... (${attemptsLeft} attempts left)`
           );
           setTimeout(() => {
             attemptLoad(attemptsLeft, attemptNumber + 1);
