@@ -1,6 +1,12 @@
 <template>
   <v-app class="flex">
-    <AppError :error="error" v-if="error" />
+    <v-container
+      v-if="isLoading"
+      class="justify-center flex h-full items-center"
+    >
+      <AppLoading :config="LOADING_CONFIG" />
+    </v-container>
+    <AppError :error="error" v-else-if="error" />
     <template v-else>
       <AppHeader
         :user="user"
@@ -10,7 +16,6 @@
       />
       <v-main>
         <v-container fluid class="p-0! h-[calc(100%-56px)]">
-          <AppLoading v-if="isLoading" :config="LOADING_CONFIG" />
           <router-view />
         </v-container>
         <AppFooter />
