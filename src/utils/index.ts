@@ -105,3 +105,18 @@ export const validateJson = (json: object | string): object | false => {
     return false;
   }
 };
+/**
+ * Check if required environment variables are set
+ *  @func checkEnvVariables
+ * @memberOf Validator
+ * @category Validator
+ * @sig String[] -> Boolean
+ * @param envVariables The list of environment variable names to check
+ * @returns true if all variables are set, false otherwise
+ */
+export const checkEnvVariables = (envVariables: string[]): boolean => {
+  if (!isArrayNotEmpty(envVariables)) return false;
+  const missingVars: boolean =
+    envVariables.filter((env) => !import.meta.env[env]).length > 0;
+  return !missingVars;
+};
