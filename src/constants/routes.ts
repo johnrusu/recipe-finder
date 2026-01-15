@@ -35,7 +35,7 @@ export const API_ROUTES = {
     description: "Test protected route",
   },
 
-  // User routes
+  // User authenticated routes
   CREATE_OR_UPDATE_USER: {
     method: "POST",
     url: `${BASE_URL}/api/users`,
@@ -54,6 +54,27 @@ export const API_ROUTES = {
     method: "GET",
     url: `${BASE_URL}/api/receipts`,
     protected: true,
-    description: "Get receipts for the authenticated user",
+    description: "Get saved receipts for the authenticated user",
+  },
+
+  SAVE_RECEIPT: {
+    method: "POST",
+    url: `${BASE_URL}/api/receipts`,
+    protected: true,
+    description: "Save a new receipt for the authenticated user",
+  },
+
+  DELETE_RECEIPT: {
+    method: "DELETE",
+    url: `${BASE_URL}/api/receipts/:id`,
+    protected: true,
+    description: "Delete a receipt by ID for the authenticated user",
+  },
+
+  UPDATE_RECEIPT: {
+    method: "PUT",
+    url: `${BASE_URL}/api/receipts/:id`,
+    protected: true,
+    description: "Update a receipt by ID for the authenticated user",
   },
 } as const;

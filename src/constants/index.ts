@@ -1,11 +1,20 @@
-const RECIPE_API_URL = "https://api.spoonacular.com/recipes?apiKey=";
-
 const APP = {
   TITLE: "Recipe Finder",
   DESCRIPTION: "Find recipes based on ingredients you have at home.",
 };
 
 const LABELS = {
+  RECENT_DISCOVERIES: "Recent Discoveries",
+  MY_KITCHEN: "My Kitchen",
+  SEARCH_RECIPES: "Search Recipes",
+  INGREDIENTS_PLACEHOLDER: "Enter ingredients (comma separated)",
+  FIND_RECIPES: "Find Recipes",
+  NO_RECIPES_FOUND: "No recipes found with the given ingredients.",
+  CREATE_NEW_RECIPE: "Create New Recipe",
+  SAVE_RECIPE: "Save Recipe",
+  VIEW_RECIPE: "View Recipe",
+  RECIPE_SAVED: "Recipe saved successfully!",
+  RECIPE_DELETED: "Recipe deleted successfully!",
   ALL_RIGHTS_RESERVED: "All rights reserved.",
   LOGIN: "Log In",
   LOGOUT: "Log Out",
@@ -37,6 +46,15 @@ const LABELS = {
   FIX_AUTH_ISSUE: "Fix Authentication Issue",
   REMOVE_STORAGE: "Clear your browser storage and cookies.",
   RELOGIN: "Then log in again.",
+};
+
+const HOME_PAGE = {
+  TITLE: "Welcome to Recipe Finder",
+  DESCRIPTION:
+    "Discover and share amazing recipes from around the world. Start your culinary journey today!",
+  AUTH_DESCRIPTION: `Sign in to unlock personalized features like saving favorites and managing your recipe collection.`,
+  BUTTON_LOGIN: "Sign In to Get Started",
+  BUTTON_GUEST: "Browse as Guest",
 };
 
 const ABOUT_PAGE = {
@@ -178,10 +196,10 @@ const LOADING_CONFIG = {
 };
 
 export {
-  RECIPE_API_URL,
   ROUTES,
   APP,
   LABELS,
+  HOME_PAGE,
   ABOUT_PAGE,
   PLACEHOLDER_IMAGE,
   LOADING_CONFIG,

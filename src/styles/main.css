@@ -1,6 +1,12 @@
 @import "vuetify/styles";
 @import "tailwindcss";
 
+:root {
+  --color-primary: #ff6b35;
+  --color-secondary: #f7931e;
+  --color-accent: #fdc830;
+}
+
 html,
 body {
   @apply w-full p-0 box-border m-0;

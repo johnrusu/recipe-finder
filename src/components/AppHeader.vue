@@ -60,7 +60,7 @@ const handleLogin = () => {
           loading="lazy"
         />
       </router-link>
-      <span class="text-lg font-semibold ml-3" data-test="header-app-title">{{
+      <span class="text-lg font-semibold ml-3 hidden sm:inline" data-test="header-app-title">{{
         APP.TITLE
       }}</span>
     </template>
@@ -74,6 +74,7 @@ const handleLogin = () => {
         :to="route.path"
         variant="text"
         :prepend-icon="route.icon"
+        :class="{ 'router-link-active': $route.path === route.path }"
       >
         {{ route.name }}
       </v-btn>
@@ -91,6 +92,7 @@ const handleLogin = () => {
             :prepend-icon="route.icon"
             rounded="lg"
             class="mb-1"
+            :class="{ 'router-link-active': $route.path === route.path }"
           >
             <v-list-item-title>
               {{ route.name }}
@@ -156,3 +158,9 @@ const handleLogin = () => {
     </template>
   </v-app-bar>
 </template>
+
+<style scoped>
+.router-link-active {
+  color: var(--color-primary) !important;
+}
+</style>

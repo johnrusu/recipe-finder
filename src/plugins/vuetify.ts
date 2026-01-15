@@ -18,5 +18,21 @@ export default createVuetify({
   directives,
   theme: {
     defaultTheme: "dark",
+    themes: {
+      dark: {
+        colors: {
+          primary: "#ff6b35",
+          secondary: "#f7931e",
+          accent: "#fdc830",
+        },
+      },
+      light: {
+        colors: {
+          primary: "#ff6b35",
+          secondary: "#f7931e",
+          accent: "#fdc830",
+        },
+      },
+    },
   },
 });

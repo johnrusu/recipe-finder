@@ -25,8 +25,17 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, computed } from "vue";
+import { defineAsyncComponent, computed, watch } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
+
+// state
+import { useAppStore } from "@/stores";
+
+// state
+const appState = useAppStore();
+
+// utils
+import { isNilOrEmpty } from "./utils";
 
 // constants
 import { ROUTES, LOADING_CONFIG } from "@/constants";
@@ -51,6 +60,17 @@ const AppError = defineAsyncComponent(
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
+
+// watch
+watch([isLoading, error, user], () => {
+  appState.setLoading(isLoading.value || false);
+  appState.setError(error.value || null);
+  if (!isNilOrEmpty(user.value) && user.value !== undefined) {
+    appState.setUser(user.value);
+  } else {
+    appState.setUser(null);
+  }
+});
 
 const handleLogout = () => {
   logout({
