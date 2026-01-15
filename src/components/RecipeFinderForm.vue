@@ -17,7 +17,7 @@
               v-model="searchQuery"
               variant="solo"
               density="comfortable"
-              :placeholder="RECIPE_FINDER.SEARCH_PLACEHOLDER"
+              :placeholder="`${xs ? '' : RECIPE_FINDER.SEARCH_PLACEHOLDER}`"
               prepend-inner-icon="mdi-magnify"
               clearable
               hide-details
@@ -227,7 +227,7 @@
 
         <!-- Action Buttons -->
         <v-row class="mt-6">
-          <v-col cols="12" class="d-flex gap-3 justify-center">
+          <v-col cols="12" md="6" class="d-flex justify-center justify-md-end">
             <v-btn
               size="x-large"
               color="primary"
@@ -236,10 +236,18 @@
               :loading="loading"
               @click="handleSearch"
               prepend-icon="mdi-magnify"
+              block
+              class="action-btn"
             >
               {{ RECIPE_FINDER.FIND_RECIPES_BUTTON }}
             </v-btn>
+          </v-col>
 
+          <v-col
+            cols="12"
+            md="6"
+            class="d-flex justify-center justify-md-start"
+          >
             <v-btn
               size="x-large"
               color="secondary"
@@ -247,6 +255,8 @@
               rounded="lg"
               prepend-icon="mdi-dice-5"
               @click="handleRandomRecipe"
+              block
+              class="action-btn"
             >
               {{ RECIPE_FINDER.SURPRISE_ME_BUTTON }}
             </v-btn>
@@ -276,6 +286,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useDisplay } from "vuetify";
+
+// constants
 import { RECIPE_FINDER } from "@/constants";
 
 // State
@@ -289,6 +302,9 @@ const includeIngredients = ref<string[]>([]);
 const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
+
+// hooks
+const { xs } = useDisplay();
 
 // Data
 const mealTypes = [
@@ -440,5 +456,11 @@ const clearFilters = () => {
 
 :deep(.v-slider__thumb:hover) {
   transform: scale(1.2);
+}
+
+@media (min-width: 960px) {
+  .action-btn {
+    max-width: 300px;
+  }
 }
 </style>

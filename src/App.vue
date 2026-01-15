@@ -10,6 +10,7 @@
     <template v-else>
       <AppHeader
         :user="user"
+        :isAuthenticated="isAuthenticated"
         :routes="menuRoutes"
         @on-logout="handleLogout"
         @on-login="handleLogin"
@@ -40,7 +41,8 @@ import { isNilOrEmpty } from "./utils";
 // constants
 import { ROUTES, LOADING_CONFIG } from "@/constants";
 
-const { isLoading, user, error, logout, loginWithRedirect } = useAuth0();
+const { isLoading, user, error, logout, loginWithRedirect, isAuthenticated } =
+  useAuth0();
 
 // components
 const AppHeader = defineAsyncComponent(

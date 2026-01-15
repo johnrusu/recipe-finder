@@ -3,7 +3,7 @@ import { computed, type ComputedRef } from "vue";
 import { useDisplay } from "vuetify";
 
 // utils
-import { isNilOrEmpty, isArrayNotEmpty } from "@/utils";
+import { isArrayNotEmpty } from "@/utils";
 
 // constants
 import { APP, LABELS } from "@/constants";
@@ -24,6 +24,7 @@ const isDisabled = computed(() => appStore.loading);
 const props = defineProps<{
   user?: TUser;
   routes?: Array<{ name: string; path: string; icon?: string }>;
+  isAuthenticated: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -84,42 +85,43 @@ const handleLogin = () => {
 
     <template v-if="xs && isArrayNotEmpty(routes as Array<any>)">
       <!-- Mobile menu -->
-      <v-btn icon="mdi-menu" variant="text" />
-      <v-menu activator="parent" location="bottom start">
-        <v-list class="pa-2" min-width="200">
-          <v-list-item
-            v-for="(route, indexRoute) in routes"
-            :key="`router-link-mobile-${indexRoute}`"
-            :to="route.path"
-            :prepend-icon="route.icon"
-            rounded="lg"
-            class="mb-1"
-            :class="{ 'router-link-active': $route.path === route.path }"
-          >
-            <v-list-item-title>
-              {{ route.name }}
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+      <div>
+        <v-btn icon="mdi-menu" variant="text" />
+        <v-menu activator="parent" location="bottom start">
+          <v-list class="pa-2" min-width="200">
+            <v-list-item
+              v-for="(route, indexRoute) in routes"
+              :key="`router-link-mobile-${indexRoute}`"
+              :to="route.path"
+              :prepend-icon="route.icon"
+              rounded="lg"
+              class="mb-1"
+              :class="{ 'router-link-active': $route.path === route.path }"
+            >
+              <v-list-item-title>
+                {{ route.name }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </template>
     <template #append>
-      <v-btn
-        v-if="isNilOrEmpty(user)"
-        prepend-icon="mdi-login"
-        @click="handleLogin"
-      >
-        {{ LABELS.LOGIN }}
+      <v-btn v-if="!isAuthenticated" @click="handleLogin">
+        <v-icon v-if="xs">mdi-login</v-icon>
+        <template v-else>
+          <v-icon start>mdi-login</v-icon>
+          {{ LABELS.LOGIN }}
+        </template>
       </v-btn>
       <v-menu v-else location="bottom">
         <template #activator="{ props }">
-          <v-btn
-            v-bind="props"
-            variant="text"
-            :disabled="isDisabled"
-            prepend-icon="mdi-account-circle"
-          >
-            {{ user?.name || user?.email }}
+          <v-btn v-bind="props" variant="text" :disabled="isDisabled">
+            <v-icon v-if="xs">mdi-account-circle</v-icon>
+            <template v-else>
+              <v-icon start>mdi-account-circle</v-icon>
+              {{ user?.name || user?.email }}
+            </template>
           </v-btn>
         </template>
 
