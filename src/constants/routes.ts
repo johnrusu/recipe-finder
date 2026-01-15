@@ -10,10 +10,10 @@ const getBaseUrl = () => {
     return import.meta.env.MODE === "production"
       ? (import.meta.env.VITE_API_BASE_URL as string)
       : (import.meta.env.VITE_API_BASE_URL_LOCAL as string) ||
-          "http://localhost:3000";
+          "http://localhost:5173";
   }
   // Fallback for test environments
-  return "http://localhost:3000";
+  return "http://localhost:5173";
 };
 
 const BASE_URL = getBaseUrl();
