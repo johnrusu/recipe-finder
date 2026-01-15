@@ -1,5 +1,5 @@
 <template>
-  <v-container class="footer-container">
+  <v-container class="footer-container" fluid>
     <div v-html="footerContent" class="text-center"></div>
   </v-container>
 </template>

@@ -6,7 +6,7 @@ import { useDisplay } from "vuetify";
 import { isArrayNotEmpty } from "@/utils";
 
 // constants
-import { APP, LABELS } from "@/constants";
+import { LABELS } from "@/constants";
 
 // state
 import { useAppStore } from "@/stores";
@@ -33,7 +33,7 @@ const emit = defineEmits<{
 }>();
 
 // hooks
-const { xs } = useDisplay();
+const { xs, lg } = useDisplay();
 
 // computed
 const user: ComputedRef<TUser | undefined> = computed(() => props.user);
@@ -52,24 +52,19 @@ const handleLogin = () => {
 <template>
   <v-app-bar class="px-4">
     <template #prepend>
-      <router-link to="/">
+      <v-btn icon to="/" variant="plain" class="opacity-100">
         <img
           src="/favicons/favicon-32x32.png"
-          :alt="APP.TITLE"
           width="32"
           height="32"
+          alt="Home"
           loading="lazy"
         />
-      </router-link>
-      <span
-        class="text-lg font-semibold ml-3 hidden sm:inline"
-        data-test="header-app-title"
-        >{{ APP.TITLE }}</span
-      >
+      </v-btn>
     </template>
     <v-container
       v-if="!xs && isArrayNotEmpty(routes as Array<any>)"
-      class="flex justify-center gap-2"
+      class="flex justify-center gap-2 absolute left-1/2 transform -translate-x-1/2"
     >
       <v-btn
         v-for="(route, indexRoute) in routes"
@@ -107,21 +102,21 @@ const handleLogin = () => {
       </div>
     </template>
     <template #append>
-      <v-btn v-if="!isAuthenticated" @click="handleLogin">
-        <v-icon v-if="xs">mdi-login</v-icon>
-        <template v-else>
-          <v-icon start>mdi-login</v-icon>
-          {{ LABELS.LOGIN }}
-        </template>
-      </v-btn>
+      <v-btn v-if="!isAuthenticated" @click="handleLogin" icon="mdi-login" />
       <v-menu v-else location="bottom">
         <template #activator="{ props }">
-          <v-btn v-bind="props" variant="text" :disabled="isDisabled">
-            <v-icon v-if="xs">mdi-account-circle</v-icon>
-            <template v-else>
-              <v-icon start>mdi-account-circle</v-icon>
-              {{ user?.name || user?.email }}
-            </template>
+          <v-btn
+            v-bind="props"
+            v-if="!lg"
+            icon="mdi-account-circle"
+            :disabled="isDisabled"
+          >
+          </v-btn>
+          <v-btn v-bind="props" v-else :disabled="isDisabled">
+            <v-icon start>mdi-account-circle</v-icon>
+            <span class="text-truncate d-inline-block user-name-text">{{
+              user?.name || user?.email
+            }}</span>
           </v-btn>
         </template>
 
@@ -166,5 +161,15 @@ const handleLogin = () => {
 <style scoped>
 .router-link-active {
   color: var(--color-primary) !important;
+}
+
+.user-name-text {
+  max-width: 100px;
+}
+
+@media (min-width: 960px) {
+  .user-name-text {
+    max-width: 150px;
+  }
 }
 </style>

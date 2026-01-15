@@ -15,7 +15,6 @@
     />
     <RecipeFinderForm
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
-      class="mt-6 sm:mt-10 mb-10"
     />
 
     <!-- Guest Confirmation Dialog -->
@@ -53,22 +52,25 @@
           </v-list>
         </v-card-text>
 
-        <v-card-actions class="px-6 pb-4">
+        <v-card-actions
+          class="px-6 pb-4 d-flex flex-column flex-sm-row gap-4 justify-between!"
+        >
           <v-btn
             variant="tonal"
             color="grey"
             @click="confirmGuestBrowse"
             size="large"
+            class="w-100 w-sm-auto"
           >
             {{ LABELS.GUEST_CONTINUE }}
           </v-btn>
-          <v-spacer />
           <v-btn
             variant="elevated"
             color="primary"
             @click="handleLogin"
             size="large"
             prepend-icon="mdi-account-plus"
+            class="w-100 w-sm-auto"
           >
             {{ LABELS.GUEST_CREATE_ACCOUNT }}
           </v-btn>

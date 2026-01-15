@@ -1,22 +1,19 @@
 <template>
   <v-container class="recipe-finder-form pa-0">
-    <v-card class="mx-auto" elevation="8" rounded="xl">
+    <v-card>
       <!-- Header Section -->
       <v-card-title
-        class="text-h4 font-weight-bold text-center py-6 bg-gradient"
+        class="font-weight-bold text-center bg-gradient pa-6 white responsive-title flex! flex-col gap-4 sm:flex-row align-center justify-center"
       >
-        <v-icon icon="mdi-chef-hat" size="40" class="mr-3" color="primary" />
-        {{ RECIPE_FINDER.TITLE }}
+        <v-icon icon="mdi-chef-hat" size="40" color="white" />
+        <span>{{ RECIPE_FINDER.TITLE }}</span>
       </v-card-title>
-
       <v-card-text class="px-6 py-8">
         <!-- Main Search Bar -->
         <v-row class="mb-4">
           <v-col cols="12">
             <v-text-field
               v-model="searchQuery"
-              variant="solo"
-              density="comfortable"
               :placeholder="`${xs ? '' : RECIPE_FINDER.SEARCH_PLACEHOLDER}`"
               prepend-inner-icon="mdi-magnify"
               clearable
@@ -25,13 +22,7 @@
               @keyup.enter="handleSearch"
             >
               <template v-slot:append-inner>
-                <v-btn
-                  color="primary"
-                  size="large"
-                  rounded="lg"
-                  @click="handleSearch"
-                  :loading="loading"
-                >
+                <v-btn color="primary" @click="handleSearch" :loading="loading">
                   {{ RECIPE_FINDER.SEARCH_BUTTON }}
                   <v-icon end icon="mdi-arrow-right" />
                 </v-btn>
@@ -418,8 +409,14 @@ const clearFilters = () => {
 </script>
 
 <style scoped>
-.recipe-finder-form {
-  max-width: 1000px;
+.responsive-title {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 600px) {
+  .responsive-title {
+    font-size: 1.5rem;
+  }
 }
 
 .bg-gradient {
@@ -429,16 +426,6 @@ const clearFilters = () => {
     rgb(var(--v-theme-secondary)) 100%
   );
   color: white;
-}
-
-.search-field :deep(.v-field) {
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.search-field :deep(.v-field__input) {
-  font-size: 1.1rem;
-  padding: 8px 0;
 }
 
 :deep(.v-chip) {

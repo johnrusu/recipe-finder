@@ -1,6 +1,6 @@
 <template>
-  <v-container class="about-page -mb-4!">
-    <h1 class="text-4xl font-bold text-center mb-8">
+  <v-container class="about-page pb-0">
+    <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
       {{ ABOUT_PAGE.TITLE }}
     </h1>
 

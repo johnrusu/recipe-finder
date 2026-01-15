@@ -16,7 +16,7 @@
         @on-login="handleLogin"
       />
       <v-main>
-        <v-container fluid class="p-0! h-[calc(100%-56px)]">
+        <v-container fluid class="h-[calc(100%-56px)] px-0! pb-0!">
           <router-view />
         </v-container>
         <AppFooter />
