@@ -1,67 +1,137 @@
 <template>
   <v-container class="home-page">
-    <v-row justify="center" class="text-center">
-      <v-col
-        cols="12"
-        sm="10"
-        md="8"
-        lg="6"
-        class="items-center flex gap-4 flex-col h-full justify-center px-4"
-      >
-        <img
-          src="/favicons/apple-icon-120x120.png"
-          alt="App Logo"
-          class="mb-2 sm:mb-4"
-          :width="$vuetify.display.xs ? 80 : 120"
-          :height="$vuetify.display.xs ? 80 : 120"
-        />
-        <h1 class="hero-title text-h3 font-bold mb-2">{{ HOME_PAGE.TITLE }}</h1>
-        <div class="px-4 sm:px-0">
-          <p class="text-body-1 sm:text-subtitle-1">
-            {{ HOME_PAGE.DESCRIPTION }}
-          </p>
-          <p class="text-body-1 sm:text-subtitle-1 mb-4 sm:mb-6 mt-2">
-            {{ HOME_PAGE.AUTH_DESCRIPTION }}
-          </p>
-        </div>
-        <div
-          class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0"
-        >
+    <HomePageNonAuthGreentings
+      v-if="statusIsVisibleNonAuthGreentings && appState.skipWelcome === false"
+      @on-login="handleLogin"
+      @on-browse="handleBrowse"
+    />
+    <HomePageAuthGreentings
+      v-if="
+        isAuthenticated &&
+        !isVisibleRecipeFinderForm &&
+        appState.skipWelcome === false
+      "
+      @on-start-journey="handleStartJourney"
+    />
+    <RecipeFinderForm
+      v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
+      class="mt-6 sm:mt-10 mb-10"
+    />
+
+    <!-- Guest Confirmation Dialog -->
+    <v-dialog v-model="showGuestDialog" max-width="500">
+      <v-card rounded="lg">
+        <v-card-title class="text-h5 font-weight-bold py-4">
+          <v-icon icon="mdi-account-alert" color="warning" class="mr-2" />
+          {{ LABELS.GUEST_CONFIRM_TITLE }}
+        </v-card-title>
+
+        <v-card-text class="pb-2">
+          <p class="text-body-1 mb-4">{{ LABELS.GUEST_CONFIRM_MESSAGE }}</p>
+
+          <v-list density="compact" class="bg-transparent">
+            <v-list-item class="px-0">
+              <template v-slot:prepend>
+                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_1 }}</span>
+              </template>
+            </v-list-item>
+            <v-list-item class="px-0">
+              <template v-slot:prepend>
+                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_2 }}</span>
+              </template>
+            </v-list-item>
+            <v-list-item class="px-0">
+              <template v-slot:prepend>
+                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_3 }}</span>
+              </template>
+            </v-list-item>
+            <v-list-item class="px-0">
+              <template v-slot:prepend>
+                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_4 }}</span>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+
+        <v-card-actions class="px-6 pb-4">
           <v-btn
+            variant="tonal"
+            color="grey"
+            @click="confirmGuestBrowse"
+            size="large"
+          >
+            {{ LABELS.GUEST_CONTINUE }}
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            variant="elevated"
             color="primary"
-            size="large"
             @click="handleLogin"
-            class="w-full sm:w-auto"
-          >
-            {{ HOME_PAGE.BUTTON_LOGIN }}
-          </v-btn>
-          <v-btn
-            variant="outlined"
             size="large"
-            @click="handleBrowse"
-            class="w-full sm:w-auto"
+            prepend-icon="mdi-account-plus"
           >
-            {{ HOME_PAGE.BUTTON_GUEST }}
+            {{ LABELS.GUEST_CREATE_ACCOUNT }}
           </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script setup lang="ts">
-import { useAuth0 } from "@auth0/auth0-vue";
-import { useRouter } from "vue-router";
-import { HOME_PAGE } from "@/constants";
+import { defineAsyncComponent, ref, computed } from "vue";
 
-const { loginWithRedirect } = useAuth0();
-const router = useRouter();
+// state
+import { useAppStore } from "@/stores";
+
+import { useAuth0 } from "@auth0/auth0-vue";
+import { LABELS } from "@/constants";
+
+// refs
+const isVisibleRecipeFinderForm = ref(false);
+const isVisibleHomePageNonAuthGreentings = ref(true);
+const showGuestDialog = ref(false);
+
+// state
+const appState = useAppStore();
+
+// components
+const HomePageNonAuthGreentings = defineAsyncComponent(
+  () => import("@/components/HomePageNonAuthGreentings.vue")
+);
+
+const HomePageAuthGreentings = defineAsyncComponent(
+  () => import("@/components/HomePageAuthGreentings.vue")
+);
+
+const RecipeFinderForm = defineAsyncComponent(
+  () => import("@/components/RecipeFinderForm.vue")
+);
+
+const { loginWithRedirect, isAuthenticated } = useAuth0();
+
+const statusIsVisibleNonAuthGreentings = computed(() => {
+  return !isAuthenticated.value && isVisibleHomePageNonAuthGreentings.value;
+});
+
+const handleStartJourney = () => {
+  isVisibleRecipeFinderForm.value = true;
+  isVisibleHomePageNonAuthGreentings.value = false;
+  appState.setSkipWelcome(true);
+};
 
 const handleLogin = () => {
   loginWithRedirect();
 };
 
 const handleBrowse = () => {
-  router.push("/dashboard");
+  showGuestDialog.value = true;
+};
+
+const confirmGuestBrowse = () => {
+  showGuestDialog.value = false;
+  isVisibleRecipeFinderForm.value = true;
+  isVisibleHomePageNonAuthGreentings.value = false;
+  appState.setSkipWelcome(true);
 };
 </script>
 

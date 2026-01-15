@@ -46,6 +46,80 @@ const LABELS = {
   FIX_AUTH_ISSUE: "Fix Authentication Issue",
   REMOVE_STORAGE: "Clear your browser storage and cookies.",
   RELOGIN: "Then log in again.",
+  GUEST_CONFIRM_TITLE: "Continue as Guest?",
+  GUEST_CONFIRM_MESSAGE:
+    "By browsing as a guest, you'll miss out on these benefits:",
+  GUEST_BENEFIT_1: "💾 Save your favorite recipes",
+  GUEST_BENEFIT_2: "📝 Create your personal recipe collection",
+  GUEST_BENEFIT_3: "🔍 Access your search history",
+  GUEST_BENEFIT_4: "⭐ Get personalized recommendations",
+  GUEST_CONTINUE: "Continue as Guest",
+  GUEST_CREATE_ACCOUNT: "Create Account",
+};
+
+const RECIPE_FINDER = {
+  TITLE: "Discover Your Next Meal",
+  SEARCH_PLACEHOLDER: "Search for ingredients, cuisines, or dish names...",
+  SEARCH_BUTTON: "Search",
+  QUICK_FILTERS_TITLE: "Quick Filters",
+  CLEAR_ALL: "Clear All",
+  SHOW_ADVANCED: "Show Advanced Filters",
+  HIDE_ADVANCED: "Hide Advanced Filters",
+  CUISINE_LABEL: "Cuisine Type",
+  DIFFICULTY_LABEL: "Difficulty Level",
+  DIETARY_PREFERENCES_TITLE: "Dietary Preferences",
+  MAX_COOKING_TIME_LABEL: "Max Cooking Time",
+  INCLUDE_INGREDIENTS_LABEL: "Include Ingredients",
+  EXCLUDE_INGREDIENTS_LABEL: "Exclude Ingredients",
+  INGREDIENTS_HINT: "Press Enter to add",
+  FIND_RECIPES_BUTTON: "Find Recipes",
+  SURPRISE_ME_BUTTON: "Surprise Me!",
+  PRO_TIPS_TITLE: "Pro Tips:",
+  PRO_TIPS_TEXT:
+    'Try searching for "pasta with chicken" or "30-minute dinners". Use filters to narrow down results based on your preferences!',
+  TIME_2PLUS_HOURS: "2+ hours",
+  TIME_MINUTES: (mins: number) => `${mins} min`,
+
+  MEAL_TYPES: {
+    BREAKFAST: "Breakfast",
+    LUNCH: "Lunch",
+    DINNER: "Dinner",
+    SNACK: "Snack",
+    DESSERT: "Dessert",
+  },
+
+  DIFFICULTY_LEVELS: {
+    EASY: "Easy - Anyone can make it!",
+    MEDIUM: "Medium - Some skills required",
+    HARD: "Hard - For experienced cooks",
+  },
+
+  DIETARY: {
+    VEGETARIAN: "Vegetarian",
+    VEGAN: "Vegan",
+    GLUTEN_FREE: "Gluten-Free",
+    DAIRY_FREE: "Dairy-Free",
+    KETO: "Keto",
+    PALEO: "Paleo",
+    LOW_CARB: "Low-Carb",
+  },
+
+  CUISINES: [
+    "Italian",
+    "Mexican",
+    "Chinese",
+    "Japanese",
+    "Indian",
+    "Thai",
+    "French",
+    "Greek",
+    "Spanish",
+    "Mediterranean",
+    "Korean",
+    "Vietnamese",
+    "American",
+    "Middle Eastern",
+  ],
 };
 
 const HOME_PAGE = {
@@ -55,6 +129,7 @@ const HOME_PAGE = {
   AUTH_DESCRIPTION: `Sign in to unlock personalized features like saving favorites and managing your recipe collection.`,
   BUTTON_LOGIN: "Sign In to Get Started",
   BUTTON_GUEST: "Browse as Guest",
+  START_YOUR_JOURNEY: "Start Your Culinary Journey",
 };
 
 const ABOUT_PAGE = {
@@ -203,4 +278,5 @@ export {
   ABOUT_PAGE,
   PLACEHOLDER_IMAGE,
   LOADING_CONFIG,
+  RECIPE_FINDER,
 };

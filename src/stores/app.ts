@@ -8,6 +8,7 @@ export const useAppStore = defineStore("app", () => {
   const loading = ref(false);
   const error = ref<Error | null>(null);
   const user = ref<TUser | null>(null);
+  const skipWelcome = ref(false);
 
   const setError = (value: Error | null) => {
     error.value = value;
@@ -21,5 +22,18 @@ export const useAppStore = defineStore("app", () => {
     loading.value = value;
   };
 
-  return { loading, setLoading, error, setError, user, setUser };
+  const setSkipWelcome = (value: boolean) => {
+    skipWelcome.value = value;
+  };
+
+  return {
+    loading,
+    setLoading,
+    error,
+    setError,
+    user,
+    setUser,
+    skipWelcome,
+    setSkipWelcome,
+  };
 });
