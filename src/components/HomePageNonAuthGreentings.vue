@@ -33,7 +33,6 @@
         class="w-full"
         size="large"
         @click="emit('on-browse')"
-        prepend-icon="mdi-open-in-app"
       >
         <span class="text-wrap"> {{ HOME_PAGE.BUTTON_GUEST }}</span>
       </v-btn>
