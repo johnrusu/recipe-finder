@@ -27,16 +27,17 @@
         class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0"
       >
         <v-btn
-          color="primary"
+          color="white"
           @click="emit('on-login')"
           class="w-full sm:w-auto gemini-live-border"
           prepend-icon="mdi-login"
           size="large"
+          variant="outlined"
         >
           <span class="text-wrap"> {{ HOME_PAGE.BUTTON_LOGIN }}</span>
         </v-btn>
         <v-btn
-          variant="outlined"
+          color="primary"
           size="large"
           @click="emit('on-browse')"
           prepend-icon="mdi-open-in-app"

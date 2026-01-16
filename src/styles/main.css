@@ -103,8 +103,8 @@ body {
   overflow: visible;
   /* Adjust this for border thickness */
   --border-width: 2px;
-  border: none 0 !important;
-  border-radius: 7px;
+  border: none 0;
+  border-radius: 2px;
 }
 
 .gemini-live-border::before {
@@ -115,7 +115,7 @@ body {
   ); /* Pulls it slightly outside the button */
   padding: var(--border-width); /* Defines the border thickness */
 
-  border-radius: 10px; /* Matches the button's rounded corners */
+  border-radius: 4px; /* Matches the button's rounded corners */
 
   /* The Colorful Gradient */
   background: conic-gradient(
