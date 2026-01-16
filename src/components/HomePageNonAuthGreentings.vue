@@ -33,7 +33,7 @@
           class="w-full sm:w-auto"
           prepend-icon="mdi-login"
         >
-          {{ HOME_PAGE.BUTTON_LOGIN }}
+          <span class="text-wrap"> {{ HOME_PAGE.BUTTON_LOGIN }}</span>
         </v-btn>
         <v-btn
           variant="outlined"
@@ -42,7 +42,7 @@
           prepend-icon="mdi-open-in-app"
           class="w-full sm:w-auto"
         >
-          {{ HOME_PAGE.BUTTON_GUEST }}
+          <span class="text-wrap"> {{ HOME_PAGE.BUTTON_GUEST }}</span>
         </v-btn>
       </div>
     </v-col>

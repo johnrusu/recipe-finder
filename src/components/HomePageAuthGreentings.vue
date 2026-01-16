@@ -29,7 +29,7 @@
           @click="emit('on-start-journey')"
           class="w-full sm:w-auto"
         >
-          {{ HOME_PAGE.START_YOUR_JOURNEY }}
+          <span class="text-wrap">{{ HOME_PAGE.START_YOUR_JOURNEY }}</span>
         </v-btn>
       </div>
     </v-col>

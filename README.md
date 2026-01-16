@@ -10,9 +10,10 @@ A modern, intuitive web application for discovering delicious recipes based on i
 ## ✨ Features
 
 ### 🔍 Advanced Search
+
 - **Smart Search Bar**: Search by ingredients, cuisines, or dish names
 - **Quick Filters**: One-click meal type selection (Breakfast, Lunch, Dinner, Snacks, Desserts)
-- **Advanced Filters**: 
+- **Advanced Filters**:
   - Multiple cuisine types (Italian, Mexican, Chinese, Japanese, and more)
   - Difficulty levels (Easy, Medium, Hard)
   - Dietary preferences (Vegetarian, Vegan, Gluten-Free, Keto, Paleo, etc.)
@@ -20,21 +21,25 @@ A modern, intuitive web application for discovering delicious recipes based on i
   - Include/exclude specific ingredients
 
 ### 🎲 Random Recipe Generator
+
 - Surprise yourself with random recipe suggestions
 - Perfect for when you can't decide what to cook
 
 ### 👤 User Authentication
+
 - Secure authentication powered by Auth0
 - Guest browsing available
 - Personalized user experience
 
 ### 💼 User Benefits
+
 - Save your favorite recipes
 - Create personal recipe collections
 - Access your search history
 - Get personalized recommendations
 
 ### 📱 Responsive Design
+
 - Fully optimized for mobile, tablet, and desktop
 - Touch-friendly interface
 - Adaptive layouts for all screen sizes
@@ -49,10 +54,10 @@ A modern, intuitive web application for discovering delicious recipes based on i
 - **Styling**: Tailwind CSS + Custom CSS
 - **Build Tool**: Vite
 - **Authentication**: Auth0
-- **Testing**: 
+- **Testing**:
   - Vitest (Unit Tests)
   - Playwright (E2E Tests)
-- **Code Quality**: 
+- **Code Quality**:
   - ESLint
   - Prettier
   - Husky (Git Hooks)
@@ -67,19 +72,22 @@ A modern, intuitive web application for discovering delicious recipes based on i
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/johnrusu/recipe-finder.git
    cd recipe-finder
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file in the root directory:
+
    ```env
    VITE_AUTH0_DOMAIN=your-auth0-domain
    VITE_AUTH0_CLIENT_ID=your-auth0-client-id
@@ -87,26 +95,27 @@ A modern, intuitive web application for discovering delicious recipes based on i
    ```
 
 4. **Start the development server**
+
    ```bash
    npm run dev
    ```
 
 5. **Open your browser**
-   
+
    Navigate to `http://localhost:5173`
 
 ## 📜 Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Lint and fix files |
-| `npm run format` | Format code with Prettier |
-| `npm run type-check` | Type check with TypeScript |
-| `npm run test` | Run all tests |
-| `npm run test:e2e` | Run E2E tests with Playwright |
+| Command              | Description                   |
+| -------------------- | ----------------------------- |
+| `npm run dev`        | Start development server      |
+| `npm run build`      | Build for production          |
+| `npm run preview`    | Preview production build      |
+| `npm run lint`       | Lint and fix files            |
+| `npm run format`     | Format code with Prettier     |
+| `npm run type-check` | Type check with TypeScript    |
+| `npm run test`       | Run all tests                 |
+| `npm run test:e2e`   | Run E2E tests with Playwright |
 
 ## 🏗️ Project Structure
 
@@ -141,21 +150,27 @@ recipe-finder/
 ## 🎨 Key Components
 
 ### RecipeFinderForm
+
 The main search interface with advanced filtering options:
+
 - Responsive design with mobile-optimized layout
 - Dynamic search placeholder
 - Collapsible advanced filters
 - Real-time filter state management
 
 ### AppHeader
+
 Navigation header with:
+
 - Logo and app title
 - Route navigation
 - User authentication menu
 - Mobile-responsive menu
 
 ### HomePage
+
 Landing page featuring:
+
 - Welcome greeting for non-authenticated users
 - Guest confirmation dialog highlighting account benefits
 - Recipe search form
@@ -173,11 +188,13 @@ The app is designed to integrate with a recipe API. Currently, the search functi
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 npm run test
 ```
 
 ### E2E Tests
+
 ```bash
 npm run test:e2e
 ```
@@ -206,6 +223,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 👨‍💻 Developer
 
 **Ionut Rusu**
+
 - Portfolio: [rusu-ionut.ro](https://rusu-ionut.ro)
 - GitHub: [@johnrusu](https://github.com/johnrusu)
 - LinkedIn: [Ionut Rusu](https://www.linkedin.com/in/ionut-rusu-1035b112)

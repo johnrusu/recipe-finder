@@ -1,5 +1,5 @@
 <template>
-  <v-app class="flex">
+  <v-app class="flex main-app-container">
     <v-container
       v-if="isLoading"
       class="justify-center flex h-full items-center"
@@ -15,11 +15,11 @@
         @on-logout="handleLogout"
         @on-login="handleLogin"
       />
-      <v-main>
-        <v-container fluid class="h-[calc(100%-56px)] px-0! pb-0!">
+      <v-main class="flex! justify-between flex-col">
+        <div class="flex-1">
           <router-view />
-        </v-container>
-        <AppFooter />
+        </div>
+        <AppFooter class="flex-0" />
       </v-main>
     </template>
   </v-app>
