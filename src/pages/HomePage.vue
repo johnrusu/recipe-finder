@@ -53,7 +53,7 @@
         </v-card-text>
 
         <v-card-actions
-          class="px-6 pb-4 d-flex flex-column flex-sm-row gap-4 justify-between!"
+          class="px-6 pb-6 d-flex flex-column flex-sm-row gap-4 justify-between!"
         >
           <v-btn
             variant="tonal"
