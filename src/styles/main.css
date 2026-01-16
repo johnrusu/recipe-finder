@@ -97,3 +97,56 @@ body {
     font-size: 2.5rem !important;
   }
 }
+
+.gemini-live-border {
+  position: relative;
+  overflow: visible;
+  /* Adjust this for border thickness */
+  --border-width: 2px;
+  border: none 0 !important;
+  border-radius: 7px;
+}
+
+.gemini-live-border::before {
+  content: "";
+  position: absolute;
+  inset: calc(
+    var(--border-width) * -1
+  ); /* Pulls it slightly outside the button */
+  padding: var(--border-width); /* Defines the border thickness */
+
+  border-radius: 10px; /* Matches the button's rounded corners */
+
+  /* The Colorful Gradient */
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    #ff0099,
+    #00ffff,
+    #ffff00,
+    #ff6600,
+    #ff0099
+  );
+
+  /* THE MAGIC: This masks out the center so ONLY the padding (border) shows */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  animation: rotate-angle 3s linear infinite;
+  pointer-events: none;
+}
+
+/* We animate the 'from' angle of the gradient instead of rotating the whole box */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate-angle {
+  to {
+    --angle: 360deg;
+  }
+}

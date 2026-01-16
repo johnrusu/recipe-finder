@@ -28,10 +28,10 @@
       >
         <v-btn
           color="primary"
-          size="large"
           @click="emit('on-login')"
-          class="w-full sm:w-auto"
+          class="w-full sm:w-auto gemini-live-border"
           prepend-icon="mdi-login"
+          size="large"
         >
           <span class="text-wrap"> {{ HOME_PAGE.BUTTON_LOGIN }}</span>
         </v-btn>
