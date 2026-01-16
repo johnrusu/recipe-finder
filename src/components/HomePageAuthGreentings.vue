@@ -24,10 +24,10 @@
         class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0"
       >
         <v-btn
-          color="primary"
+          variant="outlined"
           size="large"
           @click="emit('on-start-journey')"
-          class="w-full sm:w-auto"
+          class="gemini-live-border"
         >
           <span class="text-wrap">{{ HOME_PAGE.START_YOUR_JOURNEY }}</span>
         </v-btn>

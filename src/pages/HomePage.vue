@@ -21,7 +21,6 @@
     <v-dialog
       v-model="showGuestDialog"
       max-width="500"
-      persistent
       opacity=".8"
       transition="dialog-bottom-transition"
     >
@@ -59,24 +58,21 @@
         </v-card-text>
 
         <v-card-actions
-          class="px-6 pb-6 d-flex flex-column flex-sm-row gap-4 justify-between!"
+          class="px-6 pb-6 d-flex flex-column flex-sm-row gap-4! justify-between!"
         >
           <v-btn
-            variant="tonal"
-            color="grey"
+            color="primary"
             @click="confirmGuestBrowse"
             size="large"
-            class="w-100 w-sm-auto"
+            class="flex-1"
           >
             <span class="text-wrap">{{ LABELS.GUEST_CONTINUE }} </span>
           </v-btn>
           <v-btn
-            variant="elevated"
-            color="primary"
+            variant="outlined"
             @click="handleLogin"
             size="large"
-            prepend-icon="mdi-account-plus"
-            class="w-100 w-sm-auto"
+            class="gemini-live-border flex-1"
           >
             <span class="text-wrap">{{ LABELS.GUEST_CREATE_ACCOUNT }}</span>
           </v-btn>

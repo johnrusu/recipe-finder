@@ -23,13 +23,10 @@
           {{ HOME_PAGE.AUTH_DESCRIPTION }}
         </p>
       </div>
-      <div
-        class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0"
-      >
+      <div class="flex flex-col gap-4 px-4">
         <v-btn
-          color="white"
           @click="emit('on-login')"
-          class="w-full sm:w-auto gemini-live-border"
+          class="gemini-live-border"
           prepend-icon="mdi-login"
           size="large"
           variant="outlined"
@@ -41,7 +38,6 @@
           size="large"
           @click="emit('on-browse')"
           prepend-icon="mdi-open-in-app"
-          class="w-full sm:w-auto"
         >
           <span class="text-wrap"> {{ HOME_PAGE.BUTTON_GUEST }}</span>
         </v-btn>
