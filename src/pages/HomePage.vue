@@ -58,21 +58,20 @@
         </v-card-text>
 
         <v-card-actions
-          class="px-6 pb-6 d-flex flex-column flex-sm-row gap-4! justify-between!"
+          class="px-6 pb-6 d-flex flex-column flex-sm-row justify-between gap-4!"
         >
           <v-btn
             color="primary"
             @click="confirmGuestBrowse"
             size="large"
-            class="flex-1"
+            class="w-full sm:flex-1"
           >
             <span class="text-wrap">{{ LABELS.GUEST_CONTINUE }} </span>
           </v-btn>
           <v-btn
-            variant="outlined"
             @click="handleLogin"
             size="large"
-            class="gemini-live-border flex-1"
+            class="gemini-live-border w-full sm:flex-1"
           >
             <span class="text-wrap">{{ LABELS.GUEST_CREATE_ACCOUNT }}</span>
           </v-btn>
