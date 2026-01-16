@@ -7,13 +7,13 @@
       :width="$vuetify.display.xs ? 80 : 120"
       :height="$vuetify.display.xs ? 80 : 120"
     />
-    <h1 class="hero-title text-h3 font-bold mb-2">{{ HOME_PAGE.TITLE }}</h1>
-    <div class="px-4 sm:px-0">
-      <p class="text-body-1 sm:text-subtitle-1">
-        {{ HOME_PAGE.DESCRIPTION }}
-      </p>
+    <h1 class="hero-title text-h3 font-bold">{{ HOME_PAGE.TITLE }}</h1>
+    <div class="text-body-1 sm:text-subtitle-1">
+      {{ HOME_PAGE.DESCRIPTION }}
     </div>
-    <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0">
+    <div
+      class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0 mt-6"
+    >
       <v-btn
         variant="outlined"
         size="large"

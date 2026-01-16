@@ -10,7 +10,7 @@
       :height="$vuetify.display.xs ? 80 : 120"
     />
     <h1 class="hero-title text-h3 font-bold mb-2">{{ HOME_PAGE.TITLE }}</h1>
-    <div class="px-4 sm:px-0 mb-4">
+    <div>
       <p class="text-body-1 sm:text-subtitle-1">
         {{ HOME_PAGE.DESCRIPTION }}
       </p>
@@ -18,7 +18,7 @@
         {{ HOME_PAGE.AUTH_DESCRIPTION }}
       </p>
     </div>
-    <div class="flex flex-col gap-4 px-4 w-full sm:w-auto mt-4">
+    <div class="flex flex-col gap-4 px-4 w-full sm:w-auto mt-6">
       <v-btn
         @click="emit('on-login')"
         class="w-full gemini-live-border"
