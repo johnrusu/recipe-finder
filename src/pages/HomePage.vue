@@ -18,8 +18,14 @@
     />
 
     <!-- Guest Confirmation Dialog -->
-    <v-dialog v-model="showGuestDialog" max-width="500">
-      <v-card rounded="lg">
+    <v-dialog
+      v-model="showGuestDialog"
+      max-width="500"
+      persistent
+      opacity=".8"
+      transition="dialog-bottom-transition"
+    >
+      <v-card>
         <v-card-title class="text-h5 font-weight-bold py-4">
           <v-icon icon="mdi-account-alert" color="warning" class="mr-2" />
           {{ LABELS.GUEST_CONFIRM_TITLE }}
@@ -62,7 +68,7 @@
             size="large"
             class="w-100 w-sm-auto"
           >
-            {{ LABELS.GUEST_CONTINUE }}
+            <span class="text-wrap">{{ LABELS.GUEST_CONTINUE }} </span>
           </v-btn>
           <v-btn
             variant="elevated"
@@ -72,7 +78,7 @@
             prepend-icon="mdi-account-plus"
             class="w-100 w-sm-auto"
           >
-            {{ LABELS.GUEST_CREATE_ACCOUNT }}
+            <span class="text-wrap">{{ LABELS.GUEST_CREATE_ACCOUNT }}</span>
           </v-btn>
         </v-card-actions>
       </v-card>
