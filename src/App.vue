@@ -14,6 +14,7 @@
         :routes="menuRoutes"
         @on-logout="handleLogout"
         @on-login="handleLogin"
+        v-if="isAuthenticated || skipWelcome"
       />
       <v-main class="flex! justify-between flex-col">
         <div class="flex-1">
@@ -62,6 +63,8 @@ const AppError = defineAsyncComponent(
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
+
+const skipWelcome = computed(() => appState.skipWelcome);
 
 // watch
 watch([isLoading, error, user], () => {
