@@ -61,7 +61,7 @@
           class="px-6 pb-6 d-flex flex-column flex-sm-row justify-between gap-4!"
         >
           <v-btn
-            color="primary"
+            variant="plain"
             @click="confirmGuestBrowse"
             size="large"
             class="w-full sm:flex-1"
