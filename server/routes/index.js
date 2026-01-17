@@ -1,0 +1,295 @@
+const express = require("express");
+const router = express.Router();
+
+const { pathOr } = require("ramda");
+
+// Version: 1.0.1 - Timestamp fixes
+
+// Constants
+const {
+  APP_NAME,
+  SPOONACULAR_BASE_URL,
+  SPOONACULAR_API_KEY,
+} = require("../constants/index.js");
+const { ROUTES } = require("../constants/routes.js");
+
+// Auth middleware
+const { checkJwt } = require("../middleware/auth.js");
+
+// utils
+const { isNilOrEmpty } = require("../utils/index.js");
+
+// Database functions
+const {
+  createOrUpdateUser,
+  getUserByAuth0Id,
+  createOrUpdateTheme,
+  getThemeByUserId,
+} = require("../database/index.js");
+
+// Root route - Public
+router[ROUTES.ROOT.method.toLowerCase()](ROUTES.ROOT.path, async (req, res) => {
+  res.json({ message: `Welcome to ${APP_NAME}` });
+});
+
+router[ROUTES.PROTECTED_TEST.method.toLowerCase()](
+  ROUTES.PROTECTED_TEST.path,
+  checkJwt,
+  async (req, res) => {
+    res.json({ message: `You have accessed a protected route in ${APP_NAME}` });
+  }
+);
+
+// ===== USER ROUTES =====
+
+// Create or update user (called after Auth0 login)
+router[ROUTES.CREATE_OR_UPDATE_USER.method.toLowerCase()](
+  ROUTES.CREATE_OR_UPDATE_USER.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const email = pathOr(null, ["body", "email"], req);
+      const name = pathOr(null, ["body", "name"], req);
+
+      if (isNilOrEmpty(auth0Id) || isNilOrEmpty(email)) {
+        return res.status(400).json({ error: "Missing required user data" });
+      }
+
+      const user = await createOrUpdateUser({ auth0Id, email, name });
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get current user
+router[ROUTES.GET_CURRENT_USER.method.toLowerCase()](
+  ROUTES.GET_CURRENT_USER.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const user = await getUserByAuth0Id(auth0Id);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ===== THEME ROUTES =====
+
+// Get all themes for current user
+router[ROUTES.GET_THEME.method.toLowerCase()](
+  ROUTES.GET_THEME.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const theme = await getThemeByUserId(auth0Id);
+      res.status(200).json({ success: true, theme: theme ?? "" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Create or update theme
+router[ROUTES.CREATE_THEME.method.toLowerCase()](
+  ROUTES.CREATE_THEME.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const { theme } = req.body;
+
+      if (isNilOrEmpty(auth0Id)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (isNilOrEmpty(theme)) {
+        return res.status(400).json({ error: "Missing required theme data" });
+      }
+
+      const savedTheme = await createOrUpdateTheme({
+        theme,
+        userId: auth0Id,
+      });
+
+      res.status(200).json({ success: true, theme: savedTheme });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ===== RECIPE ROUTES =====
+
+// Search recipes with filters
+router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
+  ROUTES.SEARCH_RECIPES.path,
+  async (req, res) => {
+    try {
+      const {
+        query,
+        number = 10,
+        offset = 0,
+        type,
+        cuisine,
+        diet,
+        intolerances,
+        maxReadyTime,
+        includeIngredients,
+        excludeIngredients,
+      } = req.query;
+
+      if (isNilOrEmpty(query)) {
+        return res
+          .status(400)
+          .json({ error: "Missing required query parameter" });
+      }
+
+      // Build the search URL with all available filters
+      const params = new URLSearchParams({
+        query: encodeURIComponent(query),
+        number: parseInt(number),
+        offset: parseInt(offset),
+        addRecipeInformation: true,
+        apiKey: SPOONACULAR_API_KEY,
+      });
+
+      // Add optional filters
+      if (!isNilOrEmpty(type)) {
+        params.append("type", type);
+      }
+
+      if (!isNilOrEmpty(cuisine)) {
+        params.append("cuisine", cuisine);
+      }
+
+      if (!isNilOrEmpty(diet)) {
+        params.append("diet", diet);
+      }
+
+      if (!isNilOrEmpty(intolerances)) {
+        params.append("intolerances", intolerances);
+      }
+
+      if (!isNilOrEmpty(maxReadyTime)) {
+        params.append("maxReadyTime", parseInt(maxReadyTime));
+      }
+
+      if (!isNilOrEmpty(includeIngredients)) {
+        params.append("includeIngredients", includeIngredients);
+      }
+
+      if (!isNilOrEmpty(excludeIngredients)) {
+        params.append("excludeIngredients", excludeIngredients);
+      }
+
+      const searchUrl = `${SPOONACULAR_BASE_URL}/recipes/complexSearch?${params}`;
+      console.log("Search URL:", searchUrl.replace(SPOONACULAR_API_KEY, "***"));
+
+      const response = await fetch(searchUrl);
+      const result = await response.json();
+
+      if (!response.ok) {
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Search failed" });
+      }
+
+      res.status(200).json({ success: true, recipes: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get random recipes (must come BEFORE :recipeId route)
+router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
+  ROUTES.GET_RANDOM_RECIPES.path,
+  async (req, res) => {
+    try {
+      const { number = 5 } = req.query;
+
+      const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
+
+      const response = await fetch(randomUrl);
+      const result = await response.json();
+
+      if (!response.ok) {
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Failed to get random recipes" });
+      }
+
+      // Normalize response structure to match search endpoint
+      // Random endpoint returns { recipes: [...] }
+      // Search endpoint returns { results: [...], baseUri: "...", ... }
+      const normalizedResult = {
+        results: result.recipes || [],
+        baseUri: "https://img.spoonacular.com/recipes/",
+        offset: 0,
+        number: parseInt(number),
+        totalResults: result.recipes ? result.recipes.length : 0,
+        processingTimeMs: 0,
+        expires: 0,
+      };
+
+      res.status(200).json({ success: true, recipes: normalizedResult });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get recipe details
+router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
+  ROUTES.GET_RECIPE_DETAILS.path,
+  async (req, res) => {
+    try {
+      const { recipeId } = req.params;
+
+      if (isNilOrEmpty(recipeId)) {
+        return res
+          .status(400)
+          .json({ error: "Missing required recipeId parameter" });
+      }
+
+      const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
+
+      const response = await fetch(detailsUrl);
+      const result = await response.json();
+
+      if (!response.ok) {
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Failed to get recipe details" });
+      }
+
+      res.status(200).json({ success: true, recipe: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+module.exports = router;

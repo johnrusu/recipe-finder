@@ -1,0 +1,30 @@
+{
+  "name": "recipe-finder-server",
+  "version": "1.0.0",
+  "description": "Express server for recipe finder app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "express",
+    "recipe-finder",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "express-oauth2-jwt-bearer": "^1.7.1",
+    "mongodb": "^7.0.0",
+    "mongoose": "^8.0.0",
+    "ramda": "^0.32.0",
+    "spoonacular": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
