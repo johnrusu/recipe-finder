@@ -1,20 +1,16 @@
 import { API_ROUTES } from "@/constants/routes";
 
-interface ApiRequestOptions extends RequestInit {
-  headers?: Record<string, string>;
-}
+// types
+import type {
+  ApiRequestOptions,
+  IUser,
+  IUserData,
+  IRecipeSearchParams,
+  IRecipeSearchResponse,
+  IRecipeDetailsResponse,
+} from "@/types";
 
-interface IUserData {
-  auth0Id: string;
-  email: string;
-  name?: string;
-}
-
-interface IUser extends IUserData {
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// ===== USER SERVICES =====
 
 /**
  * Generic API request handler
@@ -94,4 +90,90 @@ export const getCurrentUser = async (token: string): Promise<IUser> => {
     },
     token
   ) as Promise<IUser>;
+};
+
+// ===== RECIPE SERVICES =====
+
+/**
+ * Search recipes
+ * GET /api/recipes/search?query=...&filters...
+ */
+export const searchRecipes = async (
+  params: IRecipeSearchParams
+): Promise<IRecipeSearchResponse> => {
+  const queryParams = new URLSearchParams({
+    query: params.query,
+    number: String(params.number || 10),
+    offset: String(params.offset || 0),
+  });
+
+  // Add optional filters
+  if (params.type) {
+    queryParams.append("type", params.type);
+  }
+
+  if (params.cuisine) {
+    queryParams.append("cuisine", params.cuisine);
+  }
+
+  if (params.diet) {
+    queryParams.append("diet", params.diet);
+  }
+
+  if (params.intolerances) {
+    queryParams.append("intolerances", params.intolerances);
+  }
+
+  if (params.maxReadyTime) {
+    queryParams.append("maxReadyTime", String(params.maxReadyTime));
+  }
+
+  if (params.includeIngredients) {
+    queryParams.append("includeIngredients", params.includeIngredients);
+  }
+
+  if (params.excludeIngredients) {
+    queryParams.append("excludeIngredients", params.excludeIngredients);
+  }
+
+  const url = `${API_ROUTES.SEARCH_RECIPES.url}?${queryParams.toString()}`;
+
+  return apiRequest(url, {
+    method: API_ROUTES.SEARCH_RECIPES.method,
+  }) as Promise<IRecipeSearchResponse>;
+};
+
+/**
+ * Get recipe details
+ * GET /api/recipes/:recipeId
+ */
+export const getRecipeDetails = async (
+  recipeId: string | number
+): Promise<IRecipeDetailsResponse> => {
+  const url = API_ROUTES.GET_RECIPE_DETAILS.url.replace(
+    ":recipeId",
+    String(recipeId)
+  );
+
+  return apiRequest(url, {
+    method: API_ROUTES.GET_RECIPE_DETAILS.method,
+  }) as Promise<IRecipeDetailsResponse>;
+};
+
+/**
+ * Get random recipes
+ * GET /api/recipes/random?number=...
+ */
+export const getRandomRecipes = async (
+  number: number = 5
+): Promise<IRecipeSearchResponse> => {
+  const queryParams = new URLSearchParams({
+    number: String(number),
+  });
+
+  const url = `${API_ROUTES.GET_RANDOM_RECIPES.url}?${queryParams.toString()}`;
+
+  return apiRequest(url, {
+    method: API_ROUTES.GET_RANDOM_RECIPES.method,
+  }) as Promise<IRecipeSearchResponse>;
 };

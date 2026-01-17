@@ -15,7 +15,6 @@ import "@/styles/main.css";
 const statusEnvVariables = checkEnvVariables([
   "VITE_AUTH0_DOMAIN",
   "VITE_AUTH0_CLIENT_ID",
-  "VITE_API_RECIPE_KEY",
 ]);
 if (!statusEnvVariables) {
   const app = document.querySelector("#app");

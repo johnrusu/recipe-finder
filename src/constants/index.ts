@@ -66,8 +66,8 @@ const RECIPE_FINDER = {
   SHOW_ADVANCED: "Show Advanced Filters",
   HIDE_ADVANCED: "Hide Advanced Filters",
   CUISINE_LABEL: "Cuisine Type",
-  DIFFICULTY_LABEL: "Difficulty Level",
   DIETARY_PREFERENCES_TITLE: "Dietary Preferences",
+  INTOLERANCES_TITLE: "Intolerances",
   MAX_COOKING_TIME_LABEL: "Max Cooking Time",
   INCLUDE_INGREDIENTS_LABEL: "Include Ingredients",
   EXCLUDE_INGREDIENTS_LABEL: "Exclude Ingredients",
@@ -79,6 +79,12 @@ const RECIPE_FINDER = {
     'Try searching for "pasta with chicken" or "30-minute dinners". Use filters to narrow down results based on your preferences!',
   TIME_2PLUS_HOURS: "2+ hours",
   TIME_MINUTES: (mins: number) => `${mins} min`,
+  IMAGE_BASE_URI: "https://img.spoonacular.com/recipes/",
+
+  // Error messages
+  ERROR_EMPTY_QUERY: "Please enter a search query",
+  ERROR_NO_RESULTS: "No recipes found. Try a different search query.",
+  ERROR_SEARCH_FAILED: "Search failed",
 
   MEAL_TYPES: {
     BREAKFAST: "Breakfast",
@@ -88,20 +94,12 @@ const RECIPE_FINDER = {
     DESSERT: "Dessert",
   },
 
-  DIFFICULTY_LEVELS: {
-    EASY: "Easy - Anyone can make it!",
-    MEDIUM: "Medium - Some skills required",
-    HARD: "Hard - For experienced cooks",
-  },
-
   DIETARY: {
     VEGETARIAN: "Vegetarian",
     VEGAN: "Vegan",
     GLUTEN_FREE: "Gluten-Free",
-    DAIRY_FREE: "Dairy-Free",
     KETO: "Keto",
     PALEO: "Paleo",
-    LOW_CARB: "Low-Carb",
   },
 
   CUISINES: [

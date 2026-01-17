@@ -10,10 +10,10 @@ const getBaseUrl = () => {
     return import.meta.env.MODE === "production"
       ? (import.meta.env.VITE_API_BASE_URL as string)
       : (import.meta.env.VITE_API_BASE_URL_LOCAL as string) ||
-          "http://localhost:5173";
+          "http://localhost:3000";
   }
   // Fallback for test environments
-  return "http://localhost:5173";
+  return "http://localhost:3000";
 };
 
 const BASE_URL = getBaseUrl();
@@ -76,5 +76,27 @@ export const API_ROUTES = {
     url: `${BASE_URL}/api/receipts/:id`,
     protected: true,
     description: "Update a receipt by ID for the authenticated user",
+  },
+
+  // Recipe routes
+  SEARCH_RECIPES: {
+    method: "GET",
+    url: `${BASE_URL}/api/recipes/search`,
+    protected: false,
+    description: "Search recipes by query",
+  },
+
+  GET_RECIPE_DETAILS: {
+    method: "GET",
+    url: `${BASE_URL}/api/recipes/:recipeId`,
+    protected: false,
+    description: "Get detailed information about a recipe",
+  },
+
+  GET_RANDOM_RECIPES: {
+    method: "GET",
+    url: `${BASE_URL}/api/recipes/random`,
+    protected: false,
+    description: "Get random recipes",
   },
 } as const;

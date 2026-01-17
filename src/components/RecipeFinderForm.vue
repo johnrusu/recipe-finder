@@ -1,13 +1,9 @@
 <template>
-  <v-container class="recipe-finder-form pa-0">
+  <div class="recipe-finder-form mt-4">
+    <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
+      {{ RECIPE_FINDER.TITLE }}
+    </h1>
     <v-card>
-      <!-- Header Section -->
-      <v-card-title
-        class="font-weight-bold text-center bg-gradient pa-6 white responsive-title flex! flex-col gap-4 sm:flex-row align-center justify-center"
-      >
-        <v-icon icon="mdi-chef-hat" size="40" color="white" />
-        <span>{{ RECIPE_FINDER.TITLE }}</span>
-      </v-card-title>
       <v-card-text class="px-6 py-8">
         <!-- Main Search Bar -->
         <v-row class="mb-4">
@@ -96,7 +92,7 @@
 
                 <!-- Cuisine Selection -->
                 <v-row class="mb-4">
-                  <v-col cols="12" md="6">
+                  <v-col cols="12">
                     <v-autocomplete
                       v-model="selectedCuisine"
                       :items="cuisines"
@@ -107,18 +103,6 @@
                       chips
                       multiple
                       closable-chips
-                      hide-details
-                    />
-                  </v-col>
-
-                  <v-col cols="12" md="6">
-                    <v-select
-                      v-model="difficulty"
-                      :items="difficultyLevels"
-                      :label="RECIPE_FINDER.DIFFICULTY_LABEL"
-                      prepend-inner-icon="mdi-chart-line"
-                      variant="outlined"
-                      clearable
                       hide-details
                     />
                   </v-col>
@@ -140,6 +124,27 @@
                         :color="diet.color"
                       >
                         {{ diet.label }}
+                      </v-chip>
+                    </v-chip-group>
+                  </v-col>
+                </v-row>
+
+                <!-- Intolerances -->
+                <v-row class="mb-4">
+                  <v-col cols="12">
+                    <div class="text-subtitle-2 mb-2">
+                      {{ RECIPE_FINDER.INTOLERANCES_TITLE }}
+                    </div>
+                    <v-chip-group v-model="intolerances" column multiple>
+                      <v-chip
+                        v-for="intolerance in intoleranceOptions"
+                        :key="intolerance.value"
+                        :value="intolerance.value"
+                        variant="outlined"
+                        filter
+                        color="error"
+                      >
+                        {{ intolerance.label }}
                       </v-chip>
                     </v-chip-group>
                   </v-col>
@@ -229,6 +234,7 @@
               prepend-icon="mdi-magnify"
               block
               class="action-btn"
+              type="button"
             >
               {{ RECIPE_FINDER.FIND_RECIPES_BUTTON }}
             </v-btn>
@@ -246,11 +252,96 @@
               rounded="lg"
               prepend-icon="mdi-dice-5"
               @click="handleRandomRecipe"
+              :loading="loading"
               block
               class="action-btn"
+              type="button"
             >
               {{ RECIPE_FINDER.SURPRISE_ME_BUTTON }}
             </v-btn>
+          </v-col>
+        </v-row>
+
+        <!-- Error Alert -->
+        <v-row v-if="error" class="mt-4">
+          <v-col cols="12">
+            <v-alert
+              type="error"
+              variant="tonal"
+              closable
+              @click:close="error = null"
+            >
+              {{ error }}
+            </v-alert>
+          </v-col>
+        </v-row>
+
+        <!-- Search Results -->
+        <v-row v-if="searchResults.length > 0" class="mt-6">
+          <v-col cols="12">
+            <h2 class="text-xl font-bold mb-4">
+              Search Results ({{ searchResults.length }}/{{ totalResults }}
+              recipes found)
+            </h2>
+            <v-row>
+              <v-col
+                v-for="recipe in searchResults"
+                :key="recipe.id"
+                cols="12"
+                sm="6"
+                md="4"
+                lg="3"
+              >
+                <v-card
+                  class="h-100 d-flex flex-column"
+                  @click="console.log('View recipe:', recipe)"
+                >
+                  <v-img
+                    :src="getImageUrl(recipe.image)"
+                    :alt="recipe.title"
+                    height="200px"
+                    cover
+                  />
+                  <v-card-text class="flex-grow-1">
+                    <div class="text-h6 font-weight-bold line-clamp-2">
+                      {{ recipe.title }}
+                    </div>
+                    <div class="d-flex align-center gap-2 mt-2 text-caption">
+                      <v-icon size="small" icon="mdi-clock" />
+                      {{ recipe.readyInMinutes }} min
+                    </div>
+                    <div class="d-flex align-center gap-2 text-caption">
+                      <v-icon size="small" icon="mdi-silverware-fork-knife" />
+                      {{ recipe.servings }} servings
+                    </div>
+                  </v-card-text>
+                  <v-card-actions class="pt-0">
+                    <v-btn
+                      variant="tonal"
+                      color="primary"
+                      size="large"
+                      block
+                      @click.stop="console.log('View details:', recipe.id)"
+                    >
+                      View Recipe
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row v-if="hasMoreResults" class="mt-6">
+              <v-col cols="12" class="text-center">
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  :loading="loadingMore"
+                  @click="loadMoreResults"
+                  block
+                >
+                  {{ loadingMore ? "Loading..." : "Load More Recipes" }}
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
       </v-card-text>
@@ -272,27 +363,46 @@
         </div>
       </v-card-text>
     </v-card>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useDisplay } from "vuetify";
 
+// types
+import type { IRecipe, IRecipeSearchParams } from "@/types";
+
 // constants
 import { RECIPE_FINDER } from "@/constants";
+
+// services
+import { searchRecipes, getRandomRecipes } from "@/services";
 
 // State
 const searchQuery = ref("");
 const selectedMealType = ref<string | null>(null);
 const selectedCuisine = ref<string[]>([]);
-const difficulty = ref<string | null>(null);
 const dietaryPreferences = ref<string[]>([]);
+const intolerances = ref<string[]>([]);
 const maxCookingTime = ref(60);
 const includeIngredients = ref<string[]>([]);
 const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
+const loadingMore = ref(false);
+const error = ref<string | null>(null);
+const searchResults = ref<IRecipe[]>([]);
+const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
+
+// Pagination state
+const currentOffset = ref(0);
+const currentNumber = ref(10);
+const totalResults = ref(0);
+const hasMoreResults = computed(
+  () => currentOffset.value + currentNumber.value < totalResults.value
+);
+const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 
 // hooks
 const { xs } = useDisplay();
@@ -324,12 +434,6 @@ const mealTypes = [
 
 const cuisines = RECIPE_FINDER.CUISINES;
 
-const difficultyLevels = [
-  { title: RECIPE_FINDER.DIFFICULTY_LEVELS.EASY, value: "easy" },
-  { title: RECIPE_FINDER.DIFFICULTY_LEVELS.MEDIUM, value: "medium" },
-  { title: RECIPE_FINDER.DIFFICULTY_LEVELS.HARD, value: "hard" },
-];
-
 const dietaryOptions = [
   {
     label: RECIPE_FINDER.DIETARY.VEGETARIAN,
@@ -343,17 +447,41 @@ const dietaryOptions = [
   },
   {
     label: RECIPE_FINDER.DIETARY.GLUTEN_FREE,
-    value: "gluten-free",
+    value: "gluten free",
     color: "amber",
   },
-  {
-    label: RECIPE_FINDER.DIETARY.DAIRY_FREE,
-    value: "dairy-free",
-    color: "blue",
-  },
-  { label: RECIPE_FINDER.DIETARY.KETO, value: "keto", color: "purple" },
+  { label: RECIPE_FINDER.DIETARY.KETO, value: "ketogenic", color: "purple" },
   { label: RECIPE_FINDER.DIETARY.PALEO, value: "paleo", color: "orange" },
-  { label: RECIPE_FINDER.DIETARY.LOW_CARB, value: "low-carb", color: "teal" },
+  {
+    label: "Pescetarian",
+    value: "pescetarian",
+    color: "blue-darken-1",
+  },
+  {
+    label: "Primal",
+    value: "primal",
+    color: "red-darken-1",
+  },
+  {
+    label: "Whole30",
+    value: "whole30",
+    color: "indigo",
+  },
+];
+
+const intoleranceOptions = [
+  { label: "Dairy", value: "dairy" },
+  { label: "Egg", value: "egg" },
+  { label: "Gluten", value: "gluten" },
+  { label: "Grain", value: "grain" },
+  { label: "Peanut", value: "peanut" },
+  { label: "Seafood", value: "seafood" },
+  { label: "Sesame", value: "sesame" },
+  { label: "Shellfish", value: "shellfish" },
+  { label: "Soy", value: "soy" },
+  { label: "Sulfite", value: "sulfite" },
+  { label: "Tree Nut", value: "tree nut" },
+  { label: "Wheat", value: "wheat" },
 ];
 
 // Computed
@@ -361,8 +489,8 @@ const hasActiveFilters = computed(() => {
   return (
     selectedMealType.value !== null ||
     selectedCuisine.value.length > 0 ||
-    difficulty.value !== null ||
     dietaryPreferences.value.length > 0 ||
+    intolerances.value.length > 0 ||
     maxCookingTime.value !== 60 ||
     includeIngredients.value.length > 0 ||
     excludeIngredients.value.length > 0
@@ -370,55 +498,176 @@ const hasActiveFilters = computed(() => {
 });
 
 // Methods
-const handleSearch = () => {
-  loading.value = true;
-
-  const filters = {
-    query: searchQuery.value,
-    mealType: selectedMealType.value,
-    cuisine: selectedCuisine.value,
-    difficulty: difficulty.value,
-    dietary: dietaryPreferences.value,
-    maxTime: maxCookingTime.value,
-    include: includeIngredients.value,
-    exclude: excludeIngredients.value,
-  };
-
-  console.log("Searching with filters:", filters);
-
-  // TODO: Implement actual search logic
-  setTimeout(() => {
-    loading.value = false;
-  }, 1000);
+const getImageUrl = (imageSrc: string): string => {
+  // If it's already a full URL (starts with http), return as-is
+  if (imageSrc.startsWith("http")) {
+    return imageSrc;
+  }
+  // Otherwise, prepend the base URI
+  return `${imageBaseUri.value}${imageSrc}`;
 };
 
-const handleRandomRecipe = () => {
-  console.log("Getting random recipe...");
-  // TODO: Implement random recipe logic
+const handleSearch = async () => {
+  // Validate search query
+  if (!searchQuery.value.trim()) {
+    error.value = RECIPE_FINDER.ERROR_EMPTY_QUERY;
+    return;
+  }
+
+  // Reset pagination state
+  currentOffset.value = 0;
+  totalResults.value = 0;
+  searchResults.value = [];
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    // Build filter parameters
+    const params: IRecipeSearchParams = {
+      query: searchQuery.value,
+      number: currentNumber.value,
+      offset: 0,
+    };
+
+    // Add optional filters
+    if (selectedMealType.value) {
+      params.type = selectedMealType.value;
+    }
+
+    if (selectedCuisine.value.length > 0) {
+      params.cuisine = selectedCuisine.value.join(",");
+    }
+
+    if (dietaryPreferences.value.length > 0) {
+      params.diet = dietaryPreferences.value.join(",");
+    }
+
+    if (intolerances.value.length > 0) {
+      params.intolerances = intolerances.value.join(",");
+    }
+
+    if (maxCookingTime.value < 120) {
+      params.maxReadyTime = maxCookingTime.value;
+    }
+
+    if (includeIngredients.value.length > 0) {
+      params.includeIngredients = includeIngredients.value.join(",");
+    }
+
+    if (excludeIngredients.value.length > 0) {
+      params.excludeIngredients = excludeIngredients.value.join(",");
+    }
+
+    // Store search params for pagination
+    lastSearchParams.value = params;
+
+    const response = await searchRecipes(params);
+
+    if (response.success && response.recipes.results) {
+      searchResults.value = response.recipes.results;
+      totalResults.value = response.recipes.totalResults || 0;
+      currentOffset.value = response.recipes.offset || 0;
+      // Store the base URI for image URLs
+      if (response.recipes.baseUri) {
+        imageBaseUri.value = response.recipes.baseUri;
+      }
+      console.log(`Found ${searchResults.value.length} recipes`, response);
+    } else {
+      error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : RECIPE_FINDER.ERROR_SEARCH_FAILED;
+    error.value = errorMessage;
+    console.error("Search error:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleRandomRecipe = async () => {
+  loading.value = true;
+  error.value = null;
+  searchResults.value = [];
+
+  try {
+    const response = await getRandomRecipes(5);
+
+    if (response.success && response.recipes.results) {
+      searchResults.value = response.recipes.results;
+      // Store the base URI for image URLs
+      if (response.recipes.baseUri) {
+        imageBaseUri.value = response.recipes.baseUri;
+      }
+      console.log(
+        `Found ${searchResults.value.length} random recipes`,
+        response
+      );
+    } else {
+      error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : RECIPE_FINDER.ERROR_SEARCH_FAILED;
+    error.value = errorMessage;
+    console.error("Random recipe error:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadMoreResults = async () => {
+  // Check if there are more results and we have stored search params
+  if (!hasMoreResults.value || !lastSearchParams.value) {
+    return;
+  }
+
+  loadingMore.value = true;
+
+  try {
+    // Increment offset for next page
+    const nextOffset = currentOffset.value + currentNumber.value;
+    const searchParams = {
+      ...lastSearchParams.value,
+      offset: nextOffset,
+      number: currentNumber.value,
+    };
+
+    const response = await searchRecipes(searchParams);
+
+    if (response.success && response.recipes.results) {
+      // Append new results to existing ones
+      searchResults.value.push(...response.recipes.results);
+      currentOffset.value = response.recipes.offset || nextOffset;
+      totalResults.value = response.recipes.totalResults || 0;
+      console.log(
+        `Loaded more recipes. Total now: ${searchResults.value.length}`
+      );
+    }
+  } catch (err) {
+    console.error("Load more error:", err);
+    error.value = "Failed to load more recipes. Please try again.";
+  } finally {
+    loadingMore.value = false;
+  }
 };
 
 const clearFilters = () => {
   selectedMealType.value = null;
   selectedCuisine.value = [];
-  difficulty.value = null;
   dietaryPreferences.value = [];
+  intolerances.value = [];
   maxCookingTime.value = 60;
   includeIngredients.value = [];
   excludeIngredients.value = [];
+  searchQuery.value = "";
+  searchResults.value = [];
+  error.value = null;
 };
 </script>
 
 <style scoped>
-.responsive-title {
-  font-size: 1.25rem;
-}
-
-@media (min-width: 600px) {
-  .responsive-title {
-    font-size: 1.5rem;
-  }
-}
-
 .bg-gradient {
   background: linear-gradient(
     135deg,
