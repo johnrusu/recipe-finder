@@ -48,7 +48,7 @@ import { useAppStore } from "@/stores";
 const appState = useAppStore();
 
 // utils
-import { is, isNilOrEmpty } from "./utils";
+import { isNilOrEmpty } from "./utils";
 
 // constants
 import { ROUTES, LOADING_CONFIG } from "@/constants";
