@@ -73,7 +73,6 @@ const AppError = defineAsyncComponent(
 );
 
 // ref
-
 const isScrolled = ref(false);
 
 // computed
@@ -113,7 +112,6 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  console.log("mounted");
   const body = document.body;
   body.addEventListener("scroll", handleScroll);
 });

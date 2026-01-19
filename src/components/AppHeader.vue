@@ -51,7 +51,7 @@ const handleLogin = () => {
 };
 </script>
 <template>
-  <div class="app-header-shadow"></div>
+  <div :class="!props.isScrolled ? 'app-header-shadow' : ''"></div>
   <div class="app-header" :class="{ scrolled: props.isScrolled }">
     <router-link to="/" class="flex items-center justify-center gap-4">
       <img
@@ -73,7 +73,7 @@ const handleLogin = () => {
         v-for="(route, indexRoute) in routes"
         :key="`router-link-${indexRoute}`"
         :to="route.path"
-        :class="`flex justify-center items-center h-full px-4! relative min-w-20 ${$route.path === route.path ? 'nav-active' : ''}`"
+        :class="`flex justify-center items-center h-full px-4! relative min-w-20 text-xl font-bold ${$route.path === route.path ? 'nav-active' : ''}`"
       >
         {{ route.name }}
       </router-link>
@@ -189,7 +189,7 @@ const handleLogin = () => {
 
 .app-header.scrolled {
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(8px);
 }
 
 .nav-active {

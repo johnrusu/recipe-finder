@@ -1,9 +1,5 @@
 <template>
   <v-container class="about-page pb-0 mt-4">
-    <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
-      {{ ABOUT_PAGE.TITLE }}
-    </h1>
-
     <v-card class="mb-6">
       <v-card-text class="pa-6">
         <h2 class="text-2xl font-semibold mb-4">
