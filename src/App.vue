@@ -15,8 +15,12 @@
         @on-logout="handleLogout"
         @on-login="handleLogin"
         v-if="isAuthenticated || skipWelcome"
+        :isScrolled="isScrolled"
       />
-      <v-main class="flex! justify-between flex-col">
+      <v-main
+        class="flex! justify-between flex-col"
+        :class="isAuthenticated || skipWelcome ? 'pt-20!' : ''"
+      >
         <div class="flex-1">
           <router-view />
         </div>
@@ -27,7 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, computed, watch } from "vue";
+import {
+  defineAsyncComponent,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  ref,
+} from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 
 // state
@@ -37,7 +48,7 @@ import { useAppStore } from "@/stores";
 const appState = useAppStore();
 
 // utils
-import { isNilOrEmpty } from "./utils";
+import { is, isNilOrEmpty } from "./utils";
 
 // constants
 import { ROUTES, LOADING_CONFIG } from "@/constants";
@@ -60,6 +71,10 @@ const AppFooter = defineAsyncComponent(
 const AppError = defineAsyncComponent(
   () => import("@/components/AppError.vue")
 );
+
+// ref
+
+const isScrolled = ref(false);
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
@@ -88,4 +103,23 @@ const handleLogout = () => {
 const handleLogin = () => {
   loginWithRedirect();
 };
+
+const handleScroll = () => {
+  const scrollTop =
+    window.scrollY ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop;
+  isScrolled.value = scrollTop > 0;
+};
+
+onMounted(() => {
+  console.log("mounted");
+  const body = document.body;
+  body.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  const body = document.body;
+  body.removeEventListener("scroll", handleScroll);
+});
 </script>
