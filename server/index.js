@@ -22,17 +22,14 @@ const requiredEnvVars = [
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.error(
-    "❌ Missing required environment variables:",
-    missingEnvVars.join(", ")
-  );
-  console.error(
-    "Please check your .env file and ensure all required variables are set."
+  console.warn("⚠️  Missing environment variables:", missingEnvVars.join(", "));
+  console.warn(
+    "This may cause API errors. Check Firebase config or .env file."
   );
   process.exit(1);
 }
 
-console.log("✓ All required environment variables are present");
+console.log("✓ Server initialization started");
 
 // database
 const { initializeDatabase, closeDatabase } = require("./database/index.js");
@@ -42,11 +39,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Initialize database connection
+// Initialize database in background
 initializeDatabase()
   .then(() => {
+    setupRoutes();
     console.log("Database connected");
-    startServer();
   })
   .catch((err) => {
     console.log({
@@ -54,15 +51,18 @@ initializeDatabase()
       error: err.message,
     });
     console.log("Starting server without database connection...");
-    startServer();
+    setupRoutes();
   });
 
-function startServer() {
+function setupRoutes() {
   // Load routes
   const routes = require("./routes/index.js");
+  // Routes are already prefixed with /api in their path definitions
   app.use(routes);
+}
 
-  // Start the server
+// For local development: listen on a port
+if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
@@ -74,3 +74,6 @@ function startServer() {
     process.exit(0);
   });
 }
+
+// For Cloud Functions: export the app
+module.exports = app;

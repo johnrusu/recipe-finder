@@ -38,42 +38,42 @@ export const API_ROUTES = {
   // User authenticated routes
   CREATE_OR_UPDATE_USER: {
     method: "POST",
-    url: `${BASE_URL}/api/users`,
+    url: `${BASE_URL}/users`,
     protected: true,
     description: "Create or update user after Auth0 login",
   },
 
   GET_CURRENT_USER: {
     method: "GET",
-    url: `${BASE_URL}/api/users/me`,
+    url: `${BASE_URL}/users/me`,
     protected: true,
     description: "Get current authenticated user",
   },
 
   GET_RECEIPTS: {
     method: "GET",
-    url: `${BASE_URL}/api/receipts`,
+    url: `${BASE_URL}/receipts`,
     protected: true,
     description: "Get saved receipts for the authenticated user",
   },
 
   SAVE_RECEIPT: {
     method: "POST",
-    url: `${BASE_URL}/api/receipts`,
+    url: `${BASE_URL}/receipts`,
     protected: true,
     description: "Save a new receipt for the authenticated user",
   },
 
   DELETE_RECEIPT: {
     method: "DELETE",
-    url: `${BASE_URL}/api/receipts/:id`,
+    url: `${BASE_URL}/receipts/:id`,
     protected: true,
     description: "Delete a receipt by ID for the authenticated user",
   },
 
   UPDATE_RECEIPT: {
     method: "PUT",
-    url: `${BASE_URL}/api/receipts/:id`,
+    url: `${BASE_URL}/receipts/:id`,
     protected: true,
     description: "Update a receipt by ID for the authenticated user",
   },
@@ -81,21 +81,21 @@ export const API_ROUTES = {
   // Recipe routes
   SEARCH_RECIPES: {
     method: "GET",
-    url: `${BASE_URL}/api/recipes/search`,
+    url: `${BASE_URL}/recipes/search`,
     protected: false,
     description: "Search recipes by query",
   },
 
   GET_RECIPE_DETAILS: {
     method: "GET",
-    url: `${BASE_URL}/api/recipes/:recipeId`,
+    url: `${BASE_URL}/recipes/:recipeId`,
     protected: false,
     description: "Get detailed information about a recipe",
   },
 
   GET_RANDOM_RECIPES: {
     method: "GET",
-    url: `${BASE_URL}/api/recipes/random`,
+    url: `${BASE_URL}/recipes/random`,
     protected: false,
     description: "Get random recipes",
   },

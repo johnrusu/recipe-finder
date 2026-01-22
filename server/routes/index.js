@@ -2,9 +2,13 @@ const express = require("express");
 const { pathOr } = require("ramda");
 const router = express.Router();
 
-const isMockData = Boolean(process.env.USE_MOCK_DATA) === true;
-console.log("isMockData", isMockData);
-const pathOfMockData = process.env.MOCK_DATA_PATH || "";
+// Helper function to get env vars with safe defaults
+const getEnvVar = (key, defaultValue = "") => {
+  return process.env[key] || defaultValue;
+};
+
+const isMockData = Boolean(getEnvVar("USE_MOCK_DATA", "true")) === true;
+const pathOfMockData = getEnvVar("MOCK_DATA_PATH", "../mock/recipes.json");
 
 // Load mock data if enabled
 let mockData = null;
@@ -193,6 +197,14 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
     try {
       const { number = 5 } = req.query;
 
+      // Return mock data if enabled
+      if (isMockData && mockData) {
+        return res.status(200).json({
+          success: true,
+          recipes: mockData,
+        });
+      }
+
       const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
 
       const response = await fetch(randomUrl);
@@ -240,6 +252,11 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
           .json({ error: "Missing required recipeId parameter" });
       }
 
+      // Return mock data if enabled
+      if (isMockData && mockData) {
+        return res.status(200).json({ success: true, recipe: mockData });
+      }
+
       const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
 
       const response = await fetch(detailsUrl);
@@ -251,9 +268,7 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
           .json({ error: result.message || "Failed to get recipe details" });
       }
 
-      res
-        .status(200)
-        .json({ success: true, recipe: isMockData ? mockData : result });
+      res.status(200).json({ success: true, recipe: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
