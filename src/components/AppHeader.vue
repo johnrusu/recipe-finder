@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, type ComputedRef } from "vue";
+// vue
+import { computed, type ComputedRef, defineAsyncComponent } from "vue";
+
+// vuetify
 import { useDisplay } from "vuetify";
 
 // utils
@@ -13,6 +16,9 @@ import { useAppStore } from "@/stores";
 
 // composables
 import { useUserAvatar } from "@/composables/useUserAvatar";
+
+// components
+const LogoAnimated = defineAsyncComponent(() => import("./LogoAnimated.vue"));
 
 // types
 import type { TUser } from "@/types";
@@ -54,13 +60,7 @@ const handleLogin = () => {
   <div :class="!props.isScrolled ? 'app-header-shadow' : ''"></div>
   <div class="app-header" :class="{ scrolled: props.isScrolled }">
     <router-link to="/" class="flex items-center justify-center gap-4">
-      <img
-        src="/favicons/android-icon-48x48.png"
-        width="48"
-        height="48"
-        alt="Home"
-        loading="lazy"
-      />
+      <LogoAnimated class="w-[48px] h-[48px]" />
       <span class="text-uppercase font-bold sm:block hidden">{{
         APP.TITLE
       }}</span>

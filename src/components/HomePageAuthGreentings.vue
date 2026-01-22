@@ -1,6 +1,6 @@
 <template>
   <div class="items-center flex flex-col h-full justify-center text-center">
-    <LogoAnimated class="w-64 h-64 sm:w-72 sm:h-72 md:w-60 md:h-60" />
+    <LogoAnimated class="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80" />
     <h1 class="hero-title text-h3 font-bold mb-4">{{ HOME_PAGE.TITLE }}</h1>
     <div>
       <p class="text-body-1 sm:text-subtitle-1">
