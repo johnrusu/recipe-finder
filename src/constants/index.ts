@@ -79,6 +79,8 @@ const RECIPE_FINDER = {
     'Try searching for "pasta with chicken" or "30-minute dinners". Use filters to narrow down results based on your preferences!',
   TIME_2PLUS_HOURS: "2+ hours",
   TIME_MINUTES: (mins: number) => `${mins} min`,
+  SEARCH_RESULTS_HEADER: (found: number, total: number) =>
+    `Search Results (${found}/${total} recipes found)`,
   IMAGE_BASE_URI: "https://img.spoonacular.com/recipes/",
 
   // Error messages

@@ -24,6 +24,25 @@
                 </v-btn>
               </template>
             </v-text-field>
+            <v-card class="mx-auto mt-6" variant="tonal">
+              <v-card-text class="py-4">
+                <div class="d-flex align-center">
+                  <v-icon
+                    icon="mdi-lightbulb-on"
+                    color="warning"
+                    class="mr-3"
+                  />
+                  <div>
+                    <div class="text-subtitle-2 font-weight-bold">
+                      {{ RECIPE_FINDER.PRO_TIPS_TITLE }}
+                    </div>
+                    <div class="text-caption">
+                      {{ RECIPE_FINDER.PRO_TIPS_TEXT }}
+                    </div>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
 
@@ -280,8 +299,12 @@
         <v-row v-if="searchResults.length > 0" class="mt-6">
           <v-col cols="12">
             <h2 class="text-xl font-bold mb-4">
-              Search Results ({{ searchResults.length }}/{{ totalResults }}
-              recipes found)
+              {{
+                RECIPE_FINDER.SEARCH_RESULTS_HEADER(
+                  searchResults.length,
+                  totalResults
+                )
+              }}
             </h2>
             <v-row>
               <v-col
@@ -295,6 +318,7 @@
                 <v-card
                   class="h-100 d-flex flex-column"
                   @click="console.log('View recipe:', recipe)"
+                  color="white"
                 >
                   <v-img
                     :src="getImageUrl(recipe.image)"
@@ -315,13 +339,33 @@
                       {{ recipe.servings }} servings
                     </div>
                   </v-card-text>
-                  <v-card-actions class="pt-0">
+                  <v-card-actions class="pt-0 d-flex gap-2">
                     <v-btn
-                      variant="tonal"
+                      icon
+                      @click.stop="toggleFavorite(recipe.id)"
+                      :color="isFavorited(recipe.id) ? 'error' : 'default'"
+                      class="save-btn"
+                    >
+                      <v-icon
+                        :icon="
+                          isFavorited(recipe.id)
+                            ? 'mdi-heart'
+                            : 'mdi-heart-outline'
+                        "
+                      />
+                      <v-tooltip activator="parent" location="top">
+                        {{
+                          isFavorited(recipe.id) ? "Saved" : "Save for later"
+                        }}
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      variant="elevated"
                       color="primary"
                       size="large"
-                      block
                       @click.stop="console.log('View details:', recipe.id)"
+                      class="view-recipe-btn flex-grow-1"
+                      append-icon="mdi-arrow-right"
                     >
                       View Recipe
                     </v-btn>
@@ -344,31 +388,23 @@
             </v-row>
           </v-col>
         </v-row>
-      </v-card-text>
-    </v-card>
 
-    <!-- Search Tips -->
-    <v-card class="mx-auto mt-6" variant="tonal">
-      <v-card-text class="py-4">
-        <div class="d-flex align-center">
-          <v-icon icon="mdi-lightbulb-on" color="warning" class="mr-3" />
-          <div>
-            <div class="text-subtitle-2 font-weight-bold">
-              {{ RECIPE_FINDER.PRO_TIPS_TITLE }}
-            </div>
-            <div class="text-caption">
-              {{ RECIPE_FINDER.PRO_TIPS_TEXT }}
-            </div>
-          </div>
-        </div>
+        <v-row v-if="loading && !error" class="mt-6">
+          <v-col cols="12" class="justify-center flex">
+            <AppLoading :config="LOADING_CONFIG" />
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, defineAsyncComponent } from "vue";
 import { useDisplay } from "vuetify";
+
+// state
+import { useAppStore } from "@/stores";
 
 // types
 import type { IRecipe, IRecipeSearchParams } from "@/types";
@@ -378,6 +414,13 @@ import { RECIPE_FINDER } from "@/constants";
 
 // services
 import { searchRecipes, getRandomRecipes } from "@/services";
+import { isArrayNotEmpty } from "@/utils";
+
+// components
+const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
+
+// constants
+import { LOADING_CONFIG } from "@/constants";
 
 // State
 const searchQuery = ref("");
@@ -394,6 +437,7 @@ const loadingMore = ref(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
+const favorites = ref<Set<number>>(new Set());
 
 // Pagination state
 const currentOffset = ref(0);
@@ -405,6 +449,8 @@ const hasMoreResults = computed(
 const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 
 // hooks
+const appStore = useAppStore();
+
 const { xs } = useDisplay();
 
 // Data
@@ -566,6 +612,7 @@ const handleSearch = async () => {
 
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
+      appStore.setRecipes(response.recipes.results);
       totalResults.value = response.recipes.totalResults || 0;
       currentOffset.value = response.recipes.offset || 0;
       // Store the base URI for image URLs
@@ -596,6 +643,9 @@ const handleRandomRecipe = async () => {
 
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
+      appStore.setRecipes(response.recipes.results);
+      totalResults.value = response.recipes.results.length;
+      currentOffset.value = 0;
       // Store the base URI for image URLs
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
@@ -639,6 +689,7 @@ const loadMoreResults = async () => {
     if (response.success && response.recipes.results) {
       // Append new results to existing ones
       searchResults.value.push(...response.recipes.results);
+      appStore.setRecipes(searchResults.value);
       currentOffset.value = response.recipes.offset || nextOffset;
       totalResults.value = response.recipes.totalResults || 0;
       console.log(
@@ -663,8 +714,26 @@ const clearFilters = () => {
   excludeIngredients.value = [];
   searchQuery.value = "";
   searchResults.value = [];
+  appStore.setRecipes([]);
   error.value = null;
 };
+
+const toggleFavorite = (recipeId: number) => {
+  if (favorites.value.has(recipeId)) {
+    favorites.value.delete(recipeId);
+  } else {
+    favorites.value.add(recipeId);
+  }
+};
+
+const isFavorited = (recipeId: number) => {
+  return favorites.value.has(recipeId);
+};
+
+const recipesFromState = computed(() => appStore.recipes);
+if (isArrayNotEmpty(recipesFromState.value)) {
+  searchResults.value = recipesFromState.value;
+}
 </script>
 
 <style scoped>
@@ -698,5 +767,30 @@ const clearFilters = () => {
   .action-btn {
     max-width: 300px;
   }
+}
+
+.view-recipe-btn {
+  transition: all 0.2s ease;
+}
+
+.view-recipe-btn:hover {
+  transform: scale(1.05);
+}
+
+.save-btn {
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  transform: scale(1.2);
+}
+
+:deep(.v-card) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.v-card:hover) {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
 }
 </style>

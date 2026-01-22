@@ -11,7 +11,7 @@
       v-for="(item, index) in props.config?.items"
       :key="`loading-item-${index}`"
       :style="{ background: item.color, animationDelay: `${item.delay}s` }"
-    />
+    ></span>
   </div>
 </template>
 

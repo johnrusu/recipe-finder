@@ -1,5 +1,5 @@
 <template>
-  <v-container class="home-page">
+  <v-container class="home-page pb-0 mt-4">
     <HomePageNonAuthGreentings
       v-if="statusIsVisibleNonAuthGreentings && appState.skipWelcome === false"
       @on-login="handleLogin"

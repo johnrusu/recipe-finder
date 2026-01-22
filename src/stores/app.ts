@@ -2,13 +2,15 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 
 // types
-import type { TUser } from "@/types";
+import type { TUser, IRecipe } from "@/types";
 
 export const useAppStore = defineStore("app", () => {
   const loading = ref(false);
   const error = ref<Error | null>(null);
   const user = ref<TUser | null>(null);
   const skipWelcome = ref(false);
+  const recipes = ref<IRecipe[]>([]);
+  const savedRecipes = ref<Set<number>>(new Set());
 
   const setError = (value: Error | null) => {
     error.value = value;
@@ -26,6 +28,14 @@ export const useAppStore = defineStore("app", () => {
     skipWelcome.value = value;
   };
 
+  const setRecipes = (recipesData: IRecipe[]) => {
+    recipes.value = recipesData;
+  };
+
+  const setSavedRecipes = (recipeIds: Set<number>) => {
+    savedRecipes.value = recipeIds;
+  };
+
   return {
     loading,
     setLoading,
@@ -35,5 +45,9 @@ export const useAppStore = defineStore("app", () => {
     setUser,
     skipWelcome,
     setSkipWelcome,
+    setRecipes,
+    recipes,
+    setSavedRecipes,
+    savedRecipes,
   };
 });
