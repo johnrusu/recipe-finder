@@ -26,6 +26,7 @@
         </div>
         <AppFooter class="flex-0" />
       </v-main>
+      <ScrollUp />
     </template>
   </v-app>
 </template>
@@ -70,6 +71,10 @@ const AppFooter = defineAsyncComponent(
 
 const AppError = defineAsyncComponent(
   () => import("@/components/AppError.vue")
+);
+
+const ScrollUp = defineAsyncComponent(
+  () => import("@/components/ScrollUp.vue")
 );
 
 // ref
