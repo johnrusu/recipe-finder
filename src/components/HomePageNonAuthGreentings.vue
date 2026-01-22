@@ -2,13 +2,7 @@
   <div
     class="items-center flex gap-4 flex-col h-full justify-center text-center"
   >
-    <img
-      src="/favicons/apple-icon-120x120.png"
-      alt="App Logo"
-      class="mb-2 sm:mb-4"
-      :width="$vuetify.display.xs ? 80 : 120"
-      :height="$vuetify.display.xs ? 80 : 120"
-    />
+    <LogoAnimated class="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80" />
     <h1 class="hero-title text-h3 font-bold mb-2" data-test="hero-title">
       {{ HOME_PAGE.TITLE }}
     </h1>
@@ -42,7 +36,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
+// constants
 import { HOME_PAGE } from "@/constants";
+
+// components
+const LogoAnimated = defineAsyncComponent(() => import("./LogoAnimated.vue"));
 
 const emit = defineEmits<{
   (e: "on-login"): void;

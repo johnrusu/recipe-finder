@@ -1,19 +1,16 @@
 <template>
-  <div class="items-center flex gap-4 flex-col h-full justify-center">
-    <img
-      src="/favicons/apple-icon-120x120.png"
-      alt="App Logo"
-      class="mb-2 sm:mb-4"
-      :width="$vuetify.display.xs ? 80 : 120"
-      :height="$vuetify.display.xs ? 80 : 120"
-    />
-    <h1 class="hero-title text-h3 font-bold">{{ HOME_PAGE.TITLE }}</h1>
-    <div class="text-body-1 sm:text-subtitle-1">
-      {{ HOME_PAGE.DESCRIPTION }}
+  <div class="items-center flex flex-col h-full justify-center text-center">
+    <LogoAnimated class="w-64 h-64 sm:w-72 sm:h-72 md:w-60 md:h-60" />
+    <h1 class="hero-title text-h3 font-bold mb-4">{{ HOME_PAGE.TITLE }}</h1>
+    <div>
+      <p class="text-body-1 sm:text-subtitle-1">
+        {{ HOME_PAGE.DESCRIPTION }}
+      </p>
+      <p class="text-body-1 sm:text-subtitle-1 mt-2">
+        {{ HOME_PAGE.AUTH_BENEFITS }}
+      </p>
     </div>
-    <div
-      class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0 mt-6"
-    >
+    <div class="flex flex-col sm:flex-row w-full sm:w-auto px-4 sm:px-0 mt-6">
       <v-btn
         variant="outlined"
         size="large"
@@ -26,7 +23,13 @@
   </div>
 </template>
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
+
+// constants
 import { HOME_PAGE } from "@/constants";
+
+// components
+const LogoAnimated = defineAsyncComponent(() => import("./LogoAnimated.vue"));
 
 const emit = defineEmits<{
   (e: "on-start-journey"): void;

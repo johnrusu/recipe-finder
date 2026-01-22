@@ -127,6 +127,7 @@ const HOME_PAGE = {
   DESCRIPTION:
     "Discover and share amazing recipes from around the world. Start your culinary journey today!",
   AUTH_DESCRIPTION: `Sign in to unlock personalized features like saving favorites and managing your recipe collection.`,
+  AUTH_BENEFITS: `Save your favorite recipes, build your personal cookbook, and get personalized recommendations based on your preferences.`,
   BUTTON_LOGIN: "Sign In to Get Started",
   BUTTON_GUEST: "Browse as Guest",
   START_YOUR_JOURNEY: "Start Your Culinary Journey",
