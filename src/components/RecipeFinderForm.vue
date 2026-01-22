@@ -342,6 +342,7 @@
                   <v-card-actions class="pt-0 d-flex gap-2">
                     <v-btn
                       icon
+                      :disabled="!isAuthenticated"
                       @click.stop="toggleFavorite(recipe.id)"
                       :color="isFavorited(recipe.id) ? 'error' : 'default'"
                       class="save-btn"
@@ -355,7 +356,9 @@
                       />
                       <v-tooltip activator="parent" location="top">
                         {{
-                          isFavorited(recipe.id) ? "Saved" : "Save for later"
+                          isFavorited(recipe.id)
+                            ? RECIPE_FINDER.SAVED_RECIPE_TOOLTIP
+                            : RECIPE_FINDER.SAVE_RECIPE_TOOLTIP
                         }}
                       </v-tooltip>
                     </v-btn>
@@ -367,7 +370,7 @@
                       class="view-recipe-btn flex-grow-1"
                       append-icon="mdi-arrow-right"
                     >
-                      View Recipe
+                      {{ RECIPE_FINDER.VIEW_RECIPE_BUTTON }}
                     </v-btn>
                   </v-card-actions>
                 </v-card>
@@ -382,7 +385,11 @@
                   @click="loadMoreResults"
                   block
                 >
-                  {{ loadingMore ? "Loading..." : "Load More Recipes" }}
+                  {{
+                    loadingMore
+                      ? RECIPE_FINDER.LOADING_MORE_TEXT
+                      : RECIPE_FINDER.LOAD_MORE_BUTTON
+                  }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -419,6 +426,9 @@ import { isArrayNotEmpty } from "@/utils";
 // components
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
 
+// auth
+import { useAuth0 } from "@auth0/auth0-vue";
+
 // constants
 import { LOADING_CONFIG } from "@/constants";
 
@@ -450,6 +460,7 @@ const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 
 // hooks
 const appStore = useAppStore();
+const { isAuthenticated } = useAuth0();
 
 const { xs } = useDisplay();
 

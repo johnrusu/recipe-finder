@@ -120,6 +120,13 @@ const RECIPE_FINDER = {
     "American",
     "Middle Eastern",
   ],
+
+  // Recipe card actions
+  VIEW_RECIPE_BUTTON: "View Recipe",
+  SAVE_RECIPE_TOOLTIP: "Save for later",
+  SAVED_RECIPE_TOOLTIP: "Saved",
+  LOAD_MORE_BUTTON: "Load More Recipes",
+  LOADING_MORE_TEXT: "Loading...",
 };
 
 const HOME_PAGE = {
