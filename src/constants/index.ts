@@ -125,6 +125,7 @@ const RECIPE_FINDER = {
   VIEW_RECIPE_BUTTON: "View Recipe",
   SAVE_RECIPE_TOOLTIP: "Save for later",
   SAVED_RECIPE_TOOLTIP: "Saved",
+  LOGIN_REQUIRED_TOOLTIP: "Sign in to save recipes",
   LOAD_MORE_BUTTON: "Load More Recipes",
   LOADING_MORE_TEXT: "Loading...",
 };

@@ -342,7 +342,6 @@
                   <v-card-actions class="pt-0 d-flex gap-2">
                     <v-btn
                       icon
-                      :disabled="!isAuthenticated"
                       @click.stop="toggleFavorite(recipe.id)"
                       :color="isFavorited(recipe.id) ? 'error' : 'default'"
                       class="save-btn"
@@ -356,9 +355,11 @@
                       />
                       <v-tooltip activator="parent" location="top">
                         {{
-                          isFavorited(recipe.id)
-                            ? RECIPE_FINDER.SAVED_RECIPE_TOOLTIP
-                            : RECIPE_FINDER.SAVE_RECIPE_TOOLTIP
+                          !isAuthenticated
+                            ? RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP
+                            : isFavorited(recipe.id)
+                              ? RECIPE_FINDER.SAVED_RECIPE_TOOLTIP
+                              : RECIPE_FINDER.SAVE_RECIPE_TOOLTIP
                         }}
                       </v-tooltip>
                     </v-btn>
@@ -730,6 +731,9 @@ const clearFilters = () => {
 };
 
 const toggleFavorite = (recipeId: number) => {
+  if (!isAuthenticated) {
+    return;
+  }
   if (favorites.value.has(recipeId)) {
     favorites.value.delete(recipeId);
   } else {
