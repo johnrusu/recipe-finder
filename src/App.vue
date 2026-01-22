@@ -77,7 +77,6 @@ const isScrolled = ref(false);
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
-
 const skipWelcome = computed(() => appState.skipWelcome);
 
 // watch

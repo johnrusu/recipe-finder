@@ -9,7 +9,9 @@
       :width="$vuetify.display.xs ? 80 : 120"
       :height="$vuetify.display.xs ? 80 : 120"
     />
-    <h1 class="hero-title text-h3 font-bold mb-2">{{ HOME_PAGE.TITLE }}</h1>
+    <h1 class="hero-title text-h3 font-bold mb-2" data-test="hero-title">
+      {{ HOME_PAGE.TITLE }}
+    </h1>
     <div>
       <p class="text-body-1 sm:text-subtitle-1">
         {{ HOME_PAGE.DESCRIPTION }}

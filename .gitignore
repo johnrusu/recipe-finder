@@ -2,6 +2,7 @@
 node_modules
 /dist
 /playwright-report
+/functions
 
 # local env files
 .env

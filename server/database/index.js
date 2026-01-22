@@ -46,13 +46,7 @@ const usersSchema = new mongoose.Schema({
   name: { type: String, required: false },
 });
 
-const themesSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  theme: { type: String, required: true },
-});
-
 const users = mongoose.model("User", usersSchema, "users-collection");
-const Theme = mongoose.model("Theme", themesSchema, "theme-collection");
 
 // User database methods
 const createOrUpdateUser = async (userData) => {
@@ -91,37 +85,6 @@ const getUserByAuth0Id = async (auth0Id) => {
   }
 };
 
-// Themes database methods
-const createOrUpdateTheme = async (themeData) => {
-  const { theme, userId } = themeData;
-
-  try {
-    // Use findOneAndUpdate with upsert to avoid race conditions
-    const updatedTheme = await Theme.findOneAndUpdate(
-      { userId }, // filter
-      { theme }, // update
-      {
-        new: true, // return the updated document
-        upsert: true, // create if doesn't exist
-        runValidators: true, // run schema validators
-      }
-    );
-
-    return updatedTheme;
-  } catch (error) {
-    throw new Error(`Error creating/updating theme: ${error.message}`);
-  }
-};
-
-const getThemeByUserId = async (userId) => {
-  try {
-    const currentTheme = await Theme.findOne({ userId }).sort({ _id: -1 });
-    return currentTheme;
-  } catch (error) {
-    throw new Error(`Error fetching theme: ${error.message}`);
-  }
-};
-
 const closeDatabase = async () => {
   await mongoose.connection.close();
 };
@@ -133,7 +96,4 @@ module.exports = {
   // User methods
   createOrUpdateUser,
   getUserByAuth0Id,
-  // Themes methods
-  createOrUpdateTheme,
-  getThemeByUserId,
 };

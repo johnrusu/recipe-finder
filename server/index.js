@@ -15,6 +15,8 @@ const requiredEnvVars = [
   "AUTH0_DOMAIN",
   "AUTH0_CLIENT_ID",
   "AUTH0_ISSUER",
+  "USE_MOCK_DATA",
+  "MOCK_DATA_PATH",
 ];
 
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);

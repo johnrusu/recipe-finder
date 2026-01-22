@@ -1,7 +1,21 @@
 const express = require("express");
+const { pathOr } = require("ramda");
 const router = express.Router();
 
-const { pathOr } = require("ramda");
+const isMockData = Boolean(process.env.USE_MOCK_DATA) === true;
+console.log("isMockData", isMockData);
+const pathOfMockData = process.env.MOCK_DATA_PATH || "";
+
+// Load mock data if enabled
+let mockData = null;
+if (isMockData) {
+  try {
+    mockData = require(pathOfMockData);
+    console.log("Mock data loaded from", pathOfMockData);
+  } catch (error) {
+    console.error("Failed to load mock data from", pathOfMockData, error);
+  }
+}
 
 // Version: 1.0.1 - Timestamp fixes
 
@@ -23,8 +37,6 @@ const { isNilOrEmpty } = require("../utils/index.js");
 const {
   createOrUpdateUser,
   getUserByAuth0Id,
-  createOrUpdateTheme,
-  getThemeByUserId,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -83,57 +95,6 @@ router[ROUTES.GET_CURRENT_USER.method.toLowerCase()](
       }
 
       res.status(200).json({ success: true, user });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
-
-// ===== THEME ROUTES =====
-
-// Get all themes for current user
-router[ROUTES.GET_THEME.method.toLowerCase()](
-  ROUTES.GET_THEME.path,
-  checkJwt,
-  async (req, res) => {
-    try {
-      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-
-      if (isNilOrEmpty(auth0Id)) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      const theme = await getThemeByUserId(auth0Id);
-      res.status(200).json({ success: true, theme: theme ?? "" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
-
-// Create or update theme
-router[ROUTES.CREATE_THEME.method.toLowerCase()](
-  ROUTES.CREATE_THEME.path,
-  checkJwt,
-  async (req, res) => {
-    try {
-      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const { theme } = req.body;
-
-      if (isNilOrEmpty(auth0Id)) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      if (isNilOrEmpty(theme)) {
-        return res.status(400).json({ error: "Missing required theme data" });
-      }
-
-      const savedTheme = await createOrUpdateTheme({
-        theme,
-        userId: auth0Id,
-      });
-
-      res.status(200).json({ success: true, theme: savedTheme });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -216,7 +177,9 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
           .json({ error: result.message || "Search failed" });
       }
 
-      res.status(200).json({ success: true, recipes: result });
+      res
+        .status(200)
+        .json({ success: true, recipes: isMockData ? mockData : result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -254,7 +217,10 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
         expires: 0,
       };
 
-      res.status(200).json({ success: true, recipes: normalizedResult });
+      res.status(200).json({
+        success: true,
+        recipes: isMockData ? mockData : normalizedResult,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -285,7 +251,9 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
           .json({ error: result.message || "Failed to get recipe details" });
       }
 
-      res.status(200).json({ success: true, recipe: result });
+      res
+        .status(200)
+        .json({ success: true, recipe: isMockData ? mockData : result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
