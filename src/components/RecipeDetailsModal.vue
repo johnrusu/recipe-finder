@@ -160,7 +160,7 @@ import type { IRecipeDetails } from "@/types";
 interface Props {
   open: boolean;
   recipe: IRecipeDetails | null;
-  favorites: Set<number>;
+  favorites: Set<number | string>;
   imageBaseUri: string;
 }
 

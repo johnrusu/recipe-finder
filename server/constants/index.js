@@ -10,10 +10,7 @@ const MONGODB_URI = IS_DEV
     getEnv("MONGO_URI") ||
     "mongodb://localhost:27017/recipe-finder-db";
 const AUTH0_AUDIENCE = getEnv("AUTH0_AUDIENCE", "your-api-identifier");
-const AUTH0_ISSUER =
-  getEnv("AUTH0_ISSUER") ||
-  getEnv("AUTH0_ISSUER_BASE_URL") ||
-  "https://your-domain.auth0.com/";
+const AUTH0_ISSUER = getEnv("AUTH0_ISSUER") || "https://your-domain.auth0.com/";
 
 const APP_NAME = "Recipe Finder";
 const SPOONACULAR_BASE_URL = getEnv(

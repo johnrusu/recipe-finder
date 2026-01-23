@@ -17,4 +17,9 @@ if [ -f "functions/package-lock.json" ]; then
   cp functions/package-lock.json functions/package-lock.json.bak
 fi
 
+# Copy env to functions directory to ensure sync
+if [ -f "server/.env" ]; then
+  cp server/.env functions/.env
+fi
+
 echo "✓ Server folder copied successfully to functions/server"

@@ -1,53 +1,99 @@
-const functions = require("firebase-functions");
-
-// Load dotenv for local development
+// Firebase Functions v2 - Notes App API v1.0.1
+const { onRequest } = require("firebase-functions/v2/https");
+const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 
-// Ensure we're in production mode for Cloud Functions
-process.env.NODE_ENV = "production";
+const app = express();
 
-// Load the server app
-let app;
-try {
-  app = require("./server/index.js");
-} catch (error) {
-  console.error("Error loading server:", error);
-  // Create a simple error app if server fails to load
-  const express = require("express");
-  app = express();
-  app.use((req, res) => {
-    res
-      .status(500)
-      .json({ error: "Server failed to initialize", message: error.message });
+// CORS configuration - allow all origins
+const corsMiddleware = cors({
+  origin: true,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+});
+
+app.use(corsMiddleware);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Health check route (before database initialization)
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "Notes API is running" });
+});
+
+// Import database initialization
+const { initializeDatabase } = require("./server/database/index.js");
+
+// Initialize database
+let dbInitialized = false;
+let dbInitializing = false;
+
+const ensureDbConnection = async () => {
+  if (dbInitialized) return;
+  if (dbInitializing) {
+    // Wait for ongoing initialization
+    while (dbInitializing) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return;
+  }
+
+  dbInitializing = true;
+  try {
+    console.log("Initializing database...");
+    await initializeDatabase();
+    dbInitialized = true;
+    console.log("Database connected successfully");
+  } catch (error) {
+    console.error("Database connection failed:", error.message);
+    throw error;
+  } finally {
+    dbInitializing = false;
+  }
+};
+
+// Import routes
+const routes = require("./server/routes/index.js");
+
+// Wrap routes with database initialization check
+app.use(async (req, res, next) => {
+  if (!dbInitialized) {
+    try {
+      await ensureDbConnection();
+      next();
+    } catch (err) {
+      console.error("Database connection error:", err);
+      return res.status(503).json({
+        error: "Database temporarily unavailable",
+        details: err.message,
+      });
+    }
+  } else {
+    next();
+  }
+});
+
+app.use(routes);
+
+// For local testing/emulator
+if (process.env.FUNCTIONS_EMULATOR) {
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
   });
 }
 
-// Create Cloud Function that uses the pre-loaded server
-exports.api = functions.https.onRequest((req, res) => {
-  // Map Firebase config to process.env for EACH REQUEST
-  const config = functions.config();
-  if (config.api) {
-    process.env.API_RECIPE_KEY =
-      config.api.recipe_key || process.env.API_RECIPE_KEY;
-    process.env.SPOONACULAR_BASE_URL =
-      config.api.spoonacular_base_url || process.env.SPOONACULAR_BASE_URL;
-    process.env.MONGODB_URI = config.api.mongodb_uri || process.env.MONGODB_URI;
-    process.env.AUTH0_AUDIENCE =
-      config.api.auth0_audience || process.env.AUTH0_AUDIENCE;
-    process.env.AUTH0_DOMAIN =
-      config.api.auth0_domain || process.env.AUTH0_DOMAIN;
-    process.env.AUTH0_CLIENT_ID =
-      config.api.auth0_client_id || process.env.AUTH0_CLIENT_ID;
-    process.env.AUTH0_ISSUER =
-      config.api.auth0_issuer || process.env.AUTH0_ISSUER;
-    process.env.USE_MOCK_DATA =
-      config.api.use_mock_data || process.env.USE_MOCK_DATA;
-    process.env.MOCK_DATA_PATH =
-      config.api.mock_data_path || process.env.MOCK_DATA_PATH;
-    process.env.MOCK_RECIPE_DETAILS_PATH =
-      config.api.mock_recipe_details_path ||
-      process.env.MOCK_RECIPE_DETAILS_PATH;
-  }
-
-  app(req, res);
-});
+// Export the Express app as a Firebase 2nd gen Function
+exports.api = onRequest(
+  {
+    maxInstances: 10,
+    timeoutSeconds: 60,
+    memory: "512MiB",
+    invoker: "public",
+  },
+  app
+);

@@ -427,7 +427,12 @@ import type { IRecipe, IRecipeSearchParams, IRecipeDetails } from "@/types";
 import { RECIPE_FINDER } from "@/constants";
 
 // services
-import { searchRecipes, getRandomRecipes, getRecipeDetails } from "@/services";
+import {
+  searchRecipes,
+  getRandomRecipes,
+  getRecipeDetails,
+  setFavoriteRecipes,
+} from "@/services";
 import { isArrayNotEmpty } from "@/utils";
 
 // components
@@ -457,7 +462,7 @@ const loadingMore = ref(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
-const favorites = ref<Set<number>>(new Set());
+const favorites = ref<Set<number | string>>(new Set());
 
 // Recipe details modal state
 const showRecipeModal = ref(false);
@@ -474,7 +479,7 @@ const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 
 // hooks
 const appStore = useAppStore();
-const { isAuthenticated } = useAuth0();
+const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
 const { xs } = useDisplay();
 
@@ -757,6 +762,25 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
+const handleRecipesFavorites = async () => {
+  loading.value = true;
+  try {
+    const token = await getAccessTokenSilently({
+      audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+    });
+
+    const response = await setFavoriteRecipes(favorites.value, token);
+    if (response.success) {
+      console.log("Favorites updated successfully");
+    } else {
+      console.error("Failed to update favorites:", response.message);
+    }
+  } catch (error) {
+    console.error("Error updating favorites:", error);
+  } finally {
+    loading.value = false;
+  }
+};
 const clearFilters = () => {
   selectedMealType.value = null;
   selectedCuisine.value = [];
@@ -780,6 +804,7 @@ const toggleFavorite = (recipeId: number) => {
   } else {
     favorites.value.add(recipeId);
   }
+  handleRecipesFavorites();
 };
 
 const handleModalClose = () => {

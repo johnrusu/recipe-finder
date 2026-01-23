@@ -99,4 +99,11 @@ export const API_ROUTES = {
     protected: false,
     description: "Get random recipes",
   },
+
+  SET_FAVORITE_RECIPES: {
+    method: "POST",
+    url: `${BASE_URL}/recipes/favorites`,
+    protected: true,
+    description: "Set favorite recipes for the authenticated user",
+  },
 } as const;

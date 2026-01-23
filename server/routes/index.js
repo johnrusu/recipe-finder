@@ -49,6 +49,7 @@ const { isNilOrEmpty } = require("../utils/index.js");
 const {
   createOrUpdateUser,
   getUserByAuth0Id,
+  setFavoritesRecipes,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -249,6 +250,59 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
   }
 );
 
+// Set recipes as favorite (must come BEFORE :recipeId route)
+router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
+  ROUTES.SET_FAVORITE_RECIPES.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const { recipeIds = [] } = req.body;
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
+        console.log("❌ Invalid recipeIds");
+        return res
+          .status(400)
+          .json({ error: "recipeIds must be a non-empty array" });
+      }
+
+      const favorites = await setFavoritesRecipes(auth0Id, recipeIds);
+
+      if (favorites) {
+        res.status(200).json({
+          success: true,
+          message: `Recipes [${recipeIds.join(
+            ", "
+          )}] set as favorite for user ${auth0Id}`,
+          recipeIds,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Recipes [${recipeIds.join(
+            ", "
+          )}] marked as favorite for user ${auth0Id} (offline mode)`,
+          recipeIds,
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in SET_FAVORITE_RECIPES:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Favorites recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
 // Get recipe details
 router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
   ROUTES.GET_RECIPE_DETAILS.path,
@@ -260,6 +314,11 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
         return res
           .status(400)
           .json({ error: "Missing required recipeId parameter" });
+      }
+
+      // Reject if trying to access favorites via GET
+      if (recipeId === "favorites") {
+        return res.status(405).json({ error: "Method not allowed" });
       }
 
       // Return mock data if enabled

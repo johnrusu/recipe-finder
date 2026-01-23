@@ -51,6 +51,13 @@ const ROUTES = {
     protected: false,
     description: "Get random recipes",
   },
+
+  SET_FAVORITE_RECIPES: {
+    method: "POST",
+    path: "/recipes/favorites",
+    protected: true,
+    description: "Set recipes as favorite",
+  },
 };
 
 module.exports = { ROUTES };

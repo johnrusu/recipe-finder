@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const { MONGODB_URI } = require("../constants/index.js");
 
 const initializeDatabase = async () => {
-  const maxRetries = 3;
+  const maxRetries = 2; // Reduced from 3
   let lastError;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -15,9 +15,10 @@ const initializeDatabase = async () => {
 
       // Use the connection string directly
       const connectionUri = MONGODB_URI;
+      console.log(`Using URI: ${connectionUri.substring(0, 50)}...`);
 
       const dbConnection = await mongoose.connect(connectionUri, {
-        serverSelectionTimeoutMS: 15000,
+        serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
       });
       return dbConnection;
@@ -46,14 +47,24 @@ const usersSchema = new mongoose.Schema({
   name: { type: String, required: false },
 });
 
-const users = mongoose.model("User", usersSchema, "users-collection");
+const favoritesRecipesSchema = new mongoose.Schema({
+  recipeIds: [{ type: String, required: true }],
+  auth0Id: { type: String, required: true, unique: false },
+});
+
+const usersModel = mongoose.model("User", usersSchema, "users-collection");
+const favoritesRecipesModel = mongoose.model(
+  "FavoritesRecipe",
+  favoritesRecipesSchema,
+  "favorites-recipes-collection"
+);
 
 // User database methods
 const createOrUpdateUser = async (userData) => {
   const { auth0Id, email, name } = userData;
 
   try {
-    const existingUser = await users.findOne({ auth0Id });
+    const existingUser = await usersModel.findOne({ auth0Id });
 
     if (existingUser) {
       // Update existing user
@@ -63,7 +74,7 @@ const createOrUpdateUser = async (userData) => {
       return existingUser;
     } else {
       // Create new user
-      const newUser = new users({
+      const newUser = new usersModel({
         userId: auth0Id, // Use auth0Id as userId
         auth0Id,
         email,
@@ -79,9 +90,43 @@ const createOrUpdateUser = async (userData) => {
 
 const getUserByAuth0Id = async (auth0Id) => {
   try {
-    return await users.findOne({ auth0Id });
+    return await usersModel.findOne({ auth0Id });
   } catch (error) {
     throw new Error(`Error fetching user: ${error.message}`);
+  }
+};
+
+// recipes database methods
+
+const setFavoritesRecipes = async (auth0Id, recipeIds) => {
+  try {
+    console.log(`[DB] Setting favorites for ${auth0Id}:`, recipeIds);
+
+    let existingUser = await usersModel.findOne({ auth0Id });
+
+    // If user doesn't exist yet, create a placeholder user
+    if (!existingUser) {
+      console.log(`[DB] User ${auth0Id} not found, creating placeholder...`);
+      existingUser = new usersModel({
+        userId: auth0Id,
+        auth0Id,
+        email: `${auth0Id}@placeholder.local`,
+        name: "Placeholder User",
+      });
+      await existingUser.save();
+    }
+
+    // Find and update existing favorites, or create new one
+    const recipesFavorites = await favoritesRecipesModel.findOneAndUpdate(
+      { auth0Id },
+      { auth0Id, recipeIds },
+      { upsert: true, new: true }
+    );
+    console.log(`[DB] Favorites saved successfully`);
+    return recipesFavorites;
+  } catch (error) {
+    console.error(`[DB] Error saving favorites:`, error.message);
+    throw new Error(`Error saving favorites: ${error.message}`);
   }
 };
 
@@ -90,10 +135,16 @@ const closeDatabase = async () => {
 };
 
 module.exports = {
+  // Database methods
   initializeDatabase,
   closeDatabase,
-  users,
+
   // User methods
+  usersModel,
   createOrUpdateUser,
   getUserByAuth0Id,
+
+  // Recipes methods
+  favoritesRecipesModel,
+  setFavoritesRecipes,
 };
