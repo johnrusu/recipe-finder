@@ -315,18 +315,14 @@
                 md="4"
                 lg="3"
               >
-                <v-card
-                  class="h-100 d-flex flex-column"
-                  @click="console.log('View recipe:', recipe)"
-                  color="white"
-                >
+                <v-card class="h-100 d-flex flex-column" color="white">
                   <v-img
                     :src="getImageUrl(recipe.image)"
                     :alt="recipe.title"
                     height="200px"
                     cover
                   />
-                  <v-card-text class="flex-grow-1">
+                  <v-card-text class="grow">
                     <div class="text-h6 font-weight-bold line-clamp-2">
                       {{ recipe.title }}
                     </div>
@@ -736,6 +732,7 @@ const loadMoreResults = async () => {
 const handleGetRecipeDetails = async (recipeId: number) => {
   loading.value = true;
   error.value = null;
+  showRecipeModal.value = true;
 
   try {
     const response = await getRecipeDetails(recipeId);
@@ -745,7 +742,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
         ...response.recipe,
         extendedIngredients: response.recipe.extendedIngredients || [],
       } as IRecipeDetails;
-      showRecipeModal.value = true;
+
       console.log("Recipe details:", response.recipe);
     } else {
       error.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
@@ -775,7 +772,7 @@ const clearFilters = () => {
 };
 
 const toggleFavorite = (recipeId: number) => {
-  if (!isAuthenticated) {
+  if (!isAuthenticated.value) {
     return;
   }
   if (favorites.value.has(recipeId)) {
