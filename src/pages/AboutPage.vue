@@ -1,5 +1,5 @@
 <template>
-  <v-container class="about-page pb-0 mt-4">
+  <v-container class="about-page pb-0">
     <v-card class="mb-6">
       <v-card-text class="pa-6">
         <h2 class="text-2xl font-semibold mb-4">

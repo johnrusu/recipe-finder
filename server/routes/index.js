@@ -7,15 +7,23 @@ const getEnvVar = (key, defaultValue = "") => {
   return process.env[key] || defaultValue;
 };
 
-const isMockData = Boolean(getEnvVar("USE_MOCK_DATA", "true")) === true;
+const isMockData = getEnvVar("USE_MOCK_DATA", "true") === "true";
 const pathOfMockData = getEnvVar("MOCK_DATA_PATH", "../mock/recipes.json");
+const pathOfMockRecipeDetails = getEnvVar(
+  "MOCK_RECIPE_DETAILS_PATH",
+  "../mock/recipes-details.json"
+);
 
 // Load mock data if enabled
 let mockData = null;
+let mockRecipeDetails = null;
 if (isMockData) {
   try {
     mockData = require(pathOfMockData);
+    mockRecipeDetails = require(pathOfMockRecipeDetails);
+
     console.log("Mock data loaded from", pathOfMockData);
+    console.log("Mock recipe details loaded from", pathOfMockRecipeDetails);
   } catch (error) {
     console.error("Failed to load mock data from", pathOfMockData, error);
   }
@@ -169,8 +177,14 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
         params.append("excludeIngredients", excludeIngredients);
       }
 
+      if (isMockData && mockData) {
+        return res.status(200).json({
+          success: true,
+          recipes: mockData,
+        });
+      }
+
       const searchUrl = `${SPOONACULAR_BASE_URL}/recipes/complexSearch?${params}`;
-      console.log("Search URL:", searchUrl.replace(SPOONACULAR_API_KEY, "***"));
 
       const response = await fetch(searchUrl);
       const result = await response.json();
@@ -181,9 +195,7 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
           .json({ error: result.message || "Search failed" });
       }
 
-      res
-        .status(200)
-        .json({ success: true, recipes: isMockData ? mockData : result });
+      res.status(200).json({ success: true, recipes: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -196,16 +208,14 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const { number = 5 } = req.query;
+      const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
 
-      // Return mock data if enabled
       if (isMockData && mockData) {
         return res.status(200).json({
           success: true,
           recipes: mockData,
         });
       }
-
-      const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
 
       const response = await fetch(randomUrl);
       const result = await response.json();
@@ -231,7 +241,7 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
 
       res.status(200).json({
         success: true,
-        recipes: isMockData ? mockData : normalizedResult,
+        recipes: normalizedResult,
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -254,11 +264,21 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
 
       // Return mock data if enabled
       if (isMockData && mockData) {
-        return res.status(200).json({ success: true, recipe: mockData });
+        const recipeDetailsMock = isMockData
+          ? mockRecipeDetails.recipes.find(
+              (r) => r.id === parseInt(recipeId)
+            ) || mockRecipeDetails.recipes[0]
+          : null;
+
+        if (recipeDetailsMock) {
+          return res.status(200).json({
+            success: true,
+            recipe: { ...recipeDetailsMock, id: parseInt(recipeId) },
+          });
+        }
       }
 
       const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
-
       const response = await fetch(detailsUrl);
       const result = await response.json();
 

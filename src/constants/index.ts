@@ -58,6 +58,8 @@ const LABELS = {
 };
 
 const RECIPE_FINDER = {
+  ERROR_RECIPE_NOT_FOUND: "Recipe not found.",
+  ERROR_FETCHING_RECIPE: "Error fetching recipe details.",
   TITLE: "Discover Your Next Meal",
   SEARCH_PLACEHOLDER: "Search for ingredients, cuisines, or dish names...",
   SEARCH_BUTTON: "Search",
@@ -128,6 +130,15 @@ const RECIPE_FINDER = {
   LOGIN_REQUIRED_TOOLTIP: "Sign in to save recipes",
   LOAD_MORE_BUTTON: "Load More Recipes",
   LOADING_MORE_TEXT: "Loading...",
+
+  // Recipe Details Modal
+  RECIPE_MODAL: {
+    SUMMARY_TITLE: "Summary",
+    INGREDIENTS_TITLE: "Ingredients",
+    INSTRUCTIONS_TITLE: "Instructions",
+    VIEW_FULL_RECIPE: "View Full Recipe",
+    CLOSE_BUTTON: "Close",
+  },
 };
 
 const HOME_PAGE = {

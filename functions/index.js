@@ -44,6 +44,9 @@ exports.api = functions.https.onRequest((req, res) => {
       config.api.use_mock_data || process.env.USE_MOCK_DATA;
     process.env.MOCK_DATA_PATH =
       config.api.mock_data_path || process.env.MOCK_DATA_PATH;
+    process.env.MOCK_RECIPE_DETAILS_PATH =
+      config.api.mock_recipe_details_path ||
+      process.env.MOCK_RECIPE_DETAILS_PATH;
   }
 
   app(req, res);

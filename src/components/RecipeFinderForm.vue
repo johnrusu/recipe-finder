@@ -367,7 +367,7 @@
                       variant="elevated"
                       color="primary"
                       size="large"
-                      @click.stop="console.log('View details:', recipe.id)"
+                      @click.stop="handleGetRecipeDetails(recipe.id)"
                       class="view-recipe-btn flex-grow-1"
                       append-icon="mdi-arrow-right"
                     >
@@ -381,7 +381,7 @@
               <v-col cols="12" class="text-center">
                 <v-btn
                   color="primary"
-                  variant="outlined"
+                  variant="flat"
                   :loading="loadingMore"
                   @click="loadMoreResults"
                   block
@@ -402,6 +402,16 @@
             <AppLoading :config="LOADING_CONFIG" />
           </v-col>
         </v-row>
+
+        <!-- Recipe Details Modal Component -->
+        <RecipeDetailsModal
+          :open="showRecipeModal"
+          :recipe="selectedRecipeDetails"
+          :favorites="favorites"
+          :image-base-uri="imageBaseUri"
+          @close="showRecipeModal = false"
+          @favorite="handleFavoriteToggle"
+        />
       </v-card-text>
     </v-card>
   </div>
@@ -415,17 +425,20 @@ import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores";
 
 // types
-import type { IRecipe, IRecipeSearchParams } from "@/types";
+import type { IRecipe, IRecipeSearchParams, IRecipeDetails } from "@/types";
 
 // constants
 import { RECIPE_FINDER } from "@/constants";
 
 // services
-import { searchRecipes, getRandomRecipes } from "@/services";
+import { searchRecipes, getRandomRecipes, getRecipeDetails } from "@/services";
 import { isArrayNotEmpty } from "@/utils";
 
 // components
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
+const RecipeDetailsModal = defineAsyncComponent(
+  () => import("./RecipeDetailsModal.vue")
+);
 
 // auth
 import { useAuth0 } from "@auth0/auth0-vue";
@@ -449,6 +462,10 @@ const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const favorites = ref<Set<number>>(new Set());
+
+// Recipe details modal state
+const showRecipeModal = ref(false);
+const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
 
 // Pagination state
 const currentOffset = ref(0);
@@ -651,7 +668,7 @@ const handleRandomRecipe = async () => {
   searchResults.value = [];
 
   try {
-    const response = await getRandomRecipes(5);
+    const response = await getRandomRecipes(50);
 
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
@@ -716,6 +733,33 @@ const loadMoreResults = async () => {
   }
 };
 
+const handleGetRecipeDetails = async (recipeId: number) => {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const response = await getRecipeDetails(recipeId);
+
+    if (response.success && response.recipe) {
+      selectedRecipeDetails.value = {
+        ...response.recipe,
+        extendedIngredients: response.recipe.extendedIngredients || [],
+      } as IRecipeDetails;
+      showRecipeModal.value = true;
+      console.log("Recipe details:", response.recipe);
+    } else {
+      error.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : RECIPE_FINDER.ERROR_FETCHING_RECIPE;
+    error.value = errorMessage;
+    console.error("Get recipe details error:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 const clearFilters = () => {
   selectedMealType.value = null;
   selectedCuisine.value = [];
@@ -739,6 +783,10 @@ const toggleFavorite = (recipeId: number) => {
   } else {
     favorites.value.add(recipeId);
   }
+};
+
+const handleFavoriteToggle = (recipeId: number) => {
+  toggleFavorite(recipeId);
 };
 
 const isFavorited = (recipeId: number) => {
@@ -784,28 +832,11 @@ if (isArrayNotEmpty(recipesFromState.value)) {
   }
 }
 
-.view-recipe-btn {
-  transition: all 0.2s ease;
-}
-
-.view-recipe-btn:hover {
-  transform: scale(1.05);
-}
-
 .save-btn {
   transition: all 0.2s ease;
 }
 
 .save-btn:hover {
   transform: scale(1.2);
-}
-
-:deep(.v-card) {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.v-card:hover) {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
 }
 </style>

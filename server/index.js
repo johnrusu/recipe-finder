@@ -22,11 +22,13 @@ const requiredEnvVars = [
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.warn("⚠️  Missing environment variables:", missingEnvVars.join(", "));
+  console.warn("⚠️ Missing environment variables:", missingEnvVars.join(", "));
   console.warn(
     "This may cause API errors. Check Firebase config or .env file."
   );
-  process.exit(1);
+  if (process.env.NODE_ENV !== "production") {
+    process.exit(1);
+  }
 }
 
 console.log("✓ Server initialization started");

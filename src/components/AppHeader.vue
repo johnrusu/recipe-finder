@@ -57,10 +57,9 @@ const handleLogin = () => {
 };
 </script>
 <template>
-  <div :class="!props.isScrolled ? 'app-header-shadow' : ''"></div>
   <div class="app-header" :class="{ scrolled: props.isScrolled }">
     <router-link to="/" class="flex items-center justify-center gap-4">
-      <LogoAnimated class="w-[48px] h-[48px]" />
+      <LogoAnimated class="w-12 h-12" />
       <span class="text-uppercase font-bold sm:block hidden">{{
         APP.TITLE
       }}</span>
@@ -164,26 +163,17 @@ const handleLogin = () => {
 </template>
 
 <style scoped>
-.app-header-shadow {
-  background: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22top_to_bottom_light_100_smooth_linearGradient1%22%20gradientUnits%3D%22objectBoundingBox%22%20gradientTransform%3D%22matrix(0%201%20-0.5%200%200.5%200)%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgb(0%2C%200%2C%200)%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%2225%25%22%20stop-color%3D%22rgb(0%2C%200%2C%200)%22%20stop-opacity%3D%220.5%22%2F%3E%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22rgb(0%2C%200%2C%200)%22%20stop-opacity%3D%220.45%22%2F%3E%3Cstop%20offset%3D%2275%25%22%20stop-color%3D%22rgb(0%2C%200%2C%200)%22%20stop-opacity%3D%220.25%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgb(0%2C%200%2C%200)%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22url(%23top_to_bottom_light_100_smooth_linearGradient1)%22%20fill-opacity%3D%221%22%2F%3E%3C%2Fsvg%3E")
-    center center / 100% 100% no-repeat;
-  bottom: 0px;
-  height: 120px;
-  inset-inline: 0px;
-  position: fixed;
-  top: 0px;
-  z-index: 2;
-}
-
 .app-header {
   align-items: center;
   box-shadow: rgba(0, 0, 0, 0) 0px 8px 24px;
   display: flex;
   height: 80px;
   justify-content: space-between;
-  position: fixed;
-  inset-inline: 0;
-  z-index: 3;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
   padding: 0 24px;
 }
 

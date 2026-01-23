@@ -2,7 +2,9 @@
   <div
     class="items-center flex gap-4 flex-col h-full justify-center text-center"
   >
-    <LogoAnimated class="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80" />
+    <LogoAnimated
+      class="w-35 h-35 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80"
+    />
     <h1 class="hero-title text-h3 font-bold mb-2" data-test="hero-title">
       {{ HOME_PAGE.TITLE }}
     </h1>

@@ -17,10 +17,7 @@
         v-if="isAuthenticated || skipWelcome"
         :isScrolled="isScrolled"
       />
-      <v-main
-        class="flex! justify-between flex-col"
-        :class="isAuthenticated || skipWelcome ? 'pt-20!' : ''"
-      >
+      <v-main class="flex! justify-between flex-col">
         <div class="flex-1">
           <router-view />
         </div>

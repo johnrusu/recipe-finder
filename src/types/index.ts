@@ -39,6 +39,65 @@ interface IRecipeSearchParams {
   [key: string]: unknown;
 }
 
+interface IExtendedIngredient {
+  id: number;
+  aisle: string;
+  image: string;
+  consistency: string;
+  name: string;
+  nameClean: string;
+  original: string;
+  originalName: string;
+  amount: number;
+  unit: string;
+  meta: string[];
+  measures: {
+    us: {
+      amount: number;
+      unitShort: string;
+      unitLong: string;
+    };
+    metric: {
+      amount: number;
+      unitShort: string;
+      unitLong: string;
+    };
+  };
+}
+
+interface IRecipeDetails {
+  id: number;
+  title: string;
+  image: string;
+  imageType: string;
+  readyInMinutes: number;
+  servings: number;
+  sourceUrl: string;
+  vegetarian: boolean;
+  vegan: boolean;
+  glutenFree: boolean;
+  dairyFree: boolean;
+  veryHealthy: boolean;
+  cheap: boolean;
+  veryPopular: boolean;
+  sustainable: boolean;
+  lowFodmap: boolean;
+  weightWatcherSmartPoints: number;
+  gaps: string;
+  preparationMinutes: number | null;
+  cookingMinutes: number | null;
+  aggregateLikes: number;
+  healthScore: number;
+  creditsText: string;
+  license: string;
+  sourceName: string;
+  pricePerServing: number;
+  extendedIngredients: IExtendedIngredient[];
+  summary?: string;
+  instructions?: string;
+  [key: string]: unknown;
+}
+
 interface IRecipe {
   id: number;
   title: string;
@@ -47,6 +106,28 @@ interface IRecipe {
   readyInMinutes: number;
   servings: number;
   sourceUrl: string;
+  vegetarian: boolean;
+  vegan: boolean;
+  glutenFree: boolean;
+  dairyFree: boolean;
+  veryHealthy: boolean;
+  cheap: boolean;
+  veryPopular: boolean;
+  sustainable: boolean;
+  lowFodmap: boolean;
+  weightWatcherSmartPoints: number;
+  gaps: string;
+  preparationMinutes: number | null;
+  cookingMinutes: number | null;
+  aggregateLikes: number;
+  healthScore: number;
+  creditsText: string;
+  license: string;
+  sourceName: string;
+  pricePerServing: number;
+  extendedIngredients?: IExtendedIngredient[];
+  summary?: string;
+  instructions?: string;
   [key: string]: unknown;
 }
 
@@ -78,6 +159,8 @@ export type {
   IUserData,
   IUser,
   IRecipeSearchParams,
+  IRecipeDetails,
+  IExtendedIngredient,
   IRecipe,
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
