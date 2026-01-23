@@ -765,9 +765,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
 const handleRecipesFavorites = async () => {
   loading.value = true;
   try {
-    const token = await getAccessTokenSilently({
-      audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-    });
+    const token = await getAccessTokenSilently();
 
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
