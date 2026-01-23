@@ -16,6 +16,7 @@ const statusEnvVariables = checkEnvVariables([
   "VITE_AUTH0_DOMAIN",
   "VITE_AUTH0_CLIENT_ID",
   "VITE_AUTH0_AUDIENCE",
+  "VITE_API_BASE_URL",
 ]);
 if (!statusEnvVariables) {
   const app = document.querySelector("#app");
