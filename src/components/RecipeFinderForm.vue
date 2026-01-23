@@ -405,7 +405,7 @@
           :recipe="selectedRecipeDetails"
           :favorites="favorites"
           :image-base-uri="imageBaseUri"
-          @close="showRecipeModal = false"
+          @close="handleModalClose"
           @favorite="handleFavoriteToggle"
         />
       </v-card-text>
@@ -780,6 +780,11 @@ const toggleFavorite = (recipeId: number) => {
   } else {
     favorites.value.add(recipeId);
   }
+};
+
+const handleModalClose = () => {
+  showRecipeModal.value = false;
+  selectedRecipeDetails.value = null;
 };
 
 const handleFavoriteToggle = (recipeId: number) => {
