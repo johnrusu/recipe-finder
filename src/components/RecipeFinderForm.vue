@@ -15,6 +15,7 @@
               clearable
               hide-details
               class="search-field"
+              bg-color="white"
               @keyup.enter="handleSearch"
             >
               <template v-slot:append-inner>
@@ -24,25 +25,18 @@
                 </v-btn>
               </template>
             </v-text-field>
-            <v-card class="mx-auto mt-6" variant="tonal">
-              <v-card-text class="py-4">
-                <div class="d-flex align-center">
-                  <v-icon
-                    icon="mdi-lightbulb-on"
-                    color="warning"
-                    class="mr-3"
-                  />
-                  <div>
-                    <div class="text-subtitle-2 font-weight-bold">
-                      {{ RECIPE_FINDER.PRO_TIPS_TITLE }}
-                    </div>
-                    <div class="text-caption">
-                      {{ RECIPE_FINDER.PRO_TIPS_TEXT }}
-                    </div>
+            <v-alert type="warning" variant="tonal" class="mt-6">
+              <div class="d-flex align-center">
+                <div>
+                  <div class="text-subtitle-2 font-weight-bold">
+                    {{ RECIPE_FINDER.PRO_TIPS_TITLE }}
+                  </div>
+                  <div class="text-caption">
+                    {{ RECIPE_FINDER.PRO_TIPS_TEXT }}
                   </div>
                 </div>
-              </v-card-text>
-            </v-card>
+              </div>
+            </v-alert>
           </v-col>
         </v-row>
 
@@ -295,10 +289,24 @@
           </v-col>
         </v-row>
 
-        <!-- Search Results -->
-        <v-row v-if="searchResults.length > 0" class="mt-6">
+        <v-row v-if="loading && !error" class="mt-6">
+          <v-col cols="12" class="justify-center flex">
+            <AppLoading :config="LOADING_CONFIG" />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
+    <!-- Search Results Card -->
+    <v-card
+      v-if="searchResults.length > 0"
+      class="mt-6 search-results-card"
+      ref="searchResultsCard"
+    >
+      <v-card-text>
+        <v-row class="mt-0">
           <v-col cols="12">
-            <h2 class="text-xl font-bold mb-4">
+            <h2 class="text-xl font-bold mb-6">
               {{
                 RECIPE_FINDER.SEARCH_RESULTS_HEADER(
                   searchResults.length,
@@ -315,7 +323,11 @@
                 md="4"
                 lg="3"
               >
-                <v-card class="h-100 d-flex flex-column" color="white">
+                <v-card
+                  class="h-100 d-flex flex-column recipe-card"
+                  color="white"
+                  ripple
+                >
                   <v-img
                     :src="getImageUrl(recipe.image)"
                     :alt="recipe.title"
@@ -392,29 +404,23 @@
             </v-row>
           </v-col>
         </v-row>
-
-        <v-row v-if="loading && !error" class="mt-6">
-          <v-col cols="12" class="justify-center flex">
-            <AppLoading :config="LOADING_CONFIG" />
-          </v-col>
-        </v-row>
-
-        <!-- Recipe Details Modal Component -->
-        <RecipeDetailsModal
-          :open="showRecipeModal"
-          :recipe="selectedRecipeDetails"
-          :favorites="favorites"
-          :image-base-uri="imageBaseUri"
-          @close="handleModalClose"
-          @favorite="handleFavoriteToggle"
-        />
       </v-card-text>
     </v-card>
+
+    <!-- Recipe Details Modal Component -->
+    <RecipeDetailsModal
+      :open="showRecipeModal"
+      :recipe="selectedRecipeDetails"
+      :favorites="favorites"
+      :image-base-uri="imageBaseUri"
+      @close="handleModalClose"
+      @favorite="handleFavoriteToggle"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from "vue";
+import { ref, computed, defineAsyncComponent, nextTick } from "vue";
 import { useDisplay } from "vuetify";
 
 // state
@@ -469,6 +475,7 @@ const showRecipeModal = ref(false);
 const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
 
 // Pagination state
+const searchResultsCard = ref<any>(null);
 const currentOffset = ref(0);
 const currentNumber = ref(10);
 const totalResults = ref(0);
@@ -684,6 +691,11 @@ const handleRandomRecipe = async () => {
         `Found ${searchResults.value.length} random recipes`,
         response
       );
+
+      // Wait for DOM to update then scroll to results
+      await nextTick();
+      const el = searchResultsCard.value?.$el as HTMLElement;
+      el?.scrollIntoView({ behavior: "smooth" });
     } else {
       error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
     }
@@ -863,5 +875,14 @@ if (isArrayNotEmpty(recipesFromState.value)) {
 
 .save-btn:hover {
   transform: scale(1.2);
+}
+
+.recipe-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recipe-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 </style>

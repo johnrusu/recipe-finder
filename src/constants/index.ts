@@ -253,6 +253,14 @@ const ROUTES = [
     isForMenu: true,
   },
   {
+    path: "/dashboard",
+    name: "Dashboard",
+    protected: true,
+    icon: "mdi-view-dashboard",
+    component: () => import("@/pages/DashboardPage.vue"),
+    isForMenu: true,
+  },
+  {
     path: "/about",
     name: "About",
     protected: false,
@@ -260,14 +268,7 @@ const ROUTES = [
     component: () => import("@/pages/AboutPage.vue"),
     isForMenu: true,
   },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    protected: true,
-    icon: "mdi-view-dashboard",
-    component: () => import("@/pages/DashboardPage.vue"),
-    isForMenu: false,
-  },
+
   {
     path: "/:pathMatch(.*)*",
     name: "not-found",

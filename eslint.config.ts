@@ -43,5 +43,12 @@ export default defineConfigWithVueTs(
     },
   },
 
+  // Allow 'any' type usage
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+
   skipFormatting
 );
