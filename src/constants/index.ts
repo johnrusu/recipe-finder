@@ -54,7 +54,7 @@ const LABELS = {
   GUEST_BENEFIT_3: "🔍 Access your search history",
   GUEST_BENEFIT_4: "⭐ Get personalized recommendations",
   GUEST_CONTINUE: "Continue as Guest",
-  GUEST_CREATE_ACCOUNT: "Create Account",
+  GUEST_SIGNIN_ACCOUNT: "Sign In to Account",
 };
 
 const RECIPE_FINDER = {
@@ -254,7 +254,7 @@ const ROUTES = [
   },
   {
     path: "/dashboard",
-    name: "Dashboard",
+    name: "My Dashboard",
     protected: true,
     icon: "mdi-view-dashboard",
     component: () => import("@/pages/DashboardPage.vue"),

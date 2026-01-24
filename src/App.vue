@@ -14,7 +14,7 @@
         :routes="menuRoutes"
         @on-logout="handleLogout"
         @on-login="handleLogin"
-        v-if="isAuthenticated || skipWelcome"
+        v-if="route.path !== '/' || skipWelcome"
         :isScrolled="isScrolled"
       />
       <v-main class="flex! justify-between flex-col">
@@ -38,6 +38,9 @@ import {
   ref,
 } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
+
+// route
+import { useRoute } from "vue-router";
 
 // state
 import { useAppStore } from "@/stores";
@@ -79,7 +82,10 @@ const isScrolled = ref(false);
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
-const skipWelcome = computed(() => appState.skipWelcome);
+const skipWelcome = computed(() => appState.skipWelcome) || false;
+
+// hooks
+const route = useRoute();
 
 // watch
 watch([isLoading, error, user], () => {

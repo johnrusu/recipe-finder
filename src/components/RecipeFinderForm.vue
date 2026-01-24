@@ -88,6 +88,7 @@
               block
               class="mb-4"
             >
+              <v-icon icon="mdi-tune" class="mr-2" />
               {{
                 showAdvanced
                   ? RECIPE_FINDER.HIDE_ADVANCED

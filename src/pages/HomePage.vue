@@ -73,7 +73,7 @@
             size="large"
             class="gemini-live-border w-full sm:flex-1"
           >
-            <span class="text-wrap">{{ LABELS.GUEST_CREATE_ACCOUNT }}</span>
+            <span class="text-wrap">{{ LABELS.GUEST_SIGNIN_ACCOUNT }}</span>
           </v-btn>
         </v-card-actions>
       </v-card>

@@ -65,7 +65,9 @@ body {
     );
 }
 
-.home-page {
+.home-page,
+.about-page,
+.dashboard-page {
   @apply flex flex-col h-full;
 }
 
