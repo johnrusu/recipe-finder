@@ -667,16 +667,18 @@ const handleRandomRecipe = async () => {
   error.value = null;
   searchResults.value = [];
   isRandomSearch.value = true;
-  searchResults.value = [];
-  isRandomSearch.value = true;
 
   try {
     const response = await getRandomRecipes(50);
+    console.log("Random recipe response:", response);
+    console.log("response.recipes:", response.recipes);
+    console.log("response.recipes.results:", response.recipes?.results);
+    console.log("Is array?", Array.isArray(response.recipes?.results));
 
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
       appStore.setRecipes(response.recipes.results);
-      totalResults.value = response.recipes.results.length;
+      totalResults.value = response.recipes.totalResults || response.recipes.results.length;
       currentOffset.value = 0;
       // Store the base URI for image URLs
       if (response.recipes.baseUri) {
@@ -684,14 +686,20 @@ const handleRandomRecipe = async () => {
       }
       console.log(
         `Found ${searchResults.value.length} random recipes`,
-        response
+        searchResults.value
       );
 
       // Wait for DOM to update then scroll to results
       await nextTick();
-      const el = searchResultsCard.value?.$el as HTMLElement;
-      el?.scrollIntoView({ behavior: "smooth" });
+      // Add small delay to ensure v-if has fully rendered the card
+      setTimeout(() => {
+        const el = searchResultsCard.value?.$el as HTMLElement;
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
     } else {
+      console.log("Condition failed - success:", response.success, "has results:", !!response.recipes?.results);
       error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
     }
   } catch (err) {
