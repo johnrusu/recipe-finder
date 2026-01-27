@@ -50,6 +50,7 @@ const {
   createOrUpdateUser,
   getUserByAuth0Id,
   setFavoritesRecipes,
+  removeFavoritesRecipes,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -293,6 +294,59 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
       }
     } catch (error) {
       console.error("❌ Error in SET_FAVORITE_RECIPES:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Favorites recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// Remove recipes from favorites
+router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
+  ROUTES.REMOVE_FAVORITE_RECIPES.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const { recipeIds = [] } = req.body;
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
+        console.log("❌ Invalid recipeIds");
+        return res
+          .status(400)
+          .json({ error: "recipeIds must be a non-empty array" });
+      }
+
+      const favorites = await removeFavoritesRecipes(auth0Id, recipeIds);
+
+      if (favorites) {
+        res.status(200).json({
+          success: true,
+          message: `Recipes [${recipeIds.join(
+            ", "
+          )}] removed from favorites for user ${auth0Id}`,
+          recipeIds,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Recipes [${recipeIds.join(
+            ", "
+          )}] removed from favorites for user ${auth0Id} (offline mode)`,
+          recipeIds,
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in REMOVE_FAVORITE_RECIPES:", error.message);
       // Don't fail - return success even if DB is down
       res.status(200).json({
         success: true,

@@ -31,7 +31,7 @@
               color="primary"
               variant="tonal"
             >
-              {{ recipe.readyInMinutes }} min
+              {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
             </v-chip>
             <v-chip
               v-if="recipe.servings"
@@ -39,7 +39,7 @@
               color="success"
               variant="tonal"
             >
-              {{ recipe.servings }} servings
+              {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
             </v-chip>
             <v-chip
               v-if="recipe.healthScore"
@@ -47,7 +47,7 @@
               color="error"
               variant="tonal"
             >
-              Health: {{ recipe.healthScore }}
+              {{ RECIPE_MODAL.HEALTH_LABEL }} {{ recipe.healthScore }}
             </v-chip>
           </div>
 
@@ -101,6 +101,7 @@
               :href="recipe.sourceUrl"
               target="_blank"
               block
+              size="large"
             >
               {{ RECIPE_MODAL.VIEW_FULL_RECIPE }}
             </v-btn>
@@ -108,29 +109,43 @@
         </v-card-text>
 
         <!-- Modal Actions -->
-        <v-card-actions class="pa-6 d-flex gap-2">
-          <v-spacer />
-          <v-btn variant="tonal" @click="$emit('close')">
-            {{ RECIPE_MODAL.CLOSE_BUTTON }}
-          </v-btn>
+        <v-card-actions class="pa-6 flex gap-2 justify-between!">
+          <div class="flex align-center gap-1">
+            <v-btn
+              v-if="recipe.id"
+              :prepend-icon="
+                isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'
+              "
+              variant="flat"
+              @click.stop="toggleFavorite(recipe.id)"
+              :loading="isAddingFavorites"
+              :color="isFavorited(recipe.id) ? 'error' : 'default'"
+            >
+              <v-tooltip activator="parent" location="top">
+                {{
+                  !isAuthenticated
+                    ? LOGIN_REQUIRED_TOOLTIP
+                    : isFavorited(recipe.id)
+                      ? SAVED_RECIPE_TOOLTIP
+                      : SAVE_RECIPE_TOOLTIP
+                }}
+              </v-tooltip>
+              <span class="text-wrap"> {{ LABELS.ADD_TO_FAVORITES }}</span>
+            </v-btn>
+            <v-btn
+              @click="printRecipe"
+              prepend-icon="mdi-printer"
+              variant="flat"
+            >
+              <span class="text-wrap"> {{ LABELS.PRINT }}</span>
+            </v-btn>
+          </div>
           <v-btn
-            v-if="recipe.id"
-            icon
-            @click.stop="toggleFavorite(recipe.id)"
-            :color="isFavorited(recipe.id) ? 'error' : 'default'"
+            variant="tonal"
+            @click="$emit('close')"
+            prepend-icon="mdi-close"
           >
-            <v-icon
-              :icon="isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'"
-            />
-            <v-tooltip activator="parent" location="top">
-              {{
-                !isAuthenticated
-                  ? LOGIN_REQUIRED_TOOLTIP
-                  : isFavorited(recipe.id)
-                    ? SAVED_RECIPE_TOOLTIP
-                    : SAVE_RECIPE_TOOLTIP
-              }}
-            </v-tooltip>
+            {{ RECIPE_MODAL.CLOSE_BUTTON }}
           </v-btn>
         </v-card-actions>
       </template>
@@ -151,7 +166,7 @@ import { useAuth0 } from "@auth0/auth0-vue";
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
 
 // constants
-import { RECIPE_FINDER, LOADING_CONFIG } from "@/constants";
+import { RECIPE_FINDER, LOADING_CONFIG, LABELS } from "@/constants";
 
 // types
 import type { IRecipeDetails } from "@/types";
@@ -162,10 +177,12 @@ interface Props {
   recipe: IRecipeDetails | null;
   favorites: Set<number | string>;
   imageBaseUri: string;
+  isAddingFavorites: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
+  isAddingFavorites: false,
 });
 
 // Emits
@@ -210,6 +227,53 @@ const toggleFavorite = (recipeId: number) => {
 
 const isFavorited = (recipeId: number) => {
   return props.favorites.has(recipeId);
+};
+
+const printRecipe = () => {
+  if (!props.recipe) return;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+
+  const recipe = props.recipe;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${recipe.title}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+          h1 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+          h2 { color: #555; margin-top: 20px; }
+          .info { margin: 20px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px; }
+          .info p { margin: 5px 0; }
+          .ingredients ul { margin: 10px 0; padding-left: 20px; }
+          .ingredients li { margin: 5px 0; }
+          .instructions { margin: 20px 0; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        <h1>${recipe.title}</h1>
+        <div class="info">
+          ${recipe.readyInMinutes ? `<p><strong>${RECIPE_MODAL.PRINT_TIME_LABEL}</strong> ${recipe.readyInMinutes} ${RECIPE_MODAL.PRINT_TIME_MINUTES}</p>` : ""}
+          ${recipe.servings ? `<p><strong>${RECIPE_MODAL.PRINT_SERVINGS_LABEL}</strong> ${recipe.servings}</p>` : ""}
+          ${recipe.healthScore ? `<p><strong>${RECIPE_MODAL.PRINT_HEALTH_SCORE_LABEL}</strong> ${recipe.healthScore}</p>` : ""}
+        </div>
+        ${recipe.summary ? `<div class="summary"><h2>${RECIPE_MODAL.SUMMARY_TITLE}</h2>${recipe.summary}</div>` : ""}
+        ${
+          recipe.extendedIngredients?.length
+            ? `<div class="ingredients"><h2>${RECIPE_MODAL.INGREDIENTS_TITLE}</h2><ul>${recipe.extendedIngredients.map((i: any) => `<li>${i.original}</li>`).join("")}</ul></div>`
+            : ""
+        }
+        ${recipe.instructions ? `<div class="instructions"><h2>${RECIPE_MODAL.INSTRUCTIONS_TITLE}</h2>${recipe.instructions}</div>` : ""}
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+  printWindow.print();
 };
 </script>
 

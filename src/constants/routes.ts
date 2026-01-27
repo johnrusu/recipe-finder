@@ -106,4 +106,11 @@ export const API_ROUTES = {
     protected: true,
     description: "Set favorite recipes for the authenticated user",
   },
+
+  REMOVE_FAVORITE_RECIPES: {
+    method: "DELETE",
+    url: `${BASE_URL}/recipes/favorites`,
+    protected: true,
+    description: "Remove favorite recipes for the authenticated user",
+  },
 } as const;

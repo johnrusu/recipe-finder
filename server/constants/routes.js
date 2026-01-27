@@ -58,6 +58,13 @@ const ROUTES = {
     protected: true,
     description: "Set recipes as favorite",
   },
+
+  REMOVE_FAVORITE_RECIPES: {
+    method: "DELETE",
+    path: "/recipes/favorites",
+    protected: true,
+    description: "Remove recipes from favorites",
+  },
 };
 
 module.exports = { ROUTES };

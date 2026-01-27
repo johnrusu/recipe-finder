@@ -49,7 +49,7 @@ const usersSchema = new mongoose.Schema({
 
 const favoritesRecipesSchema = new mongoose.Schema({
   recipeIds: [{ type: String, required: true }],
-  auth0Id: { type: String, required: true, unique: false },
+  auth0Id: { type: String, required: true, unique: true },
 });
 
 const usersModel = mongoose.model("User", usersSchema, "users-collection");
@@ -97,7 +97,6 @@ const getUserByAuth0Id = async (auth0Id) => {
 };
 
 // recipes database methods
-
 const setFavoritesRecipes = async (auth0Id, recipeIds) => {
   try {
     console.log(`[DB] Setting favorites for ${auth0Id}:`, recipeIds);
@@ -130,6 +129,25 @@ const setFavoritesRecipes = async (auth0Id, recipeIds) => {
   }
 };
 
+// remove favorite recipes
+const removeFavoritesRecipes = async (auth0Id, recipeIds) => {
+  try {
+    console.log(`[DB] Removing favorites for ${auth0Id}:`, recipeIds);
+
+    // Remove recipe IDs from favorites
+    const recipesFavorites = await favoritesRecipesModel.findOneAndUpdate(
+      { auth0Id },
+      { $pull: { recipeIds: { $in: recipeIds } } },
+      { new: true }
+    );
+    console.log(`[DB] Favorites removed successfully`);
+    return recipesFavorites;
+  } catch (error) {
+    console.error(`[DB] Error removing favorites:`, error.message);
+    throw new Error(`Error removing favorites: ${error.message}`);
+  }
+};
+
 const closeDatabase = async () => {
   await mongoose.connection.close();
 };
@@ -147,4 +165,5 @@ module.exports = {
   // Recipes methods
   favoritesRecipesModel,
   setFavoritesRecipes,
+  removeFavoritesRecipes,
 };

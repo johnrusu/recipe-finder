@@ -4,6 +4,8 @@ const APP = {
 };
 
 const LABELS = {
+  ADD_TO_FAVORITES: "Add to Favorites",
+  PRINT: "Print",
   RECENT_DISCOVERIES: "Recent Discoveries",
   MY_KITCHEN: "My Kitchen",
   SEARCH_RECIPES: "Search Recipes",
@@ -138,6 +140,13 @@ const RECIPE_FINDER = {
     INSTRUCTIONS_TITLE: "Instructions",
     VIEW_FULL_RECIPE: "View Full Recipe",
     CLOSE_BUTTON: "Close",
+    TIME_UNIT: "min",
+    SERVINGS_LABEL: "servings",
+    HEALTH_LABEL: "Health:",
+    PRINT_TIME_LABEL: "Time:",
+    PRINT_TIME_MINUTES: "minutes",
+    PRINT_SERVINGS_LABEL: "Servings:",
+    PRINT_HEALTH_SCORE_LABEL: "Health Score:",
   },
 };
 

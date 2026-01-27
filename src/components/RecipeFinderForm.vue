@@ -19,7 +19,11 @@
               @keyup.enter="handleSearch"
             >
               <template v-slot:append-inner>
-                <v-btn color="primary" @click="handleSearch" :loading="loading">
+                <v-btn
+                  color="primary"
+                  @click="handleSearch"
+                  :loading="loadingRecipes"
+                >
                   {{ RECIPE_FINDER.SEARCH_BUTTON }}
                   <v-icon end icon="mdi-arrow-right" />
                 </v-btn>
@@ -243,7 +247,7 @@
               color="primary"
               variant="elevated"
               rounded="lg"
-              :loading="loading"
+              :loading="loadingRecipes"
               @click="handleSearch"
               prepend-icon="mdi-magnify"
               block
@@ -266,7 +270,7 @@
               rounded="lg"
               prepend-icon="mdi-dice-5"
               @click="handleRandomRecipe"
-              :loading="loading"
+              :loading="loadingRecipes"
               block
               class="action-btn"
               type="button"
@@ -290,7 +294,7 @@
           </v-col>
         </v-row>
 
-        <v-row v-if="loading && !error" class="mt-6">
+        <v-row v-if="loadingRecipes && !error" class="mt-6">
           <v-col cols="12" class="justify-center flex">
             <AppLoading :config="LOADING_CONFIG" />
           </v-col>
@@ -354,6 +358,7 @@
                       @click.stop="toggleFavorite(recipe.id)"
                       :color="isFavorited(recipe.id) ? 'error' : 'default'"
                       class="save-btn"
+                      :loading="loading && recipe.id == loadingFavoriteRecipeId"
                     >
                       <v-icon
                         :icon="
@@ -377,7 +382,7 @@
                       color="primary"
                       size="large"
                       @click.stop="handleGetRecipeDetails(recipe.id)"
-                      class="view-recipe-btn flex-grow-1"
+                      class="view-recipe-btn grow"
                       append-icon="mdi-arrow-right"
                     >
                       {{ RECIPE_FINDER.VIEW_RECIPE_BUTTON }}
@@ -412,6 +417,7 @@
     <RecipeDetailsModal
       :open="showRecipeModal"
       :recipe="selectedRecipeDetails"
+      :isAddingFavorites="loading"
       :favorites="favorites"
       :image-base-uri="imageBaseUri"
       @close="handleModalClose"
@@ -439,6 +445,7 @@ import {
   getRandomRecipes,
   getRecipeDetails,
   setFavoriteRecipes,
+  removeFavoriteRecipes,
 } from "@/services";
 import { isArrayNotEmpty } from "@/utils";
 
@@ -466,6 +473,8 @@ const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
 const loadingMore = ref(false);
+const loadingRecipes = ref(false);
+const loadingFavoriteRecipeId = ref<number | string | null>(null);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
@@ -603,7 +612,7 @@ const handleSearch = async () => {
   totalResults.value = 0;
   searchResults.value = [];
 
-  loading.value = true;
+  loadingRecipes.value = true;
   error.value = null;
 
   try {
@@ -667,12 +676,12 @@ const handleSearch = async () => {
     error.value = errorMessage;
     console.error("Search error:", err);
   } finally {
-    loading.value = false;
+    loadingRecipes.value = false;
   }
 };
 
 const handleRandomRecipe = async () => {
-  loading.value = true;
+  loadingRecipes.value = true;
   error.value = null;
   searchResults.value = [];
 
@@ -706,7 +715,7 @@ const handleRandomRecipe = async () => {
     error.value = errorMessage;
     console.error("Random recipe error:", err);
   } finally {
-    loading.value = false;
+    loadingRecipes.value = false;
   }
 };
 
@@ -775,8 +784,9 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleRecipesFavorites = async () => {
+const handleAddRecipesFavorites = async (recipeId: number | string) => {
   loading.value = true;
+  loadingFavoriteRecipeId.value = recipeId;
   try {
     const token = await getAccessTokenSilently();
 
@@ -790,8 +800,32 @@ const handleRecipesFavorites = async () => {
     console.error("Error updating favorites:", error);
   } finally {
     loading.value = false;
+    loadingFavoriteRecipeId.value = null;
   }
 };
+
+const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
+  loading.value = true;
+  loadingFavoriteRecipeId.value = recipeId;
+  const recipeIdMapped = new Set<number | string>();
+  recipeIdMapped.add(recipeId);
+  try {
+    const token = await getAccessTokenSilently();
+
+    const response = await removeFavoriteRecipes(recipeIdMapped, token);
+    if (response.success) {
+      console.log("Favorites removed successfully");
+    } else {
+      console.error("Failed to remove favorites:", response.message);
+    }
+  } catch (error) {
+    console.error("Error removing favorites:", error);
+  } finally {
+    loading.value = false;
+    loadingFavoriteRecipeId.value = null;
+  }
+};
+
 const clearFilters = () => {
   selectedMealType.value = null;
   selectedCuisine.value = [];
@@ -806,16 +840,17 @@ const clearFilters = () => {
   error.value = null;
 };
 
-const toggleFavorite = (recipeId: number) => {
+const toggleFavorite = (recipeId: number | string) => {
   if (!isAuthenticated.value) {
     return;
   }
   if (favorites.value.has(recipeId)) {
     favorites.value.delete(recipeId);
+    handleDeleteRecipesFavorites(recipeId);
   } else {
     favorites.value.add(recipeId);
+    handleAddRecipesFavorites(recipeId);
   }
-  handleRecipesFavorites();
 };
 
 const handleModalClose = () => {

@@ -206,3 +206,32 @@ export const setFavoriteRecipes = async (
     recipeIds: Set<number | string>;
   }>;
 };
+
+/**
+ * Remove favorite recipes for the authenticated user
+ *
+ * @param {Array<string | number>} recipeIds Array of recipe IDs to set as favorites
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const removeFavoriteRecipes = async (
+  recipeIds: Set<number | string>,
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  recipeIds: Set<number | string>;
+}> => {
+  return apiRequest(
+    API_ROUTES.REMOVE_FAVORITE_RECIPES.url,
+    {
+      method: API_ROUTES.REMOVE_FAVORITE_RECIPES.method,
+      body: JSON.stringify({ recipeIds: Array.from(recipeIds) }),
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    recipeIds: Set<number | string>;
+  }>;
+};
