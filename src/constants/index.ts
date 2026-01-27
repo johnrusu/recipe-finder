@@ -78,6 +78,7 @@ const RECIPE_FINDER = {
   INGREDIENTS_HINT: "Press Enter to add",
   FIND_RECIPES_BUTTON: "Find Recipes",
   SURPRISE_ME_BUTTON: "Surprise Me!",
+  TIME_2PLUS_HOURS: "2+ hours",
   TIME_MINUTES: (mins: number) => `${mins} min`,
   SEARCH_RESULTS_HEADER: (found: number, total: number) =>
     `Search Results (${found}/${total} recipes found)`,
