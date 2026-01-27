@@ -62,7 +62,7 @@
               target="_blank"
               class="developer-link"
               >{{ developer }}</a
-            >. {{ LABELS.ALL_RIGHTS_RESERVED }} - {{ APP.TITLE }}
+            >. {{ LABELS.ALL_RIGHTS_RESERVED }}
           </p>
         </v-col>
       </v-row>
@@ -219,8 +219,8 @@ const socialLinks = FOOTER.SOCIAL_LINKS;
 }
 
 .developer-link {
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
+  color: white;
+  font-weight: bold;
   transition: all 0.3s ease;
   font-weight: 500;
 }
