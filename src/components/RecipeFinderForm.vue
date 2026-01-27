@@ -397,8 +397,8 @@
               :height="400"
             >
               <template #loading>
-                <div class="text-center pa-4">
-                  <v-progress-circular indeterminate color="primary" />
+                <div class="d-flex justify-center pa-4">
+                  <AppLoading :config="LOADING_CONFIG" />
                 </div>
               </template>
             </v-infinite-scroll>
