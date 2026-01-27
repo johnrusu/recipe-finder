@@ -1,18 +1,17 @@
 <template>
-  <v-container class="about-page pb-0">
-    <v-card class="mb-6">
-      <v-card-text class="pa-6">
-        <h2 class="text-2xl font-semibold mb-4">
-          {{ ABOUT_PAGE.WHAT_IS.TITLE }}
-        </h2>
-        <p class="mb-4">
-          {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_1 }}
-        </p>
-        <p>
-          {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_2 }}
-        </p>
-      </v-card-text>
-    </v-card>
+  <v-container class="about-page pb-0 mt-4">
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
+        {{ ABOUT_PAGE.WHAT_IS.TITLE }}
+      </h1>
+
+      <p class="text-subtitle-1 text-medium-emphasis mb-2">
+        {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_1 }}
+      </p>
+      <p class="text-subtitle-1 text-medium-emphasis">
+        {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_2 }}
+      </p>
+    </div>
 
     <v-card class="mb-6">
       <v-card-text class="pa-6">
