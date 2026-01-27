@@ -419,7 +419,7 @@ import { useAppStore } from "@/stores";
 import type { IRecipe, IRecipeSearchParams, IRecipeDetails } from "@/types";
 
 // constants
-import { RECIPE_FINDER } from "@/constants";
+import { RECIPE_FINDER, LOADING_CONFIG } from "@/constants";
 
 // services
 import {
@@ -439,9 +439,6 @@ const RecipeDetailsModal = defineAsyncComponent(
 
 // auth
 import { useAuth0 } from "@auth0/auth0-vue";
-
-// constants
-import { LOADING_CONFIG } from "@/constants";
 
 // State
 const searchQuery = ref("");
