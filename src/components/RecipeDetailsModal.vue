@@ -2,22 +2,23 @@
   <v-dialog
     v-model="isOpen"
     max-width="800"
-    scrollable
+    :fullscreen="$vuetify.display.mobile"
     @update:model-value="$emit('close')"
     :persistent="!recipe"
   >
-    <v-card class="recipe-modal">
+    <v-card class="recipe-modal d-flex flex-column" :style="$vuetify.display.mobile ? 'height: 100vh' : 'max-height: 90vh'">
       <template v-if="recipe">
         <!-- Header Image -->
         <v-img
           :src="getImageUrl(recipe.image)"
           :alt="recipe.title"
-          height="300px"
+          :height="$vuetify.display.mobile ? '200px' : '300px'"
           cover
+          class="flex-shrink-0"
         />
 
         <!-- Card Content -->
-        <v-card-text class="pa-6">
+        <v-card-text class="pa-6 flex-grow-1" style="overflow-y: auto;">
           <!-- Title -->
           <h2 class="text-h4 font-weight-bold mb-2">
             {{ recipe.title }}
@@ -109,8 +110,8 @@
         </v-card-text>
 
         <!-- Modal Actions -->
-        <v-card-actions class="pa-6 flex gap-2 justify-between!">
-          <div class="flex align-center gap-1">
+        <v-card-actions class="pa-6 d-flex flex-column flex-sm-row gap-2 justify-space-between flex-shrink-0">
+          <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100 w-sm-auto">
             <v-btn
               v-if="recipe.id"
               :prepend-icon="
@@ -120,6 +121,7 @@
               @click.stop="toggleFavorite(recipe.id)"
               :loading="isAddingFavorites"
               :color="isFavorited(recipe.id) ? 'error' : 'default'"
+              class="w-100 w-sm-auto"
             >
               <v-tooltip activator="parent" location="top">
                 {{
@@ -136,6 +138,7 @@
               @click="printRecipe"
               prepend-icon="mdi-printer"
               variant="flat"
+              class="w-100 w-sm-auto"
             >
               <span class="text-wrap"> {{ LABELS.PRINT }}</span>
             </v-btn>
@@ -144,6 +147,7 @@
             variant="tonal"
             @click="$emit('close')"
             prepend-icon="mdi-close"
+            class="w-100 w-sm-auto"
           >
             {{ RECIPE_MODAL.CLOSE_BUTTON }}
           </v-btn>
