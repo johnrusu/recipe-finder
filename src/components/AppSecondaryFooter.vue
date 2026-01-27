@@ -53,26 +53,11 @@
       </v-row>
 
       <!-- Bottom Bar -->
-      <v-divider class="my-6 footer-divider" />
       <v-row>
-        <v-col cols="12" md="6" class="text-center text-md-left">
+        <v-col cols="12" class="text-center">
           <p class="footer-copyright mb-0">
             &copy; {{ fullYear }} {{ developer }}. All rights reserved.
           </p>
-        </v-col>
-        <v-col cols="12" md="6" class="text-center text-md-right">
-          <a
-            :href="FOOTER.LEGAL_LINKS.COOKIE_POLICY"
-            target="_blank"
-            class="footer-link mr-4"
-            >{{ FOOTER.LEGAL.COOKIE_POLICY }}</a
-          >
-          <a
-            :href="FOOTER.LEGAL_LINKS.PORTFOLIO"
-            target="_blank"
-            class="footer-link"
-            >{{ FOOTER.LEGAL.PORTFOLIO }}</a
-          >
         </v-col>
       </v-row>
     </v-container>
@@ -145,6 +130,7 @@ const socialLinks = FOOTER.SOCIAL_LINKS;
 .footer-content {
   position: relative;
   z-index: 1;
+  padding-bottom: 24px !important;
 }
 
 @keyframes gradientShift {
