@@ -61,8 +61,18 @@
           </p>
         </v-col>
         <v-col cols="12" md="6" class="text-center text-md-right">
-          <a :href="FOOTER.LEGAL_LINKS.COOKIE_POLICY" target="_blank" class="footer-link mr-4">{{ FOOTER.LEGAL.COOKIE_POLICY }}</a>
-          <a :href="FOOTER.LEGAL_LINKS.PORTFOLIO" target="_blank" class="footer-link">{{ FOOTER.LEGAL.PORTFOLIO }}</a>
+          <a
+            :href="FOOTER.LEGAL_LINKS.COOKIE_POLICY"
+            target="_blank"
+            class="footer-link mr-4"
+            >{{ FOOTER.LEGAL.COOKIE_POLICY }}</a
+          >
+          <a
+            :href="FOOTER.LEGAL_LINKS.PORTFOLIO"
+            target="_blank"
+            class="footer-link"
+            >{{ FOOTER.LEGAL.PORTFOLIO }}</a
+          >
         </v-col>
       </v-row>
     </v-container>
@@ -100,7 +110,7 @@ const socialLinks = FOOTER.SOCIAL_LINKS;
     rgba(18, 18, 18, 0.95) 100%
   );
   background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  animation: gradientShift 8s ease infinite;
   color: white;
   position: relative;
   border-top: 3px solid transparent;
