@@ -250,30 +250,12 @@ const ABOUT_PAGE = {
 };
 
 const FOOTER = {
-  NEWSLETTER: {
-    HEADING: "Stay Updated",
-    PLACEHOLDER: "Enter your email",
-  },
   QUICK_LINKS: {
     HEADING: "Quick Links",
-  },
-  RESOURCES: {
-    HEADING: "Resources",
-    RECIPE_GUIDE: "Recipe Guide",
-    FAQ: "FAQ",
   },
   CONNECT: {
     HEADING: "Connect With Us",
     DESCRIPTION: "Follow us for daily recipe inspiration and cooking tips!",
-  },
-  SOCIAL: {
-    FACEBOOK: "Facebook",
-    TWITTER: "Twitter",
-    INSTAGRAM: "Instagram",
-    PINTEREST: "Pinterest",
-    YOUTUBE: "YouTube",
-    LINKEDIN: "LinkedIn",
-    GITHUB: "GitHub",
   },
   SOCIAL_LINKS: [
     {
@@ -288,19 +270,13 @@ const FOOTER = {
       url: "https://www.facebook.com/rusu.ionut.980",
     },
   ],
-  CONTACT: {
-    EMAIL: "admin@rusu-ionut.ro",
-    LOCATION: "https://rusu-ionut.ro",
-  },
   LEGAL: {
-    PRIVACY_POLICY: "Privacy Policy",
-    TERMS_OF_SERVICE: "Terms of Service",
     COOKIE_POLICY: "Cookie Policy",
+    PORTFOLIO: "Ionut Rusu",
   },
   LEGAL_LINKS: {
-    PRIVACY_POLICY: "#",
-    TERMS_OF_SERVICE: "#",
     COOKIE_POLICY: "https://rusu-ionut.ro/cookies-policy",
+    PORTFOLIO: "https://rusu-ionut.ro",
   },
   EXPANDED_DESCRIPTION:
     "Discover thousands of delicious recipes tailored to your ingredients.",

@@ -13,20 +13,6 @@
           <p class="footer-text mb-4">
             {{ APP.DESCRIPTION }} {{ FOOTER.EXPANDED_DESCRIPTION }}
           </p>
-          <div class="newsletter-section mt-6">
-            <h4 class="text-subtitle-1 mb-2">{{ FOOTER.NEWSLETTER.HEADING }}</h4>
-            <v-text-field
-              v-model="email"
-              :placeholder="FOOTER.NEWSLETTER.PLACEHOLDER"
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="newsletter-input"
-              append-inner-icon="mdi-send"
-              @click:append-inner="handleNewsletter"
-              @keyup.enter="handleNewsletter"
-            />
-          </div>
         </v-col>
 
         <!-- Quick Links Section -->
@@ -42,25 +28,6 @@
               </router-link>
             </li>
           </ul>
-          <div class="mt-6">
-            <h4 class="text-subtitle-1 mb-2">{{ FOOTER.RESOURCES.HEADING }}</h4>
-            <ul class="footer-links">
-              <li class="mb-2">
-                <a href="#" class="footer-link">
-                  <v-icon size="small" class="mr-2"
-                    >mdi-book-open-variant</v-icon
-                  >
-                  {{ FOOTER.RESOURCES.RECIPE_GUIDE }}
-                </a>
-              </li>
-              <li class="mb-2">
-                <a href="#" class="footer-link">
-                  <v-icon size="small" class="mr-2">mdi-help-circle</v-icon>
-                  {{ FOOTER.RESOURCES.FAQ }}
-                </a>
-              </li>
-            </ul>
-          </div>
         </v-col>
 
         <!-- Contact & Social Section -->
@@ -82,20 +49,6 @@
               target="_blank"
             />
           </div>
-          <div class="contact-info">
-            <div class="d-flex align-center mb-2">
-              <v-icon class="mr-2" size="small">mdi-email</v-icon>
-              <a :href="`mailto:${FOOTER.CONTACT.EMAIL}`" class="footer-link">
-                {{ FOOTER.CONTACT.EMAIL }}
-              </a>
-            </div>
-            <div class="d-flex align-center">
-              <v-icon class="mr-2" size="small">mdi-web</v-icon>
-              <a :href="FOOTER.CONTACT.LOCATION" target="_blank" class="footer-link">
-                {{ FOOTER.CONTACT.LOCATION }}
-              </a>
-            </div>
-          </div>
         </v-col>
       </v-row>
 
@@ -108,9 +61,8 @@
           </p>
         </v-col>
         <v-col cols="12" md="6" class="text-center text-md-right">
-          <a :href="FOOTER.LEGAL_LINKS.PRIVACY_POLICY" class="footer-link mr-4">{{ FOOTER.LEGAL.PRIVACY_POLICY }}</a>
-          <a :href="FOOTER.LEGAL_LINKS.TERMS_OF_SERVICE" class="footer-link mr-4">{{ FOOTER.LEGAL.TERMS_OF_SERVICE }}</a>
-          <a :href="FOOTER.LEGAL_LINKS.COOKIE_POLICY" target="_blank" class="footer-link">{{ FOOTER.LEGAL.COOKIE_POLICY }}</a>
+          <a :href="FOOTER.LEGAL_LINKS.COOKIE_POLICY" target="_blank" class="footer-link mr-4">{{ FOOTER.LEGAL.COOKIE_POLICY }}</a>
+          <a :href="FOOTER.LEGAL_LINKS.PORTFOLIO" target="_blank" class="footer-link">{{ FOOTER.LEGAL.PORTFOLIO }}</a>
         </v-col>
       </v-row>
     </v-container>
@@ -118,7 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import { APP, ABOUT_PAGE, FOOTER } from "@/constants";
 
 // Props
@@ -132,31 +83,21 @@ defineProps<{
 }>();
 
 // Data
-const email = ref("");
 const fullYear = new Date().getFullYear();
 const developer = ABOUT_PAGE.DEVELOPER.NAME;
 
 const socialLinks = FOOTER.SOCIAL_LINKS;
-
-// Methods
-const handleNewsletter = () => {
-  if (email.value) {
-    // TODO: Implement newsletter subscription
-    console.log("Newsletter subscription:", email.value);
-    email.value = "";
-  }
-};
 </script>
 
 <style scoped>
 .secondary-footer {
   background: linear-gradient(
     135deg,
-    #1a1a1a 0%,
-    #2d1810 25%,
-    #3d2415 50%,
-    #2d1810 75%,
-    #1a1a1a 100%
+    rgba(18, 18, 18, 0.95) 0%,
+    rgba(30, 20, 15, 0.92) 25%,
+    rgba(35, 25, 20, 0.95) 50%,
+    rgba(30, 20, 15, 0.92) 75%,
+    rgba(18, 18, 18, 0.95) 100%
   );
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
@@ -248,34 +189,6 @@ const handleNewsletter = () => {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-.newsletter-section {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-}
-
-.newsletter-input :deep(.v-field) {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-}
-
-.newsletter-input :deep(.v-field__input) {
-  color: #1a1a1a;
-}
-
-.newsletter-input :deep(input::placeholder) {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.newsletter-input :deep(.v-icon) {
-  color: #ff6b35;
-}
-
-.newsletter-input :deep(.v-field__append-inner .v-icon) {
-  cursor: pointer;
-}
-
 .social-links {
   display: flex;
   gap: 8px;
@@ -291,13 +204,6 @@ const handleNewsletter = () => {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.contact-info {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
 }
 
 .footer-divider {
