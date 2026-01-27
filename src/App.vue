@@ -21,7 +21,12 @@
         <div class="flex-1">
           <router-view />
         </div>
-        <AppFooter class="flex-0" />
+        <AppSecondaryFooter
+          v-if="skipWelcome || route.path !== '/'"
+          :menuRoutes="menuRoutes"
+          class="flex-0"
+        />
+        <AppFooter v-else class="flex-0" />
       </v-main>
       <ScrollUp />
     </template>
@@ -69,6 +74,10 @@ const AppFooter = defineAsyncComponent(
   () => import("@/components/AppFooter.vue")
 );
 
+const AppSecondaryFooter = defineAsyncComponent(
+  () => import("@/components/AppSecondaryFooter.vue")
+);
+
 const AppError = defineAsyncComponent(
   () => import("@/components/AppError.vue")
 );
@@ -82,7 +91,7 @@ const isScrolled = ref(false);
 
 // computed
 const menuRoutes = computed(() => ROUTES.filter((route) => route.isForMenu));
-const skipWelcome = computed(() => appState.skipWelcome) || false;
+const skipWelcome = computed(() => appState.skipWelcome || false);
 
 // hooks
 const route = useRoute();
