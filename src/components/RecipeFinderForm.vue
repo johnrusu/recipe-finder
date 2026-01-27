@@ -678,7 +678,8 @@ const handleRandomRecipe = async () => {
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
       appStore.setRecipes(response.recipes.results);
-      totalResults.value = response.recipes.totalResults || response.recipes.results.length;
+      totalResults.value =
+        response.recipes.totalResults || response.recipes.results.length;
       currentOffset.value = 0;
       // Store the base URI for image URLs
       if (response.recipes.baseUri) {
@@ -699,7 +700,12 @@ const handleRandomRecipe = async () => {
         }
       }, 100);
     } else {
-      console.log("Condition failed - success:", response.success, "has results:", !!response.recipes?.results);
+      console.log(
+        "Condition failed - success:",
+        response.success,
+        "has results:",
+        !!response.recipes?.results
+      );
       error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
     }
   } catch (err) {

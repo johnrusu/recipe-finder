@@ -4,6 +4,9 @@ const APP = {
 };
 
 const LABELS = {
+  MISSING_ENV_VARS:
+    "Missing required environment variables. Please check the configuration.",
+  MISSSING_ENV_VARS_ERROR: "Missing required environment variables",
   ADD_TO_FAVORITES: "Add to Favorites",
   PRINT: "Print",
   RECENT_DISCOVERIES: "Recent Discoveries",

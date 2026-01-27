@@ -221,7 +221,9 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
             baseUri: mockData.baseUri || "https://img.spoonacular.com/recipes/",
             offset: mockData.offset || 0,
             number: mockData.number || parseInt(number),
-            totalResults: mockData.totalResults || (mockData.results ? mockData.results.length : 0),
+            totalResults:
+              mockData.totalResults ||
+              (mockData.results ? mockData.results.length : 0),
             processingTimeMs: 0,
             expires: 0,
           },

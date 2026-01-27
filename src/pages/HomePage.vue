@@ -17,77 +17,24 @@
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
     />
 
-    <!-- Guest Confirmation Dialog -->
-    <v-dialog
-      v-model="showGuestDialog"
-      max-width="500"
-      opacity=".8"
-      transition="dialog-bottom-transition"
-    >
-      <v-card>
-        <v-card-title class="text-h5 font-weight-bold py-4">
-          <v-icon icon="mdi-account-alert" color="warning" class="mr-2" />
-          {{ LABELS.GUEST_CONFIRM_TITLE }}
-        </v-card-title>
-
-        <v-card-text class="pb-2">
-          <p class="text-body-1 mb-4">{{ LABELS.GUEST_CONFIRM_MESSAGE }}</p>
-
-          <v-list density="compact" class="bg-transparent">
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_1 }}</span>
-              </template>
-            </v-list-item>
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_2 }}</span>
-              </template>
-            </v-list-item>
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_3 }}</span>
-              </template>
-            </v-list-item>
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_4 }}</span>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-
-        <v-card-actions
-          class="px-6 pb-6 d-flex flex-column flex-sm-row justify-between gap-4!"
-        >
-          <v-btn
-            variant="plain"
-            @click="confirmGuestBrowse"
-            size="large"
-            class="w-full sm:flex-1"
-          >
-            <span class="text-wrap">{{ LABELS.GUEST_CONTINUE }} </span>
-          </v-btn>
-          <v-btn
-            @click="handleLogin"
-            size="large"
-            class="gemini-live-border w-full sm:flex-1"
-          >
-            <span class="text-wrap">{{ LABELS.GUEST_SIGNIN_ACCOUNT }}</span>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <HomePageConfirmAuthDialog
+      :show-guest-dialog="showGuestDialog"
+      @on-login="handleLogin"
+      @on-guest-confirmed="confirmGuestBrowse"
+    />
   </v-container>
 </template>
 <script setup lang="ts">
 import { defineAsyncComponent, ref, computed } from "vue";
+import { useAuth0 } from "@auth0/auth0-vue";
 
 // state
 import { useAppStore } from "@/stores";
 
-import { useAuth0 } from "@auth0/auth0-vue";
-import { LABELS } from "@/constants";
+// components
+const HomePageConfirmAuthDialog = defineAsyncComponent(
+  () => import("@/components/HomePageConfirmAuthDialog.vue")
+);
 
 // refs
 const isVisibleRecipeFinderForm = ref(false);

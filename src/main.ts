@@ -12,6 +12,9 @@ import App from "./App.vue";
 // Styles
 import "@/styles/main.css";
 
+// constants
+import { LABELS } from "@/constants";
+
 const statusEnvVariables = checkEnvVariables([
   "VITE_AUTH0_DOMAIN",
   "VITE_AUTH0_CLIENT_ID",
@@ -21,9 +24,8 @@ const statusEnvVariables = checkEnvVariables([
 if (!statusEnvVariables) {
   const app = document.querySelector("#app");
   if (!isNilOrEmpty(app) && app instanceof HTMLElement)
-    app.innerHTML =
-      "<h1 style='color:red;'>Missing required environment variables. Please check the configuration.</h1>";
-  throw new Error("Missing required environment variables");
+    app.innerHTML = `<h1 style='color:red;'>${LABELS.MISSING_ENV_VARS}</h1>`;
+  throw new Error(LABELS.MISSSING_ENV_VARS_ERROR);
 }
 
 const app = createApp(App);
