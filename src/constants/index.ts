@@ -229,7 +229,7 @@ const ABOUT_PAGE = {
   DEVELOPER: {
     AVATAR: "https://avatars.githubusercontent.com/u/25053517?v=4",
     TITLE: "About the Developer",
-    NAME: "Ionut Rusu",
+    NAME: "Rusu Ionut",
     ROLE: "Fullstack Developer",
     BIO_1:
       "Ionut Rusu is a passionate Fullstack Developer based in Romania, specializing in Vue.js, Node.js, React.js, and UI/UX design. With expertise in modern web technologies and a keen eye for user experience, Ionut creates efficient and elegant solutions for complex problems.",

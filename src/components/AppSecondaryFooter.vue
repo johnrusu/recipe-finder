@@ -56,7 +56,13 @@
       <v-row>
         <v-col cols="12" class="text-center">
           <p class="footer-copyright mb-0">
-            &copy; {{ fullYear }} {{ developer }}. All rights reserved.
+            &copy; {{ fullYear }}
+            <a
+              href="https://rusu-ionut.ro"
+              target="_blank"
+              class="developer-link"
+              >{{ developer }}</a
+            >. {{ LABELS.ALL_RIGHTS_RESERVED }} - {{ APP.TITLE }}
           </p>
         </v-col>
       </v-row>
@@ -65,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { APP, ABOUT_PAGE, FOOTER } from "@/constants";
+import { APP, ABOUT_PAGE, FOOTER, LABELS } from "@/constants";
 
 // Props
 defineProps<{
@@ -210,6 +216,18 @@ const socialLinks = FOOTER.SOCIAL_LINKS;
 .footer-copyright {
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.9rem;
+}
+
+.developer-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.developer-link:hover {
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 /* Responsive adjustments */
