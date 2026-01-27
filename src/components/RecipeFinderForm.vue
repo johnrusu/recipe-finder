@@ -29,18 +29,6 @@
                 </v-btn>
               </template>
             </v-text-field>
-            <v-alert type="warning" variant="tonal" class="mt-6">
-              <div class="d-flex align-center">
-                <div>
-                  <div class="text-subtitle-2 font-weight-bold">
-                    {{ RECIPE_FINDER.PRO_TIPS_TITLE }}
-                  </div>
-                  <div class="text-caption">
-                    {{ RECIPE_FINDER.PRO_TIPS_TEXT }}
-                  </div>
-                </div>
-              </div>
-            </v-alert>
           </v-col>
         </v-row>
 

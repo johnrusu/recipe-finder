@@ -78,10 +78,6 @@ const RECIPE_FINDER = {
   INGREDIENTS_HINT: "Press Enter to add",
   FIND_RECIPES_BUTTON: "Find Recipes",
   SURPRISE_ME_BUTTON: "Surprise Me!",
-  PRO_TIPS_TITLE: "Pro Tips:",
-  PRO_TIPS_TEXT:
-    'Try searching for "pasta with chicken" or "30-minute dinners". Use filters to narrow down results based on your preferences!',
-  TIME_2PLUS_HOURS: "2+ hours",
   TIME_MINUTES: (mins: number) => `${mins} min`,
   SEARCH_RESULTS_HEADER: (found: number, total: number) =>
     `Search Results (${found}/${total} recipes found)`,
@@ -279,9 +275,17 @@ const FOOTER = {
     GITHUB: "GitHub",
   },
   SOCIAL_LINKS: [
-    { name: "LinkedIn", icon: "mdi-linkedin", url: "https://www.linkedin.com/in/ionut-rusu-1035b112" },
+    {
+      name: "LinkedIn",
+      icon: "mdi-linkedin",
+      url: "https://www.linkedin.com/in/ionut-rusu-1035b112",
+    },
     { name: "GitHub", icon: "mdi-github", url: "https://github.com/johnrusu" },
-    { name: "Facebook", icon: "mdi-facebook", url: "https://www.facebook.com/rusu.ionut.980" },
+    {
+      name: "Facebook",
+      icon: "mdi-facebook",
+      url: "https://www.facebook.com/rusu.ionut.980",
+    },
   ],
   CONTACT: {
     EMAIL: "admin@rusu-ionut.ro",
@@ -297,7 +301,8 @@ const FOOTER = {
     TERMS_OF_SERVICE: "#",
     COOKIE_POLICY: "https://rusu-ionut.ro/cookies-policy",
   },
-  EXPANDED_DESCRIPTION: "Discover thousands of delicious recipes tailored to your ingredients.",
+  EXPANDED_DESCRIPTION:
+    "Discover thousands of delicious recipes tailored to your ingredients.",
 };
 
 const ROUTES = [
