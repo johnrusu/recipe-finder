@@ -12,7 +12,7 @@
       </v-card-title>
 
       <v-card-text class="pb-2">
-        <div class="animation-viewport mb-4">
+        <div v-if="!xs" class="animation-viewport mb-4">
           <svg
             viewBox="0 0 200 160"
             xmlns="http://www.w3.org/2000/svg"
@@ -70,26 +70,18 @@
 
         <p class="mb-4 text-xl">{{ LABELS.GUEST_CONFIRM_MESSAGE }}</p>
 
-        <v-list density="compact" class="mb-4">
-          <v-list-item class="px-0">
-            <template v-slot:prepend>
-              <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_1 }}</span>
-            </template>
+        <v-list density="compact">
+          <v-list-item class="px-0 benefit-container">
+            <span class="text-body-2 benefit-text">{{ LABELS.GUEST_BENEFIT_1 }}</span>
           </v-list-item>
-          <v-list-item class="px-0">
-            <template v-slot:prepend>
-              <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_2 }}</span>
-            </template>
+          <v-list-item class="px-0 benefit-container">
+            <span class="text-body-2 benefit-text">{{ LABELS.GUEST_BENEFIT_2 }}</span>
           </v-list-item>
-          <v-list-item class="px-0">
-            <template v-slot:prepend>
-              <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_3 }}</span>
-            </template>
+          <v-list-item class="px-0 benefit-container">
+            <span class="text-body-2 benefit-text">{{ LABELS.GUEST_BENEFIT_3 }}</span>
           </v-list-item>
-          <v-list-item class="px-0">
-            <template v-slot:prepend>
-              <span class="text-body-2">{{ LABELS.GUEST_BENEFIT_4 }}</span>
-            </template>
+          <v-list-item class="px-0 benefit-container">
+            <span class="text-body-2 benefit-text">{{ LABELS.GUEST_BENEFIT_4 }}</span>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -235,5 +227,17 @@ const handleLogin = () => {
 .b4 {
   --x-dist: 10px;
   --y-dist: 12px;
+}
+
+.benefit-container {
+  display: block !important;
+  padding: 8px 0 !important;
+}
+
+.benefit-text {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  display: block !important;
 }
 </style>
