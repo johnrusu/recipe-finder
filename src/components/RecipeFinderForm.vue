@@ -391,23 +391,17 @@
                 </v-card>
               </v-col>
             </v-row>
-            <v-row v-if="hasMoreResults" class="mt-6">
-              <v-col cols="12" class="text-center">
-                <v-btn
-                  color="primary"
-                  variant="flat"
-                  :loading="loadingMore"
-                  @click="loadMoreResults"
-                  block
-                >
-                  {{
-                    loadingMore
-                      ? RECIPE_FINDER.LOADING_MORE_TEXT
-                      : RECIPE_FINDER.LOAD_MORE_BUTTON
-                  }}
-                </v-btn>
-              </v-col>
-            </v-row>
+            <v-infinite-scroll
+              v-if="hasMoreResults && !isRandomSearch"
+              @load="handleInfiniteScroll"
+              :height="400"
+            >
+              <template #loading>
+                <div class="text-center pa-4">
+                  <v-progress-circular indeterminate color="primary" />
+                </div>
+              </template>
+            </v-infinite-scroll>
           </v-col>
         </v-row>
       </v-card-text>
@@ -472,7 +466,6 @@ const includeIngredients = ref<string[]>([]);
 const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
-const loadingMore = ref(false);
 const loadingRecipes = ref(false);
 const loadingFavoriteRecipeId = ref<number | string | null>(null);
 const error = ref<string | null>(null);
@@ -489,8 +482,11 @@ const searchResultsCard = ref<any>(null);
 const currentOffset = ref(0);
 const currentNumber = ref(10);
 const totalResults = ref(0);
+const isRandomSearch = ref(false);
 const hasMoreResults = computed(
-  () => currentOffset.value + currentNumber.value < totalResults.value
+  () =>
+    !isRandomSearch.value &&
+    currentOffset.value + currentNumber.value < totalResults.value
 );
 const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 
@@ -611,6 +607,7 @@ const handleSearch = async () => {
   currentOffset.value = 0;
   totalResults.value = 0;
   searchResults.value = [];
+  isRandomSearch.value = false;
 
   loadingRecipes.value = true;
   error.value = null;
@@ -684,6 +681,9 @@ const handleRandomRecipe = async () => {
   loadingRecipes.value = true;
   error.value = null;
   searchResults.value = [];
+  isRandomSearch.value = true;
+  searchResults.value = [];
+  isRandomSearch.value = true;
 
   try {
     const response = await getRandomRecipes(50);
@@ -719,13 +719,16 @@ const handleRandomRecipe = async () => {
   }
 };
 
-const loadMoreResults = async () => {
+const handleInfiniteScroll = async ({ done }: any) => {
   // Check if there are more results and we have stored search params
-  if (!hasMoreResults.value || !lastSearchParams.value) {
+  if (
+    !hasMoreResults.value ||
+    !lastSearchParams.value ||
+    isRandomSearch.value
+  ) {
+    done("empty");
     return;
   }
-
-  loadingMore.value = true;
 
   try {
     // Increment offset for next page
@@ -747,12 +750,14 @@ const loadMoreResults = async () => {
       console.log(
         `Loaded more recipes. Total now: ${searchResults.value.length}`
       );
+      done("ok");
+    } else {
+      done("error");
     }
   } catch (err) {
-    console.error("Load more error:", err);
+    console.error("Infinite scroll error:", err);
     error.value = "Failed to load more recipes. Please try again.";
-  } finally {
-    loadingMore.value = false;
+    done("error");
   }
 };
 

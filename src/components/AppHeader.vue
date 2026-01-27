@@ -72,8 +72,9 @@ const handleLogin = () => {
         v-for="(route, indexRoute) in routes"
         :key="`router-link-${indexRoute}`"
         :to="route.path"
-        :class="`flex justify-center items-center h-full px-4! relative min-w-20 text-xl font-bold ${$route.path === route.path ? 'nav-active' : ''}`"
+        :class="`flex justify-center items-center gap-2 h-full px-4! relative min-w-20 text-xl font-bold ${$route.path === route.path ? 'nav-active' : ''}`"
       >
+        <v-icon v-if="route.icon" :icon="route.icon" size="small" />
         {{ route.name }}
       </router-link>
     </div>
@@ -91,6 +92,9 @@ const handleLogin = () => {
               class="mb-1"
               :class="{ 'router-link-active': $route.path === route.path }"
             >
+              <template #prepend v-if="route.icon">
+                <v-icon :icon="route.icon" class="mr-2" />
+              </template>
               <v-list-item-title>
                 {{ route.name }}
               </v-list-item-title>
