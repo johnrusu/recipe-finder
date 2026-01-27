@@ -3,10 +3,11 @@
     class="items-center flex gap-4 flex-col h-full justify-center text-center"
   >
     <div>
-      <p class="text-body-1 sm:text-subtitle-1">
+      <NotLoggedUserAnimation />
+      <p class="text-base sm:text-xl">
         {{ HOME_PAGE.DESCRIPTION }}
       </p>
-      <p class="text-body-1 sm:text-subtitle-1 mt-2">
+      <p class="text-base sm:text-xl mt-2">
         {{ HOME_PAGE.AUTH_DESCRIPTION }}
       </p>
     </div>
@@ -24,8 +25,14 @@
   </div>
 </template>
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
 // constants
 import { HOME_PAGE } from "@/constants";
+
+// components
+const NotLoggedUserAnimation = defineAsyncComponent(
+  () => import("@/components/NotLoggedUserAnimation.vue")
+);
 
 const emit = defineEmits<{
   (e: "on-login"): void;
