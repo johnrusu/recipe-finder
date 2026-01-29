@@ -1,9 +1,12 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    fullscreen
+    :fullscreen="$vuetify.display.mobile"
+    max-width="800px"
     @update:model-value="$emit('close')"
     :persistent="!recipe"
+    scrim="black"
+    :opacity="0.9"
   >
     <v-card
       class="recipe-modal d-flex flex-column"
