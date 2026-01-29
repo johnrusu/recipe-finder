@@ -8,6 +8,7 @@ const LABELS = {
     "Missing required environment variables. Please check the configuration.",
   MISSSING_ENV_VARS_ERROR: "Missing required environment variables",
   ADD_TO_FAVORITES: "Add to Favorites",
+  REMOVE_FROM_FAVORITES: "Remove from Favorites",
   PRINT: "Print",
   RECENT_DISCOVERIES: "Recent Discoveries",
   MY_KITCHEN: "My Kitchen",

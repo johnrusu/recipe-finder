@@ -2,7 +2,7 @@
   <v-dialog
     v-model="isOpen"
     :fullscreen="$vuetify.display.mobile"
-    max-width="800px"
+    max-width="1024px"
     @update:model-value="$emit('close')"
     :persistent="!recipe"
     scrim="black"
@@ -126,10 +126,10 @@
               :prepend-icon="
                 isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'
               "
-              variant="flat"
+              variant="tonal"
               @click.stop="toggleFavorite(recipe.id)"
               :loading="isAddingFavorites"
-              :color="isFavorited(recipe.id) ? 'error' : 'default'"
+              :color="isFavorited(recipe.id) ? 'primary' : 'default'"
               class="w-100 w-sm-auto"
             >
               <v-tooltip activator="parent" location="top">
@@ -141,19 +141,25 @@
                       : SAVE_RECIPE_TOOLTIP
                 }}
               </v-tooltip>
-              <span class="text-wrap"> {{ LABELS.ADD_TO_FAVORITES }}</span>
+              <span class="text-wrap">
+                {{
+                  isFavorited(recipe.id)
+                    ? LABELS.REMOVE_FROM_FAVORITES
+                    : LABELS.ADD_TO_FAVORITES
+                }}</span
+              >
             </v-btn>
             <v-btn
               @click="printRecipe"
               prepend-icon="mdi-printer"
-              variant="flat"
+              variant="tonal"
               class="w-100 w-sm-auto"
             >
               <span class="text-wrap"> {{ LABELS.PRINT }}</span>
             </v-btn>
           </div>
           <v-btn
-            variant="tonal"
+            variant="flat"
             @click="$emit('close')"
             prepend-icon="mdi-close"
             class="w-100 w-sm-auto"
