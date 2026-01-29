@@ -290,6 +290,62 @@
       </v-card-text>
     </v-card>
 
+    <!-- No Results Message -->
+    <v-card
+      v-if="
+        searchResults.length === 0 &&
+        !loadingRecipes &&
+        !error &&
+        lastSearchParams
+      "
+      class="mt-6"
+    >
+      <v-card-text class="py-8">
+        <div class="text-h4 mb-4">{{ RECIPE_FINDER.NO_RESULTS_TITLE }}</div>
+        <div class="text-body-1 text-medium-emphasis mb-6">
+          {{ RECIPE_FINDER.NO_RESULTS_MESSAGE }}
+        </div>
+        <v-divider class="my-6" />
+        <div class="text-h6 mb-4">
+          {{ RECIPE_FINDER.NO_RESULTS_SUGGESTIONS }}
+        </div>
+        <v-list bg-color="transparent">
+          <v-list-item>
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-lightbulb-on</v-icon>
+            </template>
+            <v-list-item-title>{{
+              RECIPE_FINDER.NO_RESULTS_TIP_1
+            }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-filter-remove</v-icon>
+            </template>
+            <v-list-item-title>{{
+              RECIPE_FINDER.NO_RESULTS_TIP_2
+            }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-spellcheck</v-icon>
+            </template>
+            <v-list-item-title>{{
+              RECIPE_FINDER.NO_RESULTS_TIP_3
+            }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-dice-5</v-icon>
+            </template>
+            <v-list-item-title>{{
+              RECIPE_FINDER.NO_RESULTS_TIP_4
+            }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+
     <!-- Search Results Card -->
     <v-card
       v-if="searchResults.length > 0"

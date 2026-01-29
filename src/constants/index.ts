@@ -91,6 +91,14 @@ const RECIPE_FINDER = {
   ERROR_EMPTY_QUERY: "Please enter a search query",
   ERROR_NO_RESULTS: "No recipes found. Try a different search query.",
   ERROR_SEARCH_FAILED: "Search failed",
+  NO_RESULTS_TITLE: "🍽️ No Recipes Found",
+  NO_RESULTS_MESSAGE:
+    "We couldn't find any recipes matching your criteria. Try adjusting your filters or search terms!",
+  NO_RESULTS_SUGGESTIONS: "Suggestions:",
+  NO_RESULTS_TIP_1: "Try broader search terms",
+  NO_RESULTS_TIP_2: "Remove some filters",
+  NO_RESULTS_TIP_3: "Check your spelling",
+  NO_RESULTS_TIP_4: "Try the 'Surprise Me' button for random recipes",
 
   MEAL_TYPES: {
     BREAKFAST: "Breakfast",

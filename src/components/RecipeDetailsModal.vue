@@ -1,12 +1,15 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    max-width="800"
+    max-width="1024"
     :fullscreen="$vuetify.display.mobile"
     @update:model-value="$emit('close')"
     :persistent="!recipe"
   >
-    <v-card class="recipe-modal d-flex flex-column" :style="$vuetify.display.mobile ? 'height: 100vh' : 'max-height: 90vh'">
+    <v-card
+      class="recipe-modal d-flex flex-column"
+      :style="$vuetify.display.mobile ? 'height: 100vh' : 'max-height: 90vh'"
+    >
       <template v-if="recipe">
         <!-- Header Image -->
         <v-img
@@ -14,11 +17,11 @@
           :alt="recipe.title"
           :height="$vuetify.display.mobile ? '200px' : '300px'"
           cover
-          class="flex-shrink-0"
+          class="shrink-0"
         />
 
         <!-- Card Content -->
-        <v-card-text class="pa-6 flex-grow-1" style="overflow-y: auto;">
+        <v-card-text class="pa-6 grow" style="overflow-y: auto">
           <!-- Title -->
           <h2 class="text-h4 font-weight-bold mb-2">
             {{ recipe.title }}
@@ -110,8 +113,12 @@
         </v-card-text>
 
         <!-- Modal Actions -->
-        <v-card-actions class="pa-6 d-flex flex-column flex-sm-row gap-2 justify-space-between flex-shrink-0">
-          <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100 w-sm-auto">
+        <v-card-actions
+          class="pa-6 d-flex flex-column flex-sm-row gap-2 justify-space-between flex-shrink-0"
+        >
+          <div
+            class="d-flex flex-column flex-sm-row align-center gap-2 w-100 w-sm-auto"
+          >
             <v-btn
               v-if="recipe.id"
               :prepend-icon="

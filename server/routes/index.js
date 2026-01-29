@@ -7,27 +7,34 @@ const getEnvVar = (key, defaultValue = "") => {
   return process.env[key] || defaultValue;
 };
 
-const isMockData = getEnvVar("USE_MOCK_DATA", "true") === "true";
 const pathOfMockData = getEnvVar("MOCK_DATA_PATH", "../mock/recipes.json");
 const pathOfMockRecipeDetails = getEnvVar(
   "MOCK_RECIPE_DETAILS_PATH",
   "../mock/recipes-details.json"
 );
 
-// Load mock data if enabled
-let mockData = null;
-let mockRecipeDetails = null;
-if (isMockData) {
+// Helper to lazy-load mock data when needed
+const getMockData = () => {
   try {
-    mockData = require(pathOfMockData);
-    mockRecipeDetails = require(pathOfMockRecipeDetails);
-
-    console.log("Mock data loaded from", pathOfMockData);
-    console.log("Mock recipe details loaded from", pathOfMockRecipeDetails);
+    return require(pathOfMockData);
   } catch (error) {
     console.error("Failed to load mock data from", pathOfMockData, error);
+    return null;
   }
-}
+};
+
+const getMockRecipeDetails = () => {
+  try {
+    return require(pathOfMockRecipeDetails);
+  } catch (error) {
+    console.error(
+      "Failed to load mock recipe details from",
+      pathOfMockRecipeDetails,
+      error
+    );
+    return null;
+  }
+};
 
 // Version: 1.0.1 - Timestamp fixes
 
@@ -179,19 +186,25 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
         params.append("excludeIngredients", excludeIngredients);
       }
 
-      if (isMockData && mockData) {
-        return res.status(200).json({
-          success: true,
-          recipes: mockData,
-        });
-      }
-
       const searchUrl = `${SPOONACULAR_BASE_URL}/recipes/complexSearch?${params}`;
 
       const response = await fetch(searchUrl);
       const result = await response.json();
 
       if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockData = getMockData();
+        if (mockData) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          return res.status(200).json({
+            success: true,
+            recipes: mockData,
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
         return res
           .status(response.status)
           .json({ error: result.message || "Search failed" });
@@ -212,29 +225,34 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
       const { number = 5 } = req.query;
       const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
 
-      if (isMockData && mockData) {
-        // Mock data already has the correct structure with results array
-        return res.status(200).json({
-          success: true,
-          recipes: {
-            results: mockData.results || [],
-            baseUri: mockData.baseUri || "https://img.spoonacular.com/recipes/",
-            offset: mockData.offset || 0,
-            number: mockData.number || parseInt(number),
-            totalResults:
-              mockData.totalResults ||
-              (mockData.results ? mockData.results.length : 0),
-            processingTimeMs: 0,
-            expires: 0,
-          },
-          usingMockData: true,
-        });
-      }
-
       const response = await fetch(randomUrl);
       const result = await response.json();
 
       if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockData = getMockData();
+        if (mockData) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          return res.status(200).json({
+            success: true,
+            recipes: {
+              results: mockData.results || [],
+              baseUri:
+                mockData.baseUri || "https://img.spoonacular.com/recipes/",
+              offset: mockData.offset || 0,
+              number: mockData.number || parseInt(number),
+              totalResults:
+                mockData.totalResults ||
+                (mockData.results ? mockData.results.length : 0),
+              processingTimeMs: 0,
+              expires: 0,
+            },
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
         return res
           .status(response.status)
           .json({ error: result.message || "Failed to get random recipes" });
@@ -387,27 +405,29 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
         return res.status(405).json({ error: "Method not allowed" });
       }
 
-      // Return mock data if enabled
-      if (isMockData && mockData) {
-        const recipeDetailsMock = isMockData
-          ? mockRecipeDetails.recipes.find(
-              (r) => r.id === parseInt(recipeId)
-            ) || mockRecipeDetails.recipes[0]
-          : null;
-
-        if (recipeDetailsMock) {
-          return res.status(200).json({
-            success: true,
-            recipe: { ...recipeDetailsMock, id: parseInt(recipeId) },
-          });
-        }
-      }
-
       const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
       const response = await fetch(detailsUrl);
       const result = await response.json();
 
       if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockRecipeDetails = getMockRecipeDetails();
+        if (mockRecipeDetails) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          const recipeDetailsMock =
+            mockRecipeDetails.recipes.find(
+              (r) => r.id === parseInt(recipeId)
+            ) || mockRecipeDetails.recipes[0];
+
+          return res.status(200).json({
+            success: true,
+            recipe: { ...recipeDetailsMock, id: parseInt(recipeId) },
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
         return res
           .status(response.status)
           .json({ error: result.message || "Failed to get recipe details" });
