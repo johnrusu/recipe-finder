@@ -1,8 +1,7 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    max-width="1024"
-    :fullscreen="$vuetify.display.mobile"
+    fullscreen
     @update:model-value="$emit('close')"
     :persistent="!recipe"
   >
