@@ -9,7 +9,7 @@
         <v-row class="mb-4">
           <v-col cols="12">
             <RecipeAutocomplete
-              autocomplete="false"
+              :loading="loadingRecipes"
               @item-selected="
                 (data) =>
                   handleAutoCompleteItemSelected(
@@ -26,7 +26,6 @@
               clearable
               hide-details
               class="search-field"
-              bg-color="white"
               @keyup.enter="handleSearch"
               @update:model-value="handleAutoCompleteSearch"
               @click:clear="handleClearBtnInput"
@@ -676,7 +675,9 @@ const handleAutoCompleteItemSelected = (data: {
 };
 
 const handleAutoCompleteSearch = async () => {
+  loadingRecipes.value = true;
   if (isNilOrEmpty(searchQuery.value)) {
+    loadingRecipes.value = false;
     return;
   }
   const suggestions = await autoCompleteRecipeSearch(
@@ -684,6 +685,7 @@ const handleAutoCompleteSearch = async () => {
     AUTOCOMPLETE_NUMBER
   );
   if (!isNilOrEmpty(suggestions)) {
+    loadingRecipes.value = false;
     const success: boolean = pathOr(false, ["success"], suggestions);
     const suggestionsList: IAutocompleteSuggestion[] = pathOr(
       [],
@@ -694,6 +696,7 @@ const handleAutoCompleteSearch = async () => {
       suggestionsAutocomplete.value = suggestionsList;
     }
   }
+  loadingRecipes.value = false;
 };
 
 const getImageUrl = (imageSrc: string): string => {
