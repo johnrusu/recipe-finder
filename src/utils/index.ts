@@ -4,6 +4,25 @@ import { anyPass, isEmpty, isNil, is } from "ramda";
 export { isEmpty, anyPass, isNil, is };
 
 /**
+ * Debounces a function call by delaying its execution until after a specified time has elapsed since the last call
+ *
+ * @param {Function} fn - The function to debounce
+ * @param {number} delay - The delay in milliseconds (default: 300ms)
+ * @returns {Function} - The debounced function
+ * @example
+ *
+ * const debouncedSearch = debounce(searchFunction, 500);
+ * debouncedSearch(); // Will only execute after 500ms of no calls
+ */
+export const debounce = (fn: Function, delay: number = 300) => {
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  return (...args: any[]) => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fn(...args), delay);
+  };
+};
+
+/**
  * Returns `true` if the given value is its type's empty value, `null` or `undefined`.
  *
  * @func isNilOrEmpty

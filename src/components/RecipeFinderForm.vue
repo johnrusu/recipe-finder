@@ -27,7 +27,7 @@
               hide-details
               class="search-field"
               @keyup.enter="handleSearch"
-              @update:model-value="handleAutoCompleteSearch"
+              @update:model-value="debouncedAutoCompleteSearch"
               @click:clear="handleClearBtnInput"
             >
               <template v-slot:append-inner>
@@ -508,7 +508,7 @@ import {
   removeFavoriteRecipes,
   autoCompleteRecipeSearch,
 } from "@/services";
-import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
+import { isArrayNotEmpty, isNilOrEmpty, debounce } from "@/utils";
 
 // components
 const RecipeAutocomplete = defineAsyncComponent(
@@ -698,6 +698,9 @@ const handleAutoCompleteSearch = async () => {
   }
   loadingRecipes.value = false;
 };
+
+// Debounced version for autocomplete (300ms delay)
+const debouncedAutoCompleteSearch = debounce(handleAutoCompleteSearch, 300);
 
 const getImageUrl = (imageSrc: string): string => {
   // If it's already a full URL (starts with http), return as-is
