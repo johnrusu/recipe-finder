@@ -342,6 +342,8 @@ const LOADING_CONFIG = {
   ],
 };
 
+const AUTOCOMPLETE_NUMBER = 10;
+
 export {
   ROUTES,
   APP,
@@ -352,4 +354,5 @@ export {
   LOADING_CONFIG,
   RECIPE_FINDER,
   FOOTER,
+  AUTOCOMPLETE_NUMBER,
 };

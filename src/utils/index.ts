@@ -81,6 +81,17 @@ export const loadAsyncImage = (
     attemptLoad(retries, 1);
   });
 };
+
+/*
+ * Check if the given data is an object
+ *
+ * @func isObject - Checks if the given data is an object and not null
+ * @memberOf Validator
+ * @category Validator
+ * @sig * -> Boolean
+ * @param data
+ * @returns{Boolean} - true if data is an object, false otherwise
+ */
 const isObject = (data: object | string) =>
   typeof data === "object" && data !== null;
 
@@ -92,7 +103,7 @@ const isObject = (data: object | string) =>
  * @category Validator
  * @sig String -> Boolean
  * @param jsonString
- * @returns
+ * @returns{object | false} - parsed object if valid JSON, false otherwise
  */
 export const validateJson = (json: object | string): object | false => {
   if (isObject(json)) {

@@ -8,30 +8,30 @@ const getEnvVar = (key, defaultValue = "") => {
 };
 
 const pathOfMockData = getEnvVar("MOCK_DATA_PATH", "../mock/recipes.json");
+const pathMockOfAutocomplete = getEnvVar(
+  "MOCK_AUTOCOMPLETE_PATH",
+  "../mock/autocomplete.json"
+);
 const pathOfMockRecipeDetails = getEnvVar(
   "MOCK_RECIPE_DETAILS_PATH",
   "../mock/recipes-details.json"
 );
 
 // Helper to lazy-load mock data when needed
-const getMockData = () => {
+const fetchMockData = (mockName = "") => {
   try {
-    return require(pathOfMockData);
+    switch (mockName) {
+      case "recipes":
+        return require(pathOfMockData);
+      case "autocomplete":
+        return require(pathMockOfAutocomplete);
+      case "recipeDetails":
+        return require(pathOfMockRecipeDetails);
+      default:
+        return null;
+    }
   } catch (error) {
-    console.error("Failed to load mock data from", pathOfMockData, error);
-    return null;
-  }
-};
-
-const getMockRecipeDetails = () => {
-  try {
-    return require(pathOfMockRecipeDetails);
-  } catch (error) {
-    console.error(
-      "Failed to load mock recipe details from",
-      pathOfMockRecipeDetails,
-      error
-    );
+    console.error("Failed to load mock data from", mockName, error);
     return null;
   }
 };
@@ -193,7 +193,7 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
 
       if (!response.ok) {
         // Fallback to mock data if API fails (quota exceeded, etc.)
-        const mockData = getMockData();
+        const mockData = fetchMockData("recipes");
         if (mockData) {
           console.log(
             `API failed with status ${response.status}, using mock data as fallback`
@@ -222,7 +222,7 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
   ROUTES.GET_RANDOM_RECIPES.path,
   async (req, res) => {
     try {
-      const { number = 5 } = req.query;
+      const { number = 5 } = pathOr({}, ["query"], req);
       const randomUrl = `${SPOONACULAR_BASE_URL}/recipes/random?number=${parseInt(number)}&addRecipeInformation=true&apiKey=${SPOONACULAR_API_KEY}`;
 
       const response = await fetch(randomUrl);
@@ -230,7 +230,7 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
 
       if (!response.ok) {
         // Fallback to mock data if API fails (quota exceeded, etc.)
-        const mockData = getMockData();
+        const mockData = fetchMockData("recipes");
         if (mockData) {
           console.log(
             `API failed with status ${response.status}, using mock data as fallback`
@@ -341,7 +341,7 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const { recipeIds = [] } = req.body;
+      const recipeIds = pathOr([], ["body"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
@@ -392,17 +392,12 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
   ROUTES.GET_RECIPE_DETAILS.path,
   async (req, res) => {
     try {
-      const { recipeId } = req.params;
+      const recipeId = pathOr("", ["params", "recipeId"], req);
 
       if (isNilOrEmpty(recipeId)) {
         return res
           .status(400)
           .json({ error: "Missing required recipeId parameter" });
-      }
-
-      // Reject if trying to access favorites via GET
-      if (recipeId === "favorites") {
-        return res.status(405).json({ error: "Method not allowed" });
       }
 
       const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
@@ -411,7 +406,7 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
 
       if (!response.ok) {
         // Fallback to mock data if API fails (quota exceeded, etc.)
-        const mockRecipeDetails = getMockRecipeDetails();
+        const mockRecipeDetails = fetchMockData("recipeDetails");
         if (mockRecipeDetails) {
           console.log(
             `API failed with status ${response.status}, using mock data as fallback`
@@ -439,5 +434,65 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
     }
   }
 );
+
+// Autocomplete search recipe
+router[ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.method.toLowerCase()](
+  ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.path,
+  async (req, res) => {
+    try {
+      const query = pathOr("", ["query", "query"], req);
+      const number = pathOr(10, ["query", "number"], req);
+      if (isNilOrEmpty(query) || isNilOrEmpty(number)) {
+        return res
+          .status(400)
+          .json({ error: "Missing required query parameters" });
+      }
+
+      const autocompleteUrl = `${SPOONACULAR_BASE_URL}/recipes/autocomplete?query=${encodeURIComponent(
+        query
+      )}&number=${parseInt(number)}&apiKey=${SPOONACULAR_API_KEY}`;
+
+      const response = await fetch(autocompleteUrl);
+      const result = await response.json();
+      if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockData = fetchMockData("autocomplete");
+        if (mockData) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          return res.status(200).json({
+            success: true,
+            recipes: mockData,
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Autocomplete search failed" });
+      }
+
+      res.status(200).json({ success: true, suggestions: result });
+    } catch (error) {
+      console.error("❌ Error in AUTOCOMPLETE_RECIPE_SEARCH:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Autocomplete search recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// 404 handler - must be last route
+router.use((req, res) => {
+  res.status(404).json({
+    error: "Not Found",
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+    path: req.originalUrl,
+  });
+});
 
 module.exports = router;

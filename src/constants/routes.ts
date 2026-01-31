@@ -88,7 +88,7 @@ export const API_ROUTES = {
 
   GET_RECIPE_DETAILS: {
     method: "GET",
-    url: `${BASE_URL}/recipes/:recipeId`,
+    url: `${BASE_URL}/recipes/recipe/:recipeId`,
     protected: false,
     description: "Get detailed information about a recipe",
   },
@@ -112,5 +112,12 @@ export const API_ROUTES = {
     url: `${BASE_URL}/recipes/favorites`,
     protected: true,
     description: "Remove favorite recipes for the authenticated user",
+  },
+
+  AUTOCOMPLETE_RECIPE_SEARCH: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/autocomplete`,
+    protected: false,
+    description: "Get autocomplete suggestions for recipe search",
   },
 } as const;

@@ -152,6 +152,13 @@ interface IRecipeDetailsResponse {
   };
 }
 
+interface IAutocompleteSuggestion {
+  id: number;
+  title: string;
+  image: string;
+  imageType: string;
+}
+
 export type {
   TUser,
   ILoadingProps,
@@ -164,4 +171,5 @@ export type {
   IRecipe,
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
+  IAutocompleteSuggestion,
 };

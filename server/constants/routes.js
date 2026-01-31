@@ -40,7 +40,7 @@ const ROUTES = {
 
   GET_RECIPE_DETAILS: {
     method: "GET",
-    path: "/recipes/:recipeId",
+    path: "/recipes/recipe/:recipeId",
     protected: false,
     description: "Get detailed information about a recipe",
   },
@@ -64,6 +64,13 @@ const ROUTES = {
     path: "/recipes/favorites",
     protected: true,
     description: "Remove recipes from favorites",
+  },
+
+  AUTOCOMPLETE_RECIPE_SEARCH: {
+    method: "GET",
+    path: "/recipes/autocomplete",
+    protected: false,
+    description: "Get autocomplete suggestions for recipe search",
   },
 };
 

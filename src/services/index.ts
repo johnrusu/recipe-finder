@@ -8,6 +8,7 @@ import type {
   IRecipeSearchParams,
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
+  IAutocompleteSuggestion,
 } from "@/types";
 
 // ===== USER SERVICES =====
@@ -234,4 +235,20 @@ export const removeFavoriteRecipes = async (
     message: string;
     recipeIds: Set<number | string>;
   }>;
+};
+
+/**
+ * Get autocomplete suggestions for recipe search
+ */
+export const autoCompleteRecipeSearch = async (
+  query: string,
+  number: number = 10
+): Promise<IAutocompleteSuggestion[]> => {
+  const url = `${API_ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.url}?query=${encodeURIComponent(
+    query
+  )}&number=${number}`;
+
+  return apiRequest(url, {
+    method: API_ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.method,
+  }) as Promise<IAutocompleteSuggestion[]>;
 };

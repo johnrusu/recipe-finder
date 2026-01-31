@@ -8,7 +8,18 @@
         <!-- Main Search Bar -->
         <v-row class="mb-4">
           <v-col cols="12">
-            <v-text-field
+            <RecipeAutocomplete
+              autocomplete="false"
+              @item-selected="
+                (data) =>
+                  handleAutoCompleteItemSelected(
+                    data as {
+                      title: string;
+                      suggestion: IAutocompleteSuggestion;
+                    }
+                  )
+              "
+              :suggestions-autocomplete="suggestionsAutocomplete"
               v-model="searchQuery"
               :placeholder="`${xs ? '' : RECIPE_FINDER.SEARCH_PLACEHOLDER}`"
               prepend-inner-icon="mdi-magnify"
@@ -17,6 +28,8 @@
               class="search-field"
               bg-color="white"
               @keyup.enter="handleSearch"
+              @update:model-value="handleAutoCompleteSearch"
+              @click:clear="handleClearBtnInput"
             >
               <template v-slot:append-inner>
                 <v-btn
@@ -28,7 +41,7 @@
                   <v-icon end icon="mdi-arrow-right" />
                 </v-btn>
               </template>
-            </v-text-field>
+            </RecipeAutocomplete>
           </v-col>
         </v-row>
 
@@ -466,16 +479,26 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent, nextTick } from "vue";
+import { pathOr } from "ramda";
 import { useDisplay } from "vuetify";
 
 // state
 import { useAppStore } from "@/stores";
 
 // types
-import type { IRecipe, IRecipeSearchParams, IRecipeDetails } from "@/types";
+import type {
+  IRecipe,
+  IRecipeSearchParams,
+  IRecipeDetails,
+  IAutocompleteSuggestion,
+} from "@/types";
 
 // constants
-import { RECIPE_FINDER, LOADING_CONFIG } from "@/constants";
+import {
+  RECIPE_FINDER,
+  LOADING_CONFIG,
+  AUTOCOMPLETE_NUMBER,
+} from "@/constants";
 
 // services
 import {
@@ -484,10 +507,14 @@ import {
   getRecipeDetails,
   setFavoriteRecipes,
   removeFavoriteRecipes,
+  autoCompleteRecipeSearch,
 } from "@/services";
-import { isArrayNotEmpty } from "@/utils";
+import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
 
 // components
+const RecipeAutocomplete = defineAsyncComponent(
+  () => import("./RecipeAutocomplete.vue")
+);
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
 const RecipeDetailsModal = defineAsyncComponent(
   () => import("./RecipeDetailsModal.vue")
@@ -513,6 +540,7 @@ const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const favorites = ref<Set<number | string>>(new Set());
+const suggestionsAutocomplete = ref<IAutocompleteSuggestion[]>([]);
 
 // Recipe details modal state
 const showRecipeModal = ref(false);
@@ -628,6 +656,46 @@ const hasActiveFilters = computed(() => {
 });
 
 // Methods
+const handleClearBtnInput = () => {
+  searchQuery.value = "";
+  suggestionsAutocomplete.value = [];
+};
+const handleAutoCompleteItemSelected = (data: {
+  title: string;
+  suggestion: IAutocompleteSuggestion;
+}) => {
+  searchQuery.value = data.title;
+
+  // If suggestion has an ID (from Spoonacular autocomplete), fetch that specific recipe
+  if (data.suggestion?.id) {
+    handleGetRecipeDetails(data.suggestion.id);
+  } else {
+    // Otherwise, do a regular search
+    handleSearch();
+  }
+};
+
+const handleAutoCompleteSearch = async () => {
+  if (isNilOrEmpty(searchQuery.value)) {
+    return;
+  }
+  const suggestions = await autoCompleteRecipeSearch(
+    searchQuery.value,
+    AUTOCOMPLETE_NUMBER
+  );
+  if (!isNilOrEmpty(suggestions)) {
+    const success: boolean = pathOr(false, ["success"], suggestions);
+    const suggestionsList: IAutocompleteSuggestion[] = pathOr(
+      [],
+      ["suggestions"],
+      suggestions
+    );
+    if (success && isArrayNotEmpty(suggestionsList)) {
+      suggestionsAutocomplete.value = suggestionsList;
+    }
+  }
+};
+
 const getImageUrl = (imageSrc: string): string => {
   // If it's already a full URL (starts with http), return as-is
   if (imageSrc.startsWith("http")) {
