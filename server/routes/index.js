@@ -463,7 +463,7 @@ router[ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.method.toLowerCase()](
           );
           return res.status(200).json({
             success: true,
-            recipes: mockData,
+            suggestions: mockData.suggestions,
             usingMockData: true,
             apiError: result.message || "API unavailable",
           });
