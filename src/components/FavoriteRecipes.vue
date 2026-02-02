@@ -115,7 +115,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, defineAsyncComponent, computed, watch } from "vue";
+import { ref, onMounted, defineAsyncComponent, computed } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 
 // state
@@ -148,7 +148,7 @@ const props = defineProps<{
 }>();
 
 // auth
-const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+const { getAccessTokenSilently } = useAuth0();
 
 // store
 const appStore = useAppStore();
