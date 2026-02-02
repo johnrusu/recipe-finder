@@ -95,7 +95,7 @@
       <v-card-text class="pa-6">
         <!-- Loading State -->
         <div v-if="loadingFavorites" class="d-flex justify-center pa-8">
-          <v-progress-circular indeterminate color="primary" size="64" />
+          <AppLoading :config="LOADING_CONFIG" />
         </div>
 
         <!-- Error State -->
@@ -202,7 +202,7 @@
       <v-card-text class="pa-6">
         <!-- Loading State -->
         <div v-if="loadingSearchHistory" class="d-flex justify-center pa-8">
-          <v-progress-circular indeterminate color="primary" size="64" />
+          <AppLoading :config="LOADING_CONFIG" />
         </div>
 
         <!-- Error State -->
@@ -287,15 +287,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, defineAsyncComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth0 } from "@auth0/auth0-vue";
+
+// constants
+import { LOADING_CONFIG } from "@/constants";
 
 // types
 import type { IRecipe } from "@/types";
 
 // services
 import { getFavoriteRecipes, getRecipeDetails } from "@/services";
+
+// components
+
+const AppLoading = defineAsyncComponent(
+  () => import("@/components/AppLoading.vue")
+);
 
 // auth
 const { getAccessTokenSilently } = useAuth0();
@@ -423,7 +432,7 @@ onMounted(() => {
 }
 
 .welcome-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
 }
 
