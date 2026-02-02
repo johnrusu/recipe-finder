@@ -40,7 +40,7 @@
             cols="12"
             sm="6"
             md="4"
-            lg="3"
+            lg="4"
           >
             <v-card
               class="h-100 d-flex flex-column recipe-card"
