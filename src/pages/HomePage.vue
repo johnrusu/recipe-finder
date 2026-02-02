@@ -16,12 +16,12 @@
     <RecipeFinderForm
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
     />
-    <!-- <FavoriteRecipes
+    <FavoriteRecipes
       v-if="
         isAuthenticated && (isVisibleRecipeFinderForm || appState.skipWelcome)
       "
       :max-items="MAX_FAVORITE_ITEMS"
-    /> -->
+    />
 
     <RecentRecipes
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
@@ -41,7 +41,7 @@ import { defineAsyncComponent, ref, computed } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 
 // constants
-import { MAX_RECENT_ITEMS, LABELS } from "@/constants";
+import { MAX_RECENT_ITEMS, MAX_FAVORITE_ITEMS, LABELS } from "@/constants";
 
 // state
 import { useAppStore } from "@/stores";
@@ -72,9 +72,9 @@ const RecipeFinderForm = defineAsyncComponent(
   () => import("@/components/RecipeFinderForm.vue")
 );
 
-// const FavoriteRecipes = defineAsyncComponent(
-//   () => import("@/components/FavoriteRecipes.vue")
-// );
+const FavoriteRecipes = defineAsyncComponent(
+  () => import("@/components/FavoriteRecipes.vue")
+);
 
 const RecentRecipes = defineAsyncComponent(
   () => import("@/components/RecentRecipes.vue")

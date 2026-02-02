@@ -553,7 +553,7 @@ const loadingAutocomplete = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
-const favorites = ref<Set<number | string>>(new Set());
+const favorites = ref<Array<number | string>>([]);
 const suggestionsAutocomplete = ref<IAutocompleteSuggestion[]>([]);
 
 // Recipe details modal state
@@ -959,11 +959,7 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
       console.log("Favorites updated successfully");
-      // Update store with new favorites, converting to Set<number>
-      const numericFavorites = new Set(
-        Array.from(favorites.value).map((id) => Number(id)) as number[]
-      );
-      appStore.setFavoritesRecipes(numericFavorites);
+      appStore.setFavoritesRecipes(favorites.value);
     } else {
       console.error("Failed to update favorites:", response.message);
     }
@@ -978,19 +974,15 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
 const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
-  const recipeIdMapped = new Set<number | string>();
-  recipeIdMapped.add(recipeId);
+  const recipeIdMapped: Array<number | string> = [];
+  recipeIdMapped.push(recipeId);
   try {
     const token = await getAccessTokenSilently();
 
     const response = await removeFavoriteRecipes(recipeIdMapped, token);
     if (response.success) {
       console.log("Favorites removed successfully");
-      // Update store with updated favorites, converting to Set<number>
-      const numericFavorites = new Set(
-        Array.from(favorites.value).map((id) => Number(id)) as number[]
-      );
-      appStore.setFavoritesRecipes(numericFavorites);
+      appStore.setFavoritesRecipes(favorites.value);
     } else {
       console.error("Failed to remove favorites:", response.message);
     }
@@ -1020,11 +1012,11 @@ const toggleFavorite = (recipeId: number | string) => {
   if (!isAuthenticated.value) {
     return;
   }
-  if (favorites.value.has(recipeId)) {
-    favorites.value.delete(recipeId);
+  if (favorites.value.includes(recipeId)) {
+    favorites.value = favorites.value.filter((id) => id !== recipeId);
     handleDeleteRecipesFavorites(recipeId);
   } else {
-    favorites.value.add(recipeId);
+    favorites.value.push(recipeId);
     handleAddRecipesFavorites(recipeId);
   }
 };
@@ -1039,7 +1031,7 @@ const handleFavoriteToggle = (recipeId: number) => {
 };
 
 const isFavorited = (recipeId: number) => {
-  return favorites.value.has(recipeId);
+  return favorites.value.includes(recipeId);
 };
 
 const recipesFromState = computed(() => appStore.recipes);

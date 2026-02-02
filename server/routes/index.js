@@ -12,10 +12,6 @@ const pathMockOfAutocomplete = getEnvVar(
   "MOCK_AUTOCOMPLETE_PATH",
   "../mock/autocomplete.json"
 );
-const pathOfMockRecipeDetails = getEnvVar(
-  "MOCK_RECIPE_DETAILS_PATH",
-  "../mock/recipes-details.json"
-);
 
 // Helper to lazy-load mock data when needed
 const fetchMockData = (mockName = "") => {
@@ -25,8 +21,6 @@ const fetchMockData = (mockName = "") => {
         return require(pathOfMockData);
       case "autocomplete":
         return require(pathMockOfAutocomplete);
-      case "recipeDetails":
-        return require(pathOfMockRecipeDetails);
       default:
         return null;
     }
@@ -50,7 +44,7 @@ const { ROUTES } = require("../constants/routes.js");
 const { checkJwt } = require("../middleware/auth.js");
 
 // utils
-const { isNilOrEmpty } = require("../utils/index.js");
+const { isNilOrEmpty, isArrayNotEmpty } = require("../utils/index.js");
 
 // Database functions
 const {
@@ -241,14 +235,14 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
           return res.status(200).json({
             success: true,
             recipes: {
-              results: mockData.results || [],
+              results: mockData.recipes || [],
               baseUri:
                 mockData.baseUri || "https://img.spoonacular.com/recipes/",
               offset: mockData.offset || 0,
               number: mockData.number || parseInt(number),
               totalResults:
                 mockData.totalResults ||
-                (mockData.results ? mockData.results.length : 0),
+                (mockData.recipes ? mockData.recipes.length : 0),
               processingTimeMs: 0,
               expires: 0,
             },
@@ -444,7 +438,7 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
 
       if (!response.ok) {
         // Fallback to mock data if API fails (quota exceeded, etc.)
-        const mockRecipeDetails = fetchMockData("recipeDetails");
+        const mockRecipeDetails = fetchMockData("recipes");
         if (mockRecipeDetails) {
           console.log(
             `API failed with status ${response.status}, using mock data as fallback`
@@ -467,6 +461,61 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
       }
 
       res.status(200).json({ success: true, recipe: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get recipes details
+router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
+  ROUTES.GET_RECIPES_BULK_DETAILS.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const recipesIds = pathOr([], ["body", "recipesIds"], req);
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!isArrayNotEmpty(recipesIds)) {
+        return res
+          .status(400)
+          .json({ error: "Missing required recipesIds parameter" });
+      }
+
+      const responseInformationBulk = `${SPOONACULAR_BASE_URL}/recipes/informationBulk?ids=${recipesIds.join(",")}&apiKey=${SPOONACULAR_API_KEY}`;
+      const response = await fetch(responseInformationBulk);
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockRecipeDetails = fetchMockData("recipes");
+        if (mockRecipeDetails) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          const recipeDetailsMock =
+            mockRecipeDetails.recipes.filter((r) =>
+              recipesIds.map((q) => parseInt(q)).includes(r.id)
+            ) || mockRecipeDetails.recipes[0];
+
+          return res.status(200).json({
+            success: true,
+            recipes: recipeDetailsMock,
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Failed to get recipes details" });
+      }
+
+      res.status(200).json({ success: true, recipes: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

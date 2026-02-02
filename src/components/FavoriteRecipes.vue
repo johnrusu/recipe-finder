@@ -1,7 +1,7 @@
 <template>
   <div
     class="favorite-recipes-container mb-12"
-    v-if="isArrayNotEmpty(displayedRecipes)"
+    v-if="!apiInitializedWithNoData"
   >
     <!-- Header Section -->
     <div class="d-flex align-center justify-center mb-6">
@@ -93,11 +93,6 @@
             </v-card>
           </v-col>
         </v-row>
-
-        <!-- Empty State -->
-        <v-alert v-else type="info" variant="tonal">
-          {{ FAVORITE_RECIPES.EMPTY_STATE }}
-        </v-alert>
       </v-card-text>
     </v-card>
 
@@ -115,8 +110,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, defineAsyncComponent, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
+import { pathOr } from "ramda";
 
 // state
 import { useAppStore } from "@/stores";
@@ -132,14 +128,13 @@ import {
   getFavoriteRecipes,
   getRecipeDetails,
   removeFavoriteRecipes,
+  getRecipesBulkDetails,
 } from "@/services";
-import { isArrayNotEmpty } from "@/utils";
+import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
 
 // components
-const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
-const RecipeDetailsModal = defineAsyncComponent(
-  () => import("./RecipeDetailsModal.vue")
-);
+import AppLoading from "./AppLoading.vue";
+import RecipeDetailsModal from "./RecipeDetailsModal.vue";
 
 // props
 const props = defineProps<{
@@ -161,6 +156,7 @@ const loading = ref(false);
 const loadingFavoriteRecipeId = ref<number | string | null>(null);
 const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
+const apiInitializedWithNoData = ref(false);
 
 // recipe details modal state
 const showRecipeModal = ref(false);
@@ -168,9 +164,10 @@ const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
 
 // computed
 const title = ref(props.title || FAVORITE_RECIPES.DEFAULT_TITLE);
-const displayedRecipes = computed(() => recipes.value.slice(0, props.maxItems));
-const favoriteIds = computed(() => new Set(favoriteRecipeIds.value));
-const hasFavorites = computed(() => recipes.value.length > 0);
+const displayedRecipes = computed(() =>
+  isArrayNotEmpty(recipes.value) ? recipes.value.slice(0, props.maxItems) : []
+);
+const favoriteIds = computed(() => favoriteRecipeIds.value);
 
 // methods
 const getImageUrl = (imageSrc: string): string => {
@@ -180,56 +177,74 @@ const getImageUrl = (imageSrc: string): string => {
   return `${imageBaseUri.value}${imageSrc}`;
 };
 
-const fetchFavorites = async () => {
-  loadingRecipes.value = true;
-  error.value = null;
+const fetchBulkDetailsByIds = async (
+  ids: Array<string | number>,
+  token: string
+) => {
+  recipes.value = [];
+  if (isArrayNotEmpty(ids)) {
+    // Fetch recipe details in bulk
+    try {
+      const detailsResponse = await getRecipesBulkDetails(ids, token);
 
-  try {
-    const token = await getAccessTokenSilently();
-    const response = await getFavoriteRecipes(token);
-
-    if (response.success && response.recipeIds) {
-      favoriteRecipeIds.value = response.recipeIds;
-
-      console.log("Fetching details for recipe IDs:", response.recipeIds);
-
-      // Fetch recipe details for each favorite
-      const recipeDetailsPromises = response.recipeIds.map((id) =>
-        getRecipeDetails(id)
-      );
-
-      // Use allSettled to handle both successful and failed requests
-      const recipeDetailsResults = await Promise.allSettled(
-        recipeDetailsPromises
-      );
-
-      console.log("Recipe details results:", recipeDetailsResults);
-
-      recipes.value = recipeDetailsResults
-        .filter(
-          (result) =>
-            result.status === "fulfilled" &&
-            result.value.success &&
-            result.value.recipe
-        )
-        .map(
-          (result) =>
-            (result as PromiseFulfilledResult<any>).value.recipe as IRecipe
+      if (!isNilOrEmpty(detailsResponse)) {
+        const recipesData = pathOr([], ["recipes"], detailsResponse);
+        recipes.value = recipesData;
+        if (!isArrayNotEmpty(recipesData)) {
+          apiInitializedWithNoData.value = true;
+        }
+      } else {
+        console.error(
+          "Failed to fetch favorite recipe details:",
+          detailsResponse
         );
+      }
+    } catch (e) {
+      console.error("Error fetching bulk recipe details:", e);
+      recipes.value = [];
+    }
+  }
+};
 
-      console.log("Final recipes:", recipes.value);
-    } else {
+const fetchFavorites = async (favoritesFromStore: Array<string | number>) => {
+  const token = await getAccessTokenSilently();
+  loadingRecipes.value = true;
+  favoriteRecipeIds.value = [];
+  recipes.value = [];
+  error.value = null;
+  apiInitializedWithNoData.value = false;
+
+  if (isArrayNotEmpty(favoritesFromStore)) {
+    favoriteRecipeIds.value = favoritesFromStore;
+    await fetchBulkDetailsByIds(Array.from(favoritesFromStore), token);
+  } else {
+    try {
+      const response = await getFavoriteRecipes(token);
+      if (!isNilOrEmpty(response)) {
+        const success = pathOr(false, ["success"], response);
+        const recipeIds = pathOr([], ["recipeIds"], response);
+        if (!isArrayNotEmpty(recipeIds)) {
+          apiInitializedWithNoData.value = true;
+        }
+
+        if (success) {
+          favoriteRecipeIds.value = recipeIds;
+          await fetchBulkDetailsByIds(recipeIds, token);
+        }
+      } else {
+        favoriteRecipeIds.value = [];
+        recipes.value = [];
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : FAVORITE_RECIPES.ERROR_GENERIC;
+      error.value = errorMessage;
+      console.error("Error loading favorite recipes:", err);
       favoriteRecipeIds.value = [];
       recipes.value = [];
     }
-  } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : FAVORITE_RECIPES.ERROR_GENERIC;
-    error.value = errorMessage;
-    console.error("Error loading favorite recipes:", err);
-  } finally {
-    loadingRecipes.value = false;
   }
+  loadingRecipes.value = false;
 };
 
 const handleGetRecipeDetails = async (recipeId: number) => {
@@ -261,8 +276,8 @@ const handleGetRecipeDetails = async (recipeId: number) => {
 const handleRemoveFavorite = async (recipeId: number | string) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
-  const recipeIdMapped = new Set<number | string>();
-  recipeIdMapped.add(recipeId);
+  const recipeIdMapped: Array<number | string> = [];
+  recipeIdMapped.push(recipeId);
 
   try {
     const token = await getAccessTokenSilently();
@@ -280,7 +295,7 @@ const handleRemoveFavorite = async (recipeId: number | string) => {
     }
 
     // Update store
-    appStore.setFavoritesRecipes(new Set(favoriteRecipeIds.value as number[]));
+    appStore.setFavoritesRecipes(favoriteRecipeIds.value);
   } catch (error) {
     console.error("Error removing favorite:", error);
   } finally {
@@ -299,14 +314,27 @@ const handleFavoriteToggle = (recipeId: number) => {
 };
 
 // lifecycle
-onMounted(() => {
-  fetchFavorites();
+onMounted(async () => {
+  const hasFavorites = isArrayNotEmpty(appStore.favoritesRecipes);
+
+  // Handle favorites initialization
+  if (hasFavorites) {
+    favoriteRecipeIds.value = appStore.favoritesRecipes;
+    await fetchFavorites(favoriteRecipeIds.value);
+    return;
+  }
+  await fetchFavorites([]);
 });
 
-// expose
-defineExpose({
-  hasFavorites,
-});
+// watch store for changes from other components
+watch(
+  () => appStore.favoritesRecipes,
+  async (newFavorites) => {
+    favoriteRecipeIds.value = Array.from(newFavorites);
+    await fetchFavorites(favoriteRecipeIds.value);
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>

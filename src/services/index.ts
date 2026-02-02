@@ -162,6 +162,31 @@ export const getRecipeDetails = async (
 };
 
 /**
+ * Get recipes bulk details
+ * POST /api/recipes/bulk-details
+ *
+ * @param recipeIds - Array of recipe IDs to fetch details for
+ * @param token - Optional Auth0 JWT token for authentication
+ * @returns {Promise<IRecipeDetailsResponse>} - Response data
+ *
+ */
+export const getRecipesBulkDetails = async (
+  recipesIds: Array<string | number>,
+  token?: string
+): Promise<IRecipeDetailsResponse> => {
+  const url = API_ROUTES.GET_RECIPES_BULK_DETAILS.url;
+
+  return apiRequest(
+    url,
+    {
+      method: API_ROUTES.GET_RECIPES_BULK_DETAILS.method,
+      body: JSON.stringify({ recipesIds }),
+    },
+    token
+  ) as Promise<IRecipeDetailsResponse>;
+};
+
+/**
  * Get random recipes
  * GET /api/recipes/random?number=...
  */
@@ -212,24 +237,24 @@ export const getFavoriteRecipes = async (
  * @returns {Promise<any>} - Response data
  */
 export const setFavoriteRecipes = async (
-  recipeIds: Set<number | string>,
+  recipeIds: Array<number | string>,
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: Set<number | string>;
+  recipeIds: Array<number | string>;
 }> => {
   return apiRequest(
     API_ROUTES.SET_FAVORITE_RECIPES.url,
     {
       method: API_ROUTES.SET_FAVORITE_RECIPES.method,
-      body: JSON.stringify({ recipeIds: Array.from(recipeIds) }),
+      body: JSON.stringify({ recipeIds }),
     },
     token
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: Set<number | string>;
+    recipeIds: Array<number | string>;
   }>;
 };
 
@@ -241,24 +266,24 @@ export const setFavoriteRecipes = async (
  * @returns {Promise<any>} - Response data
  */
 export const removeFavoriteRecipes = async (
-  recipeIds: Set<number | string>,
+  recipeIds: Array<number | string>,
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: Set<number | string>;
+  recipeIds: Array<number | string>;
 }> => {
   return apiRequest(
     API_ROUTES.REMOVE_FAVORITE_RECIPES.url,
     {
       method: API_ROUTES.REMOVE_FAVORITE_RECIPES.method,
-      body: JSON.stringify({ recipeIds: Array.from(recipeIds) }),
+      body: JSON.stringify({ recipeIds }),
     },
     token
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: Set<number | string>;
+    recipeIds: Array<number | string>;
   }>;
 };
 

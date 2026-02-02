@@ -45,6 +45,13 @@ const ROUTES = {
     description: "Get detailed information about a recipe",
   },
 
+  GET_RECIPES_BULK_DETAILS: {
+    method: "POST",
+    path: "/recipes/bulk-details",
+    protected: false,
+    description: "Get detailed information about multiple recipes",
+  },
+
   GET_RANDOM_RECIPES: {
     method: "GET",
     path: "/recipes/random",

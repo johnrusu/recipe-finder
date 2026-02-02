@@ -93,6 +93,13 @@ export const API_ROUTES = {
     description: "Get detailed information about a recipe",
   },
 
+  GET_RECIPES_BULK_DETAILS: {
+    method: "POST",
+    url: `${BASE_URL}/recipes/bulk-details`,
+    protected: true,
+    description: "Get detailed information about multiple recipes",
+  },
+
   GET_RANDOM_RECIPES: {
     method: "GET",
     url: `${BASE_URL}/recipes/random`,

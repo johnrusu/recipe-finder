@@ -9,6 +9,9 @@ const { anyPass, isEmpty, isNil } = require("ramda");
  */
 const isNilOrEmpty = anyPass([isNil, isEmpty]);
 
+const isArrayNotEmpty = (array) => Array.isArray(array) && array.length > 0;
+
 module.exports = {
   isNilOrEmpty,
+  isArrayNotEmpty,
 };

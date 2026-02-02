@@ -194,7 +194,7 @@ import type { IRecipeDetails } from "@/types";
 interface Props {
   open: boolean;
   recipe: IRecipeDetails | null;
-  favorites: Set<number | string>;
+  favorites: Array<number | string>;
   imageBaseUri: string;
   isAddingFavorites: boolean;
 }
@@ -245,7 +245,7 @@ const toggleFavorite = (recipeId: number) => {
 };
 
 const isFavorited = (recipeId: number) => {
-  return props.favorites.has(recipeId);
+  return props.favorites.includes(recipeId);
 };
 
 const printRecipe = () => {
