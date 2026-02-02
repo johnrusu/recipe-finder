@@ -6,17 +6,18 @@ export { isEmpty, anyPass, isNil, is };
 /**
  * Debounces a function call by delaying its execution until after a specified time has elapsed since the last call
  *
- * @param {Function} fn - The function to debounce
- * @param {number} delay - The delay in milliseconds (default: 300ms)
- * @returns {Function} - The debounced function
+ * @param delay - The delay in milliseconds (default: 300ms)
  * @example
  *
  * const debouncedSearch = debounce(searchFunction, 500);
  * debouncedSearch(); // Will only execute after 500ms of no calls
  */
-export const debounce = (fn: Function, delay: number = 300) => {
+export const debounce = (
+  fn: (...args: unknown[]) => void,
+  delay: number = 300
+) => {
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  return (...args: any[]) => {
+  return (...args: unknown[]) => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => fn(...args), delay);
   };

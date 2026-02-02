@@ -4,6 +4,7 @@ const APP = {
 };
 
 const LABELS = {
+  RECENT_RECIPES_TITLE: "Discover New Recipes",
   MISSING_ENV_VARS:
     "Missing required environment variables. Please check the configuration.",
   MISSSING_ENV_VARS_ERROR: "Missing required environment variables",
@@ -343,6 +344,16 @@ const LOADING_CONFIG = {
 };
 
 const AUTOCOMPLETE_NUMBER = 10;
+const MAX_FAVORITE_ITEMS = 10;
+const MAX_RECENT_ITEMS = 10;
+
+const RECENT_RECIPES = {
+  DEFAULT_TITLE: "Recent Recipes",
+  REFRESH_BUTTON: "Refresh",
+  EMPTY_STATE: "No recipes available at the moment. Try refreshing!",
+  ERROR_LOADING: "Failed to load recent recipes",
+  ERROR_GENERIC: "Failed to load recipes",
+};
 
 export {
   ROUTES,
@@ -355,4 +366,7 @@ export {
   RECIPE_FINDER,
   FOOTER,
   AUTOCOMPLETE_NUMBER,
+  MAX_FAVORITE_ITEMS,
+  MAX_RECENT_ITEMS,
+  RECENT_RECIPES,
 };

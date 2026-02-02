@@ -52,11 +52,35 @@ const favoritesRecipesSchema = new mongoose.Schema({
   auth0Id: { type: String, required: true, unique: true },
 });
 
+const recipesSearchHistorySchema = new mongoose.Schema({
+  auth0Id: { type: String, required: true, unique: false },
+  searchQueries: [
+    {
+      query: { type: String, required: true },
+      type: { type: String, required: false },
+      cuisine: { type: String, required: false },
+      diet: { type: String, required: false },
+      intolerances: { type: String, required: false },
+      maxReadyTime: { type: Number, required: false },
+      includeIngredients: { type: String, required: false },
+      excludeIngredients: { type: String, required: false },
+      number: { type: Number, required: false },
+      offset: { type: Number, required: false },
+      timestamp: { type: Date, default: Date.now },
+    },
+  ],
+});
+
 const usersModel = mongoose.model("User", usersSchema, "users-collection");
 const favoritesRecipesModel = mongoose.model(
   "FavoritesRecipe",
   favoritesRecipesSchema,
   "favorites-recipes-collection"
+);
+const recipesSearchHistoryModel = mongoose.model(
+  "RecipesSearchHistory",
+  recipesSearchHistorySchema,
+  "recipes-search-history-collection"
 );
 
 // User database methods
@@ -148,6 +172,62 @@ const removeFavoritesRecipes = async (auth0Id, recipeIds) => {
   }
 };
 
+// add recipes search history
+const createRecipesSearchHistory = async (auth0Id, searchQuery) => {
+  try {
+    console.log(`[DB] Setting search history for ${auth0Id}:`, searchQuery);
+
+    let existingUser = await usersModel.findOne({ auth0Id });
+
+    // If user doesn't exist yet, create a placeholder user
+    if (!existingUser) {
+      console.log(`[DB] User ${auth0Id} not found, creating placeholder...`);
+      existingUser = new usersModel({
+        userId: auth0Id,
+        auth0Id,
+        email: `${auth0Id}@placeholder.local`,
+        name: "Placeholder User",
+      });
+      await existingUser.save();
+    }
+
+    // Find and update existing search history, or create new one
+    const setSearchHistoryRecipes =
+      await recipesSearchHistoryModel.findOneAndUpdate(
+        { auth0Id },
+        {
+          $push: {
+            searchQueries: { $each: [searchQuery], $position: 0, $slice: 50 },
+          },
+        },
+        { upsert: true, new: true }
+      );
+    console.log(`[DB] Search history saved successfully`);
+    return setSearchHistoryRecipes;
+  } catch (error) {
+    console.error(`[DB] Error saving search history:`, error.message);
+    throw new Error(`Error saving search history: ${error.message}`);
+  }
+};
+
+// remove search history
+const removeRecipesSearchHistory = async (auth0Id, searchQueryId) => {
+  try {
+    console.log(`Removing search history for ${auth0Id}:`, searchQueryId);
+    // Remove search query by _id
+    const searchHistoryAfterRemove =
+      await recipesSearchHistoryModel.findOneAndUpdate(
+        { auth0Id },
+        { $pull: { searchQueries: { _id: searchQueryId } } },
+        { new: true }
+      );
+    return searchHistoryAfterRemove;
+  } catch (error) {
+    console.error(`[DB] Error removing search history:`, error.message);
+    throw new Error(`Error removing search history: ${error.message}`);
+  }
+};
+
 const closeDatabase = async () => {
   await mongoose.connection.close();
 };
@@ -166,4 +246,9 @@ module.exports = {
   favoritesRecipesModel,
   setFavoritesRecipes,
   removeFavoritesRecipes,
+
+  // Recipes Search History methods
+  recipesSearchHistoryModel,
+  createRecipesSearchHistory,
+  removeRecipesSearchHistory,
 };

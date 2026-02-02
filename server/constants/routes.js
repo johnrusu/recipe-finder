@@ -72,6 +72,20 @@ const ROUTES = {
     protected: false,
     description: "Get autocomplete suggestions for recipe search",
   },
+
+  ADD_SEARCH_HISTORY: {
+    method: "POST",
+    path: "/recipes/search-history",
+    protected: true,
+    description: "Add a search query to user's search history",
+  },
+
+  REMOVE_SEARCH_HISTORY: {
+    method: "DELETE",
+    path: "/recipes/search-history",
+    protected: true,
+    description: "Remove a search query from user's search history",
+  },
 };
 
 module.exports = { ROUTES };

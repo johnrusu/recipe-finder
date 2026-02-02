@@ -19,39 +19,41 @@
       </v-text-field>
     </template>
 
-    <v-list
+    <v-card
       v-if="isArrayNotEmpty(props.suggestionsAutocomplete)"
-      class="gap-2 flex flex-col"
+      class="position-relative"
     >
-      <v-list-item
-        v-for="(suggestion, index) in props.suggestionsAutocomplete"
-        :key="index"
-        @click="selectSuggestion(suggestion)"
-        class="cursor-pointer"
-      >
-        <template v-if="getSuggestionImage(suggestion)" v-slot:prepend>
-          <v-avatar size="40" rounded="sm">
-            <v-img
-              :src="getSuggestionImage(suggestion)"
-              :alt="getSuggestionTitle(suggestion)"
-              cover
-              @error="handleImageError"
-            >
-              <template v-slot:error>
-                <div
-                  class="d-flex align-center justify-center h-100 bg-grey-lighten-3"
-                >
-                  <v-icon icon="mdi-food" size="20" color="grey" />
-                </div>
-              </template>
-            </v-img>
-          </v-avatar>
-        </template>
-        <v-list-item-title>
-          {{ getSuggestionTitle(suggestion) }}
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
+      <v-list class="gap-2 flex flex-col autocomplete-menu-list">
+        <v-list-item
+          v-for="(suggestion, index) in props.suggestionsAutocomplete"
+          :key="index"
+          @click="selectSuggestion(suggestion)"
+          class="cursor-pointer"
+        >
+          <template v-if="getSuggestionImage(suggestion)" v-slot:prepend>
+            <v-avatar size="40" rounded="sm">
+              <v-img
+                :src="getSuggestionImage(suggestion)"
+                :alt="getSuggestionTitle(suggestion)"
+                cover
+                @error="handleImageError"
+              >
+                <template v-slot:error>
+                  <div
+                    class="d-flex align-center justify-center h-100 bg-grey-lighten-3"
+                  >
+                    <v-icon icon="mdi-food" size="20" color="grey" />
+                  </div>
+                </template>
+              </v-img>
+            </v-avatar>
+          </template>
+          <v-list-item-title>
+            {{ getSuggestionTitle(suggestion) }}
+          </v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-card>
   </v-menu>
 </template>
 
@@ -150,5 +152,10 @@ const handleBlur = () => {
 :deep(.v-field__field),
 :deep(input) {
   cursor: text !important;
+}
+
+.autocomplete-menu-list {
+  max-height: 400px;
+  overflow-y: auto;
 }
 </style>

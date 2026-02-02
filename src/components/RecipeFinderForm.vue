@@ -1,15 +1,18 @@
 <template>
   <div class="recipe-finder-form mt-4">
-    <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
-      {{ RECIPE_FINDER.TITLE }}
-    </h1>
+    <div class="d-flex align-center justify-center gap-3 mb-8">
+      <v-icon icon="mdi-food-variant" size="x-large" color="primary" />
+      <h1 class="text-2xl sm:text-4xl font-bold text-center">
+        {{ RECIPE_FINDER.TITLE }}
+      </h1>
+    </div>
     <v-card>
-      <v-card-text class="px-6 py-8">
+      <v-card-text class="px-6 py-8 relative!">
         <!-- Main Search Bar -->
         <v-row class="mb-4">
           <v-col cols="12">
             <RecipeAutocomplete
-              :loading="loadingRecipes"
+              :loading="loadingAutocomplete"
               @item-selected="
                 (data) =>
                   handleAutoCompleteItemSelected(
@@ -358,23 +361,33 @@
       </v-card-text>
     </v-card>
 
+    <!-- Search Results Header -->
+    <div
+      v-if="searchResults.length > 0"
+      class="d-flex align-center justify-center mb-6 mt-12"
+    >
+      <div class="d-flex align-center gap-3">
+        <v-icon icon="mdi-check-circle" size="x-large" color="success" />
+        <h2 class="text-h4 font-weight-bold">
+          {{
+            RECIPE_FINDER.SEARCH_RESULTS_HEADER(
+              searchResults.length,
+              totalResults
+            )
+          }}
+        </h2>
+      </div>
+    </div>
+
     <!-- Search Results Card -->
     <v-card
       v-if="searchResults.length > 0"
-      class="mt-6 search-results-card"
+      class="search-results-card"
       ref="searchResultsCard"
     >
-      <v-card-text>
+      <v-card-text class="p-6! relative!">
         <v-row class="mt-0">
           <v-col cols="12">
-            <h2 class="text-xl font-bold mb-6">
-              {{
-                RECIPE_FINDER.SEARCH_RESULTS_HEADER(
-                  searchResults.length,
-                  totalResults
-                )
-              }}
-            </h2>
             <v-row>
               <v-col
                 v-for="recipe in searchResults"
@@ -382,7 +395,7 @@
                 cols="12"
                 sm="6"
                 md="4"
-                lg="3"
+                lg="4"
               >
                 <v-card
                   class="h-100 d-flex flex-column recipe-card"
@@ -507,6 +520,7 @@ import {
   setFavoriteRecipes,
   removeFavoriteRecipes,
   autoCompleteRecipeSearch,
+  setRecipesSearchHistory,
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty, debounce } from "@/utils";
 
@@ -535,6 +549,7 @@ const showAdvanced = ref(false);
 const loading = ref(false);
 const loadingRecipes = ref(false);
 const loadingFavoriteRecipeId = ref<number | string | null>(null);
+const loadingAutocomplete = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
@@ -675,9 +690,9 @@ const handleAutoCompleteItemSelected = (data: {
 };
 
 const handleAutoCompleteSearch = async () => {
-  loadingRecipes.value = true;
+  loadingAutocomplete.value = true;
   if (isNilOrEmpty(searchQuery.value)) {
-    loadingRecipes.value = false;
+    loadingAutocomplete.value = false;
     return;
   }
   const suggestions = await autoCompleteRecipeSearch(
@@ -685,7 +700,7 @@ const handleAutoCompleteSearch = async () => {
     AUTOCOMPLETE_NUMBER
   );
   if (!isNilOrEmpty(suggestions)) {
-    loadingRecipes.value = false;
+    loadingAutocomplete.value = false;
     const success: boolean = pathOr(false, ["success"], suggestions);
     const suggestionsList: IAutocompleteSuggestion[] = pathOr(
       [],
@@ -696,7 +711,7 @@ const handleAutoCompleteSearch = async () => {
       suggestionsAutocomplete.value = suggestionsList;
     }
   }
-  loadingRecipes.value = false;
+  loadingAutocomplete.value = false;
 };
 
 // Debounced version for autocomplete (300ms delay)
@@ -762,6 +777,23 @@ const handleSearch = async () => {
 
     if (excludeIngredients.value.length > 0) {
       params.excludeIngredients = excludeIngredients.value.join(",");
+    }
+
+    if (isAuthenticated.value) {
+      try {
+        const token = await getAccessTokenSilently();
+        const response = await setRecipesSearchHistory(params, token);
+        if (response.success) {
+          console.log("Search query added to history");
+        } else {
+          console.error(
+            "Failed to add search query to history:",
+            response.message
+          );
+        }
+      } catch (error) {
+        console.error("Error adding search query to history:", error);
+      }
     }
 
     // Store search params for pagination

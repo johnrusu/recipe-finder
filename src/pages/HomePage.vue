@@ -15,6 +15,20 @@
     />
     <RecipeFinderForm
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
+      class="mb-12"
+    />
+    <FavoriteRecipes
+      v-if="
+        isAuthenticated && (isVisibleRecipeFinderForm || appState.skipWelcome)
+      "
+      :max-items="MAX_FAVORITE_ITEMS"
+      class="mb-12"
+    />
+
+    <RecentRecipes
+      v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
+      :max-items="MAX_RECENT_ITEMS"
+      :title="LABELS.RECENT_RECIPES_TITLE"
     />
 
     <HomePageConfirmAuthDialog
@@ -27,6 +41,9 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref, computed } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
+
+// constants
+import { MAX_FAVORITE_ITEMS, MAX_RECENT_ITEMS, LABELS } from "@/constants";
 
 // state
 import { useAppStore } from "@/stores";
@@ -55,6 +72,14 @@ const HomePageAuthGreentings = defineAsyncComponent(
 
 const RecipeFinderForm = defineAsyncComponent(
   () => import("@/components/RecipeFinderForm.vue")
+);
+
+const FavoriteRecipes = defineAsyncComponent(
+  () => import("@/components/FavoriteRecipes.vue")
+);
+
+const RecentRecipes = defineAsyncComponent(
+  () => import("@/components/RecentRecipes.vue")
 );
 
 const { loginWithRedirect, isAuthenticated } = useAuth0();

@@ -58,6 +58,8 @@ const {
   getUserByAuth0Id,
   setFavoritesRecipes,
   removeFavoritesRecipes,
+  createRecipesSearchHistory,
+  removeRecipesSearchHistory,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -288,7 +290,7 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const { recipeIds = [] } = req.body;
+      const recipeIds = pathOr([], ["body", "recipeIds"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
@@ -480,6 +482,110 @@ router[ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.method.toLowerCase()](
       res.status(200).json({
         success: true,
         message: "Autocomplete search recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// Set recipes search history
+router[ROUTES.ADD_SEARCH_HISTORY.method.toLowerCase()](
+  ROUTES.ADD_SEARCH_HISTORY.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const searchQuery = pathOr(null, ["body", "searchQuery"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (isNilOrEmpty(searchQuery) || typeof searchQuery !== "object") {
+        console.log("❌ Invalid searchQuery");
+        return res
+          .status(400)
+          .json({ error: "searchQuery must be a valid object" });
+      }
+
+      const addSearchRecipesHistory = await createRecipesSearchHistory(
+        auth0Id,
+        searchQuery
+      );
+
+      if (addSearchRecipesHistory) {
+        res.status(200).json({
+          success: true,
+          message: `Recipe search recorded for user ${auth0Id}`,
+          searchQuery,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Recipe search recorded for user ${auth0Id} (offline mode)`,
+          searchQuery,
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in SET_SEARCH_HISTORY:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Search history recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// Remove recipes search history
+router[ROUTES.REMOVE_SEARCH_HISTORY.method.toLowerCase()](
+  ROUTES.REMOVE_SEARCH_HISTORY.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const searchQueryId = pathOr("", ["body", "searchQueryId"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (isNilOrEmpty(searchQueryId)) {
+        console.log("❌ Invalid searchQueryId");
+        return res
+          .status(400)
+          .json({ error: "searchQueryId must be a non-empty string" });
+      }
+
+      const removeSearchHistoryResult = await removeRecipesSearchHistory(
+        auth0Id,
+        searchQueryId
+      );
+
+      if (removeSearchHistoryResult) {
+        res.status(200).json({
+          success: true,
+          message: `Search history item removed for user ${auth0Id}`,
+          searchQueryId,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Search history item removed for user ${auth0Id} (offline mode)`,
+          searchQueryId,
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in REMOVE_SEARCH_HISTORY:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Search history removed (database offline)",
         offline: true,
       });
     }

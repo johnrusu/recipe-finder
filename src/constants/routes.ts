@@ -120,4 +120,18 @@ export const API_ROUTES = {
     protected: false,
     description: "Get autocomplete suggestions for recipe search",
   },
+
+  ADD_SEARCH_HISTORY: {
+    method: "POST",
+    url: `${BASE_URL}/recipes/search-history`,
+    protected: true,
+    description: "Add a search query to user's search history",
+  },
+
+  REMOVE_SEARCH_HISTORY: {
+    method: "DELETE",
+    url: `${BASE_URL}/recipes/search-history`,
+    protected: true,
+    description: "Remove a search query from user's search history",
+  },
 } as const;

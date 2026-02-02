@@ -1,14 +1,17 @@
 <template>
   <v-container class="about-page pb-0 mt-4">
     <div class="mb-6 text-center">
-      <h1 class="text-2xl sm:text-4xl font-bold text-center mb-8">
-        {{ ABOUT_PAGE.WHAT_IS.TITLE }}
-      </h1>
+      <div class="d-flex align-center justify-center gap-3 mb-8">
+        <v-icon icon="mdi-information" size="x-large" color="primary" />
+        <h1 class="text-2xl sm:text-4xl font-bold text-center">
+          {{ ABOUT_PAGE.WHAT_IS.TITLE }}
+        </h1>
+      </div>
 
-      <p class="text-subtitle-1 text-medium-emphasis mb-2">
+      <p class="text-subtitle-1 mb-2">
         {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_1 }}
       </p>
-      <p class="text-subtitle-1 text-medium-emphasis">
+      <p class="text-subtitle-1">
         {{ ABOUT_PAGE.WHAT_IS.DESCRIPTION_2 }}
       </p>
     </div>

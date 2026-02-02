@@ -252,3 +252,59 @@ export const autoCompleteRecipeSearch = async (
     method: API_ROUTES.AUTOCOMPLETE_RECIPE_SEARCH.method,
   }) as Promise<IAutocompleteSuggestion[]>;
 };
+
+/**
+ * Add a search query to user's search history
+ * @param searchQuery  - The search query params to add
+ * @param token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const setRecipesSearchHistory = async (
+  searchQuery: IRecipeSearchParams,
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  searchQuery: IRecipeSearchParams;
+}> => {
+  return apiRequest(
+    API_ROUTES.ADD_SEARCH_HISTORY.url,
+    {
+      method: API_ROUTES.ADD_SEARCH_HISTORY.method,
+      body: JSON.stringify({ searchQuery }),
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    searchQuery: IRecipeSearchParams;
+  }>;
+};
+
+/**
+ * Remove a search query from user's search history
+ * @param searchQueryId - The ID of the search query to remove
+ * @param token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const removeRecipesSearchHistory = async (
+  searchQueryId: string,
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  searchQueryId: string;
+}> => {
+  return apiRequest(
+    API_ROUTES.REMOVE_SEARCH_HISTORY.url,
+    {
+      method: API_ROUTES.REMOVE_SEARCH_HISTORY.method,
+      body: JSON.stringify({ searchQueryId }),
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    searchQueryId: string;
+  }>;
+};
