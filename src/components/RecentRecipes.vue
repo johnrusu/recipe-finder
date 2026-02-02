@@ -1,5 +1,5 @@
 <template>
-  <div class="recent-recipes-container">
+  <div class="recent-recipes-container" v-if="!apiInitializedWithNoData">
     <!-- Header Section -->
     <div class="d-flex align-center justify-center mb-6">
       <div class="d-flex align-center gap-3">
@@ -9,7 +9,7 @@
         </h2>
       </div>
       <v-btn
-        v-if="!loadingRecipes && recipes.length > 0"
+        v-if="!loadingRecipes && isArrayNotEmpty(recipes)"
         variant="text"
         size="small"
         color="primary"
@@ -22,7 +22,7 @@
     </div>
 
     <v-card>
-      <v-card-text class="p-6! relative!">
+      <v-card-text class="p-6!">
         <!-- Loading State -->
         <div v-if="loadingRecipes" class="d-flex justify-center pa-8">
           <AppLoading :config="LOADING_CONFIG" />
@@ -177,6 +177,7 @@ const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const favorites = ref<Set<number | string>>(new Set());
 const favoritesInitialized = ref(false);
+const apiInitializedWithNoData = ref(false);
 
 // recipe details modal state
 const showRecipeModal = ref(false);
@@ -219,6 +220,7 @@ const initializeFavorites = async () => {
 
 const fetchRecipes = async () => {
   loadingRecipes.value = true;
+  apiInitializedWithNoData.value = false;
   error.value = null;
 
   try {
@@ -228,6 +230,9 @@ const fetchRecipes = async () => {
       recipes.value = response.recipes.results;
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
+      }
+      if (!isArrayNotEmpty(response.recipes.results)) {
+        apiInitializedWithNoData.value = true;
       }
 
       // Cache full recipes in store for navigation persistence
@@ -288,9 +293,7 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
       console.log("Favorites updated successfully");
       // Update store with new favorites
       const numericFavorites = new Set<number>(
-        Array.from(favorites.value).filter(
-          (id) => typeof id === "number"
-        ) as number[]
+        Array.from(favorites.value).map((id) => Number(id)) as number[]
       );
       appStore.setFavoritesRecipes(numericFavorites);
     } else {
@@ -316,9 +319,7 @@ const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
       console.log("Favorites removed successfully");
       // Update store with updated favorites
       const numericFavorites = new Set<number>(
-        Array.from(favorites.value).filter(
-          (id) => typeof id === "number"
-        ) as number[]
+        Array.from(favorites.value).map((id) => Number(id)) as number[]
       );
       appStore.setFavoritesRecipes(numericFavorites);
     } else {
@@ -373,7 +374,7 @@ onMounted(async () => {
   await initializeFavorites();
 
   // Check store first - only fetch if store is empty
-  if (appStore.recentRecipes.length > 0) {
+  if (isArrayNotEmpty(appStore.recentRecipes)) {
     // Load from cache
     recipes.value = appStore.recentRecipes;
     favorites.value = new Set(appStore.favoritesRecipes);
