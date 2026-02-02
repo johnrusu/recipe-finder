@@ -1,5 +1,5 @@
 <template>
-  <div class="recipe-finder-form mt-4">
+  <div class="recipe-finder-form mt-4 mb-12">
     <div class="d-flex align-center justify-center gap-3 mb-8">
       <v-icon icon="mdi-food-variant" size="x-large" color="primary" />
       <h1 class="text-2xl sm:text-4xl font-bold text-center">

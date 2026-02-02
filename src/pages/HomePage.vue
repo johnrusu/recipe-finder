@@ -15,14 +15,12 @@
     />
     <RecipeFinderForm
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
-      class="mb-12"
     />
     <FavoriteRecipes
       v-if="
         isAuthenticated && (isVisibleRecipeFinderForm || appState.skipWelcome)
       "
       :max-items="MAX_FAVORITE_ITEMS"
-      class="mb-12"
     />
 
     <RecentRecipes
