@@ -57,9 +57,8 @@ const LABELS = {
   GUEST_CONFIRM_MESSAGE:
     "By browsing as a guest, you'll miss out on these benefits:",
   GUEST_BENEFIT_1: "💾 Save your favorite recipes",
-  GUEST_BENEFIT_2: "📝 Create your personal recipe collection",
-  GUEST_BENEFIT_3: "🔍 Access your search history",
-  GUEST_BENEFIT_4: "⭐ Get personalized recommendations",
+  GUEST_BENEFIT_2: "🔍 Access your search history",
+  GUEST_BENEFIT_3: "⭐ Get personalized recommendations",
   GUEST_CONTINUE: "Continue as Guest",
   GUEST_SIGNIN_ACCOUNT: "Sign In to Account",
 };

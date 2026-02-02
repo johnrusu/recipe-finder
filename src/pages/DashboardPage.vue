@@ -1,6 +1,7 @@
 <template>
   <v-container class="dashboard-page">
     <DashboardNotLogged v-if="!isAuthenticated" @on-login="handleLogin" />
+    <DashboardLogged v-else />
   </v-container>
 </template>
 <script setup lang="ts">
@@ -9,6 +10,7 @@ import { useAuth0 } from "@auth0/auth0-vue";
 
 // components
 import DashboardNotLogged from "@/components/DashboardNotLogged.vue";
+import DashboardLogged from "@/components/DashboardLogged.vue";
 
 // hooks
 const { isAuthenticated, loginWithRedirect } = useAuth0();

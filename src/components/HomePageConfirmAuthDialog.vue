@@ -32,11 +32,6 @@
               LABELS.GUEST_BENEFIT_3
             }}</span>
           </v-list-item>
-          <v-list-item class="px-0 benefit-container">
-            <span class="text-body-2 benefit-text">{{
-              LABELS.GUEST_BENEFIT_4
-            }}</span>
-          </v-list-item>
         </v-list>
       </v-card-text>
 
