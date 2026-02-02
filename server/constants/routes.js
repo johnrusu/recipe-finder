@@ -52,6 +52,13 @@ const ROUTES = {
     description: "Get random recipes",
   },
 
+  GET_FAVORITE_RECIPES: {
+    method: "GET",
+    path: "/recipes/favorites",
+    protected: true,
+    description: "Get user's favorite recipes",
+  },
+
   SET_FAVORITE_RECIPES: {
     method: "POST",
     path: "/recipes/favorites",

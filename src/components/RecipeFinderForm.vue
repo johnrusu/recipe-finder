@@ -959,6 +959,11 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
       console.log("Favorites updated successfully");
+      // Update store with new favorites, converting to Set<number>
+      const numericFavorites = new Set(
+        Array.from(favorites.value).map((id) => Number(id)) as number[]
+      );
+      appStore.setFavoritesRecipes(numericFavorites);
     } else {
       console.error("Failed to update favorites:", response.message);
     }
@@ -981,6 +986,11 @@ const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
     const response = await removeFavoriteRecipes(recipeIdMapped, token);
     if (response.success) {
       console.log("Favorites removed successfully");
+      // Update store with updated favorites, converting to Set<number>
+      const numericFavorites = new Set(
+        Array.from(favorites.value).map((id) => Number(id)) as number[]
+      );
+      appStore.setFavoritesRecipes(numericFavorites);
     } else {
       console.error("Failed to remove favorites:", response.message);
     }

@@ -180,6 +180,31 @@ export const getRandomRecipes = async (
 };
 
 /**
+ * Get user's favorite recipes
+ * @param token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const getFavoriteRecipes = async (
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  recipeIds: Array<string | number>;
+}> => {
+  return apiRequest(
+    API_ROUTES.GET_FAVORITE_RECIPES.url,
+    {
+      method: API_ROUTES.GET_FAVORITE_RECIPES.method,
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    recipeIds: Array<string | number>;
+  }>;
+};
+
+/**
  * Set favorite recipes for the authenticated user
  *
  * @param {Array<string | number>} recipeIds Array of recipe IDs to set as favorites

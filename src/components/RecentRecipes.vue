@@ -41,10 +41,10 @@
         </v-alert>
 
         <!-- Recipes Grid -->
-        <v-row v-else-if="limitedRecipes.length > 0">
+        <v-row v-else-if="isArrayNotEmpty(limitedRecipes)">
           <v-col
             v-for="recipe in limitedRecipes"
-            :key="recipe.id"
+            :key="`recent-recipe-${recipe.id}`"
             cols="12"
             sm="6"
             md="4"
@@ -111,11 +111,6 @@
             </v-card>
           </v-col>
         </v-row>
-
-        <!-- Empty State -->
-        <v-alert v-else type="info" variant="tonal">
-          {{ RECENT_RECIPES.EMPTY_STATE }}
-        </v-alert>
       </v-card-text>
     </v-card>
 
@@ -133,8 +128,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, defineAsyncComponent, computed } from "vue";
+import { ref, onMounted, defineAsyncComponent, computed, watch } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
+
+// state
+import { useAppStore } from "@/stores";
 
 // types
 import type { IRecipe, IRecipeDetails } from "@/types";
@@ -148,7 +146,9 @@ import {
   getRecipeDetails,
   setFavoriteRecipes,
   removeFavoriteRecipes,
+  getFavoriteRecipes,
 } from "@/services";
+import { isArrayNotEmpty } from "@/utils";
 
 // components
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
@@ -165,6 +165,9 @@ const props = defineProps<{
 // auth
 const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
+// store
+const appStore = useAppStore();
+
 // state
 const recipes = ref<IRecipe[]>([]);
 const loadingRecipes = ref(false);
@@ -173,6 +176,7 @@ const loadingFavoriteRecipeId = ref<number | string | null>(null);
 const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const favorites = ref<Set<number | string>>(new Set());
+const favoritesInitialized = ref(false);
 
 // recipe details modal state
 const showRecipeModal = ref(false);
@@ -190,6 +194,29 @@ const getImageUrl = (imageSrc: string): string => {
   return `${imageBaseUri.value}${imageSrc}`;
 };
 
+const initializeFavorites = async () => {
+  if (!isAuthenticated.value || favoritesInitialized.value) {
+    return;
+  }
+
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await getFavoriteRecipes(token);
+
+    if (response.success && response.recipeIds) {
+      // Convert string IDs from DB to numbers
+      const numericFavorites = new Set<number>(
+        response.recipeIds.map((id) => Number(id))
+      );
+      appStore.setFavoritesRecipes(numericFavorites);
+      favorites.value = new Set(numericFavorites);
+      favoritesInitialized.value = true;
+    }
+  } catch (err) {
+    console.error("Error initializing favorites:", err);
+  }
+};
+
 const fetchRecipes = async () => {
   loadingRecipes.value = true;
   error.value = null;
@@ -202,6 +229,12 @@ const fetchRecipes = async () => {
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
       }
+
+      // Cache full recipes in store for navigation persistence
+      appStore.setRecentRecipes(response.recipes.results);
+
+      // Sync local favorites with store
+      favorites.value = new Set(appStore.favoritesRecipes);
     } else {
       error.value = RECENT_RECIPES.ERROR_LOADING;
     }
@@ -253,6 +286,13 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
       console.log("Favorites updated successfully");
+      // Update store with new favorites
+      const numericFavorites = new Set<number>(
+        Array.from(favorites.value).filter(
+          (id) => typeof id === "number"
+        ) as number[]
+      );
+      appStore.setFavoritesRecipes(numericFavorites);
     } else {
       console.error("Failed to update favorites:", response.message);
     }
@@ -274,6 +314,13 @@ const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
     const response = await removeFavoriteRecipes(recipeIdMapped, token);
     if (response.success) {
       console.log("Favorites removed successfully");
+      // Update store with updated favorites
+      const numericFavorites = new Set<number>(
+        Array.from(favorites.value).filter(
+          (id) => typeof id === "number"
+        ) as number[]
+      );
+      appStore.setFavoritesRecipes(numericFavorites);
     } else {
       console.error("Failed to remove favorites:", response.message);
     }
@@ -308,12 +355,32 @@ const handleFavoriteToggle = (recipeId: number) => {
 };
 
 const isFavorited = (recipeId: number) => {
-  return favorites.value.has(recipeId);
+  // Check both number and string versions since DB stores as string
+  return favorites.value.has(recipeId) || favorites.value.has(String(recipeId));
 };
 
+// watch store for changes from other components
+watch(
+  () => appStore.favoritesRecipes,
+  (newFavorites) => {
+    favorites.value = new Set(newFavorites);
+  },
+  { deep: true }
+);
+
 // lifecycle
-onMounted(() => {
-  fetchRecipes();
+onMounted(async () => {
+  await initializeFavorites();
+
+  // Check store first - only fetch if store is empty
+  if (appStore.recentRecipes.length > 0) {
+    // Load from cache
+    recipes.value = appStore.recentRecipes;
+    favorites.value = new Set(appStore.favoritesRecipes);
+  } else {
+    // Store is empty, fetch from API
+    fetchRecipes();
+  }
 });
 </script>
 

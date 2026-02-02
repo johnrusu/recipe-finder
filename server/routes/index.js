@@ -56,6 +56,7 @@ const { isNilOrEmpty } = require("../utils/index.js");
 const {
   createOrUpdateUser,
   getUserByAuth0Id,
+  getFavoritesRecipes,
   setFavoritesRecipes,
   removeFavoritesRecipes,
   createRecipesSearchHistory,
@@ -283,6 +284,41 @@ router[ROUTES.GET_RANDOM_RECIPES.method.toLowerCase()](
   }
 );
 
+// Get user's favorite recipes
+router[ROUTES.GET_FAVORITE_RECIPES.method.toLowerCase()](
+  ROUTES.GET_FAVORITE_RECIPES.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const favorites = await getFavoritesRecipes(auth0Id);
+
+      if (favorites) {
+        res.status(200).json({
+          success: true,
+          message: `Favorites retrieved for user ${auth0Id}`,
+          recipeIds: favorites.recipeIds || [],
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `No favorites found for user ${auth0Id}`,
+          recipeIds: [],
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in GET_FAVORITE_RECIPES:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 // Set recipes as favorite (must come BEFORE :recipeId route)
 router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
   ROUTES.SET_FAVORITE_RECIPES.path,
@@ -343,7 +379,7 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const recipeIds = pathOr([], ["body"], req);
+      const recipeIds = pathOr([], ["body", "recipeIds"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");

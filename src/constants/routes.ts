@@ -100,6 +100,13 @@ export const API_ROUTES = {
     description: "Get random recipes",
   },
 
+  GET_FAVORITE_RECIPES: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/favorites`,
+    protected: true,
+    description: "Get user's favorite recipes",
+  },
+
   SET_FAVORITE_RECIPES: {
     method: "POST",
     url: `${BASE_URL}/recipes/favorites`,

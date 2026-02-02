@@ -10,7 +10,8 @@ export const useAppStore = defineStore("app", () => {
   const user = ref<TUser | null>(null);
   const skipWelcome = ref(false);
   const recipes = ref<IRecipe[]>([]);
-  const savedRecipes = ref<Set<number>>(new Set());
+  const favoritesRecipes = ref<Set<number>>(new Set());
+  const recentRecipes = ref<IRecipe[]>([]);
 
   const setError = (value: Error | null) => {
     error.value = value;
@@ -32,8 +33,12 @@ export const useAppStore = defineStore("app", () => {
     recipes.value = recipesData;
   };
 
-  const setSavedRecipes = (recipeIds: Set<number>) => {
-    savedRecipes.value = recipeIds;
+  const setFavoritesRecipes = (recipeIds: Set<number>) => {
+    favoritesRecipes.value = recipeIds;
+  };
+
+  const setRecentRecipes = (recipesData: IRecipe[]) => {
+    recentRecipes.value = recipesData;
   };
 
   return {
@@ -47,7 +52,9 @@ export const useAppStore = defineStore("app", () => {
     setSkipWelcome,
     setRecipes,
     recipes,
-    setSavedRecipes,
-    savedRecipes,
+    setFavoritesRecipes,
+    favoritesRecipes,
+    recentRecipes,
+    setRecentRecipes,
   };
 });

@@ -121,6 +121,17 @@ const getUserByAuth0Id = async (auth0Id) => {
 };
 
 // recipes database methods
+const getFavoritesRecipes = async (auth0Id) => {
+  try {
+    console.log(`[DB] Getting favorites for ${auth0Id}`);
+    const userFavorites = await favoritesRecipesModel.findOne({ auth0Id });
+    return userFavorites;
+  } catch (error) {
+    console.error(`[DB] Error getting favorites:`, error.message);
+    throw new Error(`Error getting favorites: ${error.message}`);
+  }
+};
+
 const setFavoritesRecipes = async (auth0Id, recipeIds) => {
   try {
     console.log(`[DB] Setting favorites for ${auth0Id}:`, recipeIds);
@@ -244,6 +255,7 @@ module.exports = {
 
   // Recipes methods
   favoritesRecipesModel,
+  getFavoritesRecipes,
   setFavoritesRecipes,
   removeFavoritesRecipes,
 

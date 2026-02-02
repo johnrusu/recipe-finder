@@ -355,6 +355,16 @@ const RECENT_RECIPES = {
   ERROR_GENERIC: "Failed to load recipes",
 };
 
+const FAVORITE_RECIPES = {
+  DEFAULT_TITLE: "My Favorite Recipes",
+  REMOVE_BUTTON: "Remove from Favorites",
+  EMPTY_STATE:
+    "You haven't saved any favorite recipes yet. Start exploring and save your favorites!",
+  ERROR_LOADING: "Failed to load favorite recipes",
+  ERROR_GENERIC: "Failed to load recipes",
+  ERROR_FETCHING_DETAILS: "Failed to fetch recipe details",
+};
+
 export {
   ROUTES,
   APP,
@@ -369,4 +379,5 @@ export {
   MAX_FAVORITE_ITEMS,
   MAX_RECENT_ITEMS,
   RECENT_RECIPES,
+  FAVORITE_RECIPES,
 };
