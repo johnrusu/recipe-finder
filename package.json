@@ -13,6 +13,7 @@
     "prepare": "husky",
     "test:e2e": "playwright test",
     "test": "vitest run --passWithNoTests && playwright test",
+    "git-deploy": "git add . && git commit -m \"Update\" --no-verify && git push origin main && npm run deploy:firebase",
     "deploy:firebase": "cd functions && rm -rf node_modules package-lock.json && npm install && cd .. && bash sync-server.sh && npx firebase-tools deploy --only functions"
   },
   "dependencies": {

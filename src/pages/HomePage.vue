@@ -5,6 +5,7 @@
       @on-login="handleLogin"
       @on-browse="handleBrowse"
     />
+
     <HomePageAuthGreentings
       v-if="
         isAuthenticated &&
@@ -13,9 +14,11 @@
       "
       @on-start-journey="handleStartJourney"
     />
+
     <RecipeFinderForm
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
     />
+
     <FavoriteRecipes
       v-if="
         isAuthenticated && (isVisibleRecipeFinderForm || appState.skipWelcome)

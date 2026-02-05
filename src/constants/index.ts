@@ -4,6 +4,7 @@ const APP = {
 };
 
 const LABELS = {
+  CLEAR_STORAGE_AND_RELOGIN: "Clear Storage & Re-login",
   RECENT_RECIPES_TITLE: "Discover New Recipes",
   MISSING_ENV_VARS:
     "Missing required environment variables. Please check the configuration.",

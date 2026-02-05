@@ -46,6 +46,19 @@ const { checkJwt } = require("../middleware/auth.js");
 // utils
 const { isNilOrEmpty, isArrayNotEmpty } = require("../utils/index.js");
 
+// Helper function to normalize recipe IDs to numbers
+const normalizeRecipeIds = (recipeIds) => {
+  if (!Array.isArray(recipeIds)) {
+    return [];
+  }
+  return recipeIds
+    .map((id) => {
+      const parsed = Number(id);
+      return Number.isFinite(parsed) ? parsed : null;
+    })
+    .filter((id) => id !== null);
+};
+
 // Database functions
 const {
   createOrUpdateUser,
@@ -320,21 +333,25 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const recipeIds = pathOr([], ["body", "recipeIds"], req);
+      let recipeIds = pathOr([], ["body", "recipeIds"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
+      // Normalize recipe IDs to numbers
+      recipeIds = normalizeRecipeIds(recipeIds);
+
       if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
         console.log("❌ Invalid recipeIds");
-        return res
-          .status(400)
-          .json({ error: "recipeIds must be a non-empty array" });
+        return res.status(400).json({
+          error: "recipeIds must be a non-empty array of valid numbers",
+        });
       }
 
       const favorites = await setFavoritesRecipes(auth0Id, recipeIds);
+      console.log(favorites, "favorites after setting"); // --- IGNORE ---
 
       if (favorites) {
         res.status(200).json({
@@ -342,7 +359,7 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
           message: `Recipes [${recipeIds.join(
             ", "
           )}] set as favorite for user ${auth0Id}`,
-          recipeIds,
+          recipeIds: favorites.recipeIds || [],
         });
       } else {
         res.status(200).json({
@@ -350,7 +367,7 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
           message: `Recipes [${recipeIds.join(
             ", "
           )}] marked as favorite for user ${auth0Id} (offline mode)`,
-          recipeIds,
+          recipeIds: favorites.recipeIds || [],
           offline: true,
         });
       }
@@ -373,18 +390,21 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const recipeIds = pathOr([], ["body", "recipeIds"], req);
+      let recipeIds = pathOr([], ["body", "recipeIds"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
+      // Normalize recipe IDs to numbers
+      recipeIds = normalizeRecipeIds(recipeIds);
+
       if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
         console.log("❌ Invalid recipeIds");
-        return res
-          .status(400)
-          .json({ error: "recipeIds must be a non-empty array" });
+        return res.status(400).json({
+          error: "recipeIds must be a non-empty array of valid numbers",
+        });
       }
 
       const favorites = await removeFavoritesRecipes(auth0Id, recipeIds);
@@ -395,7 +415,7 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
           message: `Recipes [${recipeIds.join(
             ", "
           )}] removed from favorites for user ${auth0Id}`,
-          recipeIds,
+          recipeIds: favorites.recipeIds || [],
         });
       } else {
         res.status(200).json({
@@ -403,7 +423,7 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
           message: `Recipes [${recipeIds.join(
             ", "
           )}] removed from favorites for user ${auth0Id} (offline mode)`,
-          recipeIds,
+          recipeIds: favorites.recipeIds || [],
           offline: true,
         });
       }
@@ -491,6 +511,9 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
       const response = await fetch(responseInformationBulk);
       const result = await response.json();
 
+      let recipes = [];
+      let requestedIds = recipesIds.map((id) => parseInt(id));
+
       if (!response.ok) {
         // Fallback to mock data if API fails (quota exceeded, etc.)
         const mockRecipeDetails = fetchMockData("recipes");
@@ -498,14 +521,29 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
           console.log(
             `API failed with status ${response.status}, using mock data as fallback`
           );
-          const recipeDetailsMock =
+          recipes =
             mockRecipeDetails.recipes.filter((r) =>
-              recipesIds.map((q) => parseInt(q)).includes(r.id)
-            ) || mockRecipeDetails.recipes[0];
+              requestedIds.includes(r.id)
+            ) || [];
+
+          // Find missing recipe IDs
+          const returnedIds = recipes.map((r) => r.id);
+          const missingIds = requestedIds.filter(
+            (id) => !returnedIds.includes(id)
+          );
+
+          // Remove missing IDs from user's favorites
+          if (isArrayNotEmpty(missingIds)) {
+            console.log(
+              `Removing non-existent recipes from favorites for ${auth0Id}:`,
+              missingIds
+            );
+            await removeFavoritesRecipes(auth0Id, missingIds);
+          }
 
           return res.status(200).json({
             success: true,
-            recipes: recipeDetailsMock,
+            recipes: recipes,
             usingMockData: true,
             apiError: result.message || "API unavailable",
           });
@@ -515,7 +553,22 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
           .json({ error: result.message || "Failed to get recipes details" });
       }
 
-      res.status(200).json({ success: true, recipes: result });
+      recipes = Array.isArray(result) ? result : [];
+
+      // Find missing recipe IDs from API response
+      const returnedIds = recipes.map((r) => r.id);
+      const missingIds = requestedIds.filter((id) => !returnedIds.includes(id));
+
+      // Remove missing IDs from user's favorites
+      if (isArrayNotEmpty(missingIds)) {
+        console.log(
+          `Removing non-existent recipes from favorites for ${auth0Id}:`,
+          missingIds
+        );
+        await removeFavoritesRecipes(auth0Id, missingIds);
+      }
+
+      res.status(200).json({ success: true, recipes: recipes });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

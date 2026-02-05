@@ -548,12 +548,12 @@ const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
 const loadingRecipes = ref(false);
-const loadingFavoriteRecipeId = ref<number | string | null>(null);
+const loadingFavoriteRecipeId = ref<number | null>(null);
 const loadingAutocomplete = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
-const favorites = ref<Array<number | string>>([]);
+const favorites = ref<number[]>([]);
 const suggestionsAutocomplete = ref<IAutocompleteSuggestion[]>([]);
 
 // Recipe details modal state
@@ -950,7 +950,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleAddRecipesFavorites = async (recipeId: number | string) => {
+const handleAddRecipesFavorites = async (recipeId: number) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
   try {
@@ -971,10 +971,10 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
   }
 };
 
-const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
+const handleDeleteRecipesFavorites = async (recipeId: number) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
-  const recipeIdMapped: Array<number | string> = [];
+  const recipeIdMapped: number[] = [];
   recipeIdMapped.push(recipeId);
   try {
     const token = await getAccessTokenSilently();
@@ -1008,15 +1008,17 @@ const clearFilters = () => {
   error.value = null;
 };
 
-const toggleFavorite = (recipeId: number | string) => {
+const toggleFavorite = (recipeId: number) => {
   if (!isAuthenticated.value) {
     return;
   }
   if (favorites.value.includes(recipeId)) {
     favorites.value = favorites.value.filter((id) => id !== recipeId);
+    appStore.setFavoritesRecipes(favorites.value);
     handleDeleteRecipesFavorites(recipeId);
   } else {
     favorites.value.push(recipeId);
+    appStore.setFavoritesRecipes(favorites.value);
     handleAddRecipesFavorites(recipeId);
   }
 };

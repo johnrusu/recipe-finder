@@ -149,7 +149,7 @@ export const searchRecipes = async (
  * GET /api/recipes/:recipeId
  */
 export const getRecipeDetails = async (
-  recipeId: string | number
+  recipeId: number
 ): Promise<IRecipeDetailsResponse> => {
   const url = API_ROUTES.GET_RECIPE_DETAILS.url.replace(
     ":recipeId",
@@ -171,7 +171,7 @@ export const getRecipeDetails = async (
  *
  */
 export const getRecipesBulkDetails = async (
-  recipesIds: Array<string | number>,
+  recipesIds: number[],
   token?: string
 ): Promise<IRecipeDetailsResponse> => {
   const url = API_ROUTES.GET_RECIPES_BULK_DETAILS.url;
@@ -214,7 +214,7 @@ export const getFavoriteRecipes = async (
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: Array<string | number>;
+  recipeIds: number[];
 }> => {
   return apiRequest(
     API_ROUTES.GET_FAVORITE_RECIPES.url,
@@ -225,24 +225,24 @@ export const getFavoriteRecipes = async (
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: Array<string | number>;
+    recipeIds: number[];
   }>;
 };
 
 /**
  * Set favorite recipes for the authenticated user
  *
- * @param {Array<string | number>} recipeIds Array of recipe IDs to set as favorites
+ * @param {number[]} recipeIds Array of recipe IDs to set as favorites
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
 export const setFavoriteRecipes = async (
-  recipeIds: Array<number | string>,
+  recipeIds: number[],
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: Array<number | string>;
+  recipeIds: number[];
 }> => {
   return apiRequest(
     API_ROUTES.SET_FAVORITE_RECIPES.url,
@@ -254,24 +254,24 @@ export const setFavoriteRecipes = async (
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: Array<number | string>;
+    recipeIds: number[];
   }>;
 };
 
 /**
  * Remove favorite recipes for the authenticated user
  *
- * @param {Array<string | number>} recipeIds Array of recipe IDs to set as favorites
+ * @param {number[]} recipeIds Array of recipe IDs to remove from favorites
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
 export const removeFavoriteRecipes = async (
-  recipeIds: Array<number | string>,
+  recipeIds: number[],
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: Array<number | string>;
+  recipeIds: number[];
 }> => {
   return apiRequest(
     API_ROUTES.REMOVE_FAVORITE_RECIPES.url,
@@ -283,7 +283,7 @@ export const removeFavoriteRecipes = async (
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: Array<number | string>;
+    recipeIds: number[];
   }>;
 };
 

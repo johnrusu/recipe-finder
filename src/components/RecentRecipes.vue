@@ -169,10 +169,10 @@ const appStore = useAppStore();
 const recipes = ref<IRecipe[]>([]);
 const loadingRecipes = ref(false);
 const loading = ref(false);
-const loadingFavoriteRecipeId = ref<number | string | null>(null);
+const loadingFavoriteRecipeId = ref<number | null>(null);
 const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
-const favorites = ref<Array<number | string>>([]);
+const favorites = ref<number[]>([]);
 const favoritesInitialized = ref(false);
 const apiInitializedWithNoData = ref(false);
 
@@ -276,7 +276,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleAddRecipesFavorites = async (recipeId: number | string) => {
+const handleAddRecipesFavorites = async (recipeId: number) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
   try {
@@ -297,10 +297,10 @@ const handleAddRecipesFavorites = async (recipeId: number | string) => {
   }
 };
 
-const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
+const handleDeleteRecipesFavorites = async (recipeId: number) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
-  const recipeIdMapped: Array<number | string> = [];
+  const recipeIdMapped: number[] = [];
   recipeIdMapped.push(recipeId);
   try {
     const token = await getAccessTokenSilently();
@@ -318,7 +318,7 @@ const handleDeleteRecipesFavorites = async (recipeId: number | string) => {
   }
 };
 
-const toggleFavorite = (recipeId: number | string) => {
+const toggleFavorite = (recipeId: number) => {
   if (!isAuthenticated.value) {
     return;
   }
@@ -341,11 +341,7 @@ const handleFavoriteToggle = (recipeId: number) => {
 };
 
 const isFavorited = (recipeId: number) => {
-  // Check both number and string versions since DB stores as string
-  return (
-    favorites.value.includes(recipeId) ||
-    favorites.value.includes(String(recipeId))
-  );
+  return favorites.value.includes(recipeId);
 };
 
 // watch store for changes from other components

@@ -194,7 +194,7 @@ import type { IRecipeDetails } from "@/types";
 interface Props {
   open: boolean;
   recipe: IRecipeDetails | null;
-  favorites: Array<number | string>;
+  favorites: number[];
   imageBaseUri: string;
   isAddingFavorites: boolean;
 }
