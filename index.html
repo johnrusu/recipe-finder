@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>recipe-finder Finder</title>
+    <title><%= title %></title>
     <meta name="author" content="<%= author %>" />
     <meta name="description" content="<%= description %>" />
     <meta name="title" content="<%= title %>" />
@@ -106,7 +106,7 @@
         function handleRedirect() {
           if (
             window.location.pathname === "/" &&
-            window.location.href === "https://johnrusu.github.io/"
+            window.location.href === "https://johnrusu.github.io/recipe-finder/"
           ) {
             window.location.replace(
               window.location.origin +
