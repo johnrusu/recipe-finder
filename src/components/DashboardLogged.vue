@@ -22,14 +22,20 @@
           </v-avatar>
           <div class="text-center text-md-left flex-grow-1">
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">
-              {{ DASHBOARD.WELCOME_HEADING }}{{ user?.name ? `, ${user.name.split(' ')[0]}` : '' }}!
+              {{ DASHBOARD.WELCOME_HEADING
+              }}{{ user?.name ? `, ${user.name.split(" ")[0]}` : "" }}!
             </h1>
             <p class="text-body1 text-md-h6 text-medium-emphasis mb-2">
               {{ DASHBOARD.WELCOME_SUBHEADING }}
             </p>
-            <div class="d-flex align-center gap-2 justify-center justify-md-start" v-if="user?.email">
+            <div
+              class="d-flex align-center gap-2 justify-center justify-md-start"
+              v-if="user?.email"
+            >
               <v-icon size="small" icon="mdi-email" color="medium-emphasis" />
-              <span class="text-caption text-medium-emphasis">{{ user.email }}</span>
+              <span class="text-caption text-medium-emphasis">{{
+                user.email
+              }}</span>
             </div>
           </div>
         </div>
@@ -875,7 +881,7 @@ watch(
 }
 
 .profile-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   right: -10%;

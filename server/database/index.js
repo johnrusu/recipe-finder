@@ -320,6 +320,22 @@ const getViewedRecipesCount = async (auth0Id) => {
   }
 };
 
+// Remove viewed recipes by recipe IDs
+const removeViewedRecipes = async (auth0Id, recipeIds) => {
+  try {
+    console.log(`[DB] Removing viewed recipes for ${auth0Id}:`, recipeIds);
+    const result = await recipeViewedModel.deleteMany({
+      auth0Id,
+      recipeId: { $in: recipeIds },
+    });
+    console.log(`[DB] Removed ${result.deletedCount} viewed recipes`);
+    return result;
+  } catch (error) {
+    console.error(`[DB] Error removing viewed recipes:`, error.message);
+    throw new Error(`Error removing viewed recipes: ${error.message}`);
+  }
+};
+
 module.exports = {
   // Database methods
   initializeDatabase,
@@ -344,4 +360,5 @@ module.exports = {
   setRecipeViewed,
   getViewedRecipes,
   getViewedRecipesCount,
+  removeViewedRecipes,
 };

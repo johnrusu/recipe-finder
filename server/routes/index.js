@@ -71,6 +71,7 @@ const {
   getViewedRecipesCount,
   setRecipeViewed,
   getViewedRecipes,
+  removeViewedRecipes,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -542,13 +543,14 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
             (id) => !returnedIds.includes(id)
           );
 
-          // Remove missing IDs from user's favorites
+          // Remove missing IDs from user's favorites and viewed recipes
           if (isArrayNotEmpty(missingIds)) {
             console.log(
-              `Removing non-existent recipes from favorites for ${auth0Id}:`,
+              `Removing non-existent recipes from favorites and viewed list for ${auth0Id}:`,
               missingIds
             );
             await removeFavoritesRecipes(auth0Id, missingIds);
+            await removeViewedRecipes(auth0Id, missingIds);
           }
 
           return res.status(200).json({
@@ -569,13 +571,14 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
       const returnedIds = recipes.map((r) => r.id);
       const missingIds = requestedIds.filter((id) => !returnedIds.includes(id));
 
-      // Remove missing IDs from user's favorites
+      // Remove missing IDs from user's favorites and viewed recipes
       if (isArrayNotEmpty(missingIds)) {
         console.log(
-          `Removing non-existent recipes from favorites for ${auth0Id}:`,
+          `Removing non-existent recipes from favorites and viewed list for ${auth0Id}:`,
           missingIds
         );
         await removeFavoritesRecipes(auth0Id, missingIds);
+        await removeViewedRecipes(auth0Id, missingIds);
       }
 
       res.status(200).json({ success: true, recipes: recipes });
