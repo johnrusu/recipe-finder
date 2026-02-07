@@ -1,5 +1,5 @@
 <template>
-  <div class="recent-recipes-container" v-if="!apiInitializedWithNoData">
+  <div class="recent-recipes-container" v-if="isArrayNotEmpty(recipes)">
     <!-- Header Section -->
     <div class="d-flex align-center justify-center mb-6">
       <div class="d-flex align-center gap-3">
@@ -174,7 +174,6 @@ const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const favorites = ref<number[]>([]);
 const favoritesInitialized = ref(false);
-const apiInitializedWithNoData = ref(false);
 
 // recipe details modal state
 const showRecipeModal = ref(false);
@@ -219,7 +218,6 @@ const initializeFavorites = async () => {
 
 const fetchRecipes = async () => {
   loadingRecipes.value = true;
-  apiInitializedWithNoData.value = false;
   error.value = null;
 
   try {
@@ -229,9 +227,6 @@ const fetchRecipes = async () => {
       recipes.value = response.recipes.results;
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
-      }
-      if (!isArrayNotEmpty(response.recipes.results)) {
-        apiInitializedWithNoData.value = true;
       }
 
       // Cache full recipes in store for navigation persistence

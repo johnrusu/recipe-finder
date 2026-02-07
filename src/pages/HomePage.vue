@@ -40,7 +40,7 @@
   </v-container>
 </template>
 <script setup lang="ts">
-import { defineAsyncComponent, ref, computed } from "vue";
+import { ref, computed } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 
 // constants
@@ -48,11 +48,6 @@ import { MAX_RECENT_ITEMS, MAX_FAVORITE_ITEMS, LABELS } from "@/constants";
 
 // state
 import { useAppStore } from "@/stores";
-
-// components
-const HomePageConfirmAuthDialog = defineAsyncComponent(
-  () => import("@/components/HomePageConfirmAuthDialog.vue")
-);
 
 // refs
 const isVisibleRecipeFinderForm = ref(false);
@@ -63,25 +58,12 @@ const showGuestDialog = ref(false);
 const appState = useAppStore();
 
 // components
-const HomePageNonAuthGreentings = defineAsyncComponent(
-  () => import("@/components/HomePageNonAuthGreentings.vue")
-);
-
-const HomePageAuthGreentings = defineAsyncComponent(
-  () => import("@/components/HomePageAuthGreentings.vue")
-);
-
-const RecipeFinderForm = defineAsyncComponent(
-  () => import("@/components/RecipeFinderForm.vue")
-);
-
-const FavoriteRecipes = defineAsyncComponent(
-  () => import("@/components/FavoriteRecipes.vue")
-);
-
-const RecentRecipes = defineAsyncComponent(
-  () => import("@/components/RecentRecipes.vue")
-);
+import FavoriteRecipes from "@/components/FavoriteRecipes.vue";
+import RecentRecipes from "@/components/RecentRecipes.vue";
+import RecipeFinderForm from "@/components/RecipeFinderForm.vue";
+import HomePageAuthGreentings from "@/components/HomePageAuthGreentings.vue";
+import HomePageNonAuthGreentings from "@/components/HomePageNonAuthGreentings.vue";
+import HomePageConfirmAuthDialog from "@/components/HomePageConfirmAuthDialog.vue";
 
 const { loginWithRedirect, isAuthenticated } = useAuth0();
 

@@ -4,13 +4,15 @@
     max-width="1200px"
     @update:model-value="$emit('close')"
   >
-    <v-card class="h-100 relative">
+    <v-card class="d-flex flex-column modal-card">
       <v-progress-linear
         indeterminate
         v-if="loadingForDetails"
         class="absolute top-0 left-0 w-full"
       ></v-progress-linear>
-      <v-card-title class="pa-6 d-flex align-center justify-space-between">
+      <v-card-title
+        class="pa-6 d-flex align-center justify-space-between fixed-header"
+      >
         <div class="d-flex align-center gap-3">
           <v-icon :icon="icon" size="large" :color="iconColor" />
           <h2 class="text-h5 font-weight-bold">
@@ -32,7 +34,7 @@
 
       <v-divider />
 
-      <v-card-text class="pa-6">
+      <v-card-text class="pa-6 scrollable-content">
         <!-- Loading State -->
         <div v-if="loading" class="d-flex justify-center pa-8">
           <AppLoading :config="LOADING_CONFIG" />
@@ -213,6 +215,21 @@ const toggleFavorite = (id: number) => {
 </script>
 
 <style scoped>
+.modal-card {
+  max-height: 90vh;
+}
+
+.fixed-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.scrollable-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
 .recipe-card {
   transition: transform 0.2s ease-in-out;
 }

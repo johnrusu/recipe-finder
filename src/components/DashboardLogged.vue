@@ -394,7 +394,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, defineAsyncComponent, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { pathOr } from "ramda";
@@ -428,17 +428,9 @@ import {
 import { useAppStore } from "@/stores";
 
 // components
-const AppLoading = defineAsyncComponent(
-  () => import("@/components/AppLoading.vue")
-);
-
-const RecipeDetailsModal = defineAsyncComponent(
-  () => import("@/components/RecipeDetailsModal.vue")
-);
-
-const RecipesListModal = defineAsyncComponent(
-  () => import("@/components/RecipesListModal.vue")
-);
+import AppLoading from "@/components/AppLoading.vue";
+import RecipeDetailsModal from "@/components/RecipeDetailsModal.vue";
+import RecipesListModal from "@/components/RecipesListModal.vue";
 
 // auth
 const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
