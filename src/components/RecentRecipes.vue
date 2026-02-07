@@ -256,7 +256,8 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const response = await getRecipeDetails(recipeId);
+    const token = await getAccessTokenSilently();
+    const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = {
@@ -283,7 +284,6 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
     const token = await getAccessTokenSilently();
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
-      console.log("Favorites updated successfully");
       // Update store with new favorites
       appStore.setFavoritesRecipes(favorites.value);
     } else {

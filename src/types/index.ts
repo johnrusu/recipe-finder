@@ -159,6 +159,12 @@ interface IAutocompleteSuggestion {
   imageType: string;
 }
 
+type TViewedRecipe = {
+  recipeId: number;
+  viewedAt: string;
+  auth0Id: string;
+};
+
 export type {
   TUser,
   ILoadingProps,
@@ -172,4 +178,5 @@ export type {
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
   IAutocompleteSuggestion,
+  TViewedRecipe,
 };

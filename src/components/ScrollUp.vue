@@ -30,7 +30,7 @@ onMounted(() => {
     icon="mdi-arrow-up"
     v-show="isVisible"
     @click="scrollToTop"
-    class="scroll-up-button fixed! bottom-6 right-6"
+    class="scroll-up-button fixed! bottom-6 right-6 z-50"
     aria-label="Scroll to top"
   ></v-btn>
 </template>

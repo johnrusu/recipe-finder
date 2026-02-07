@@ -149,12 +149,18 @@ export const searchRecipes = async (
  * GET /api/recipes/:recipeId
  */
 export const getRecipeDetails = async (
-  recipeId: number
+  recipeId: number,
+  token: string
 ): Promise<IRecipeDetailsResponse> => {
   const url = API_ROUTES.GET_RECIPE_DETAILS.url.replace(
     ":recipeId",
     String(recipeId)
   );
+
+  if (token) {
+    // If auth token is provided, also mark the recipe as viewed
+    await setRecipeViewed(recipeId, token);
+  }
 
   return apiRequest(url, {
     method: API_ROUTES.GET_RECIPE_DETAILS.method,
@@ -356,5 +362,86 @@ export const removeRecipesSearchHistory = async (
     success: boolean;
     message: string;
     searchQueryId: string;
+  }>;
+};
+
+/**
+ * Set a recipe as viewed for the authenticated user
+ *
+ * @param {number} recipeId - The ID of the recipe to mark as viewed
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const setRecipeViewed = async (
+  recipeId: number,
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  recipeIds: number[];
+}> => {
+  return apiRequest(
+    API_ROUTES.SET_RECIPE_VIEWED.url.replace(":recipeId", String(recipeId)),
+    {
+      method: API_ROUTES.SET_RECIPE_VIEWED.method,
+      body: JSON.stringify({ recipeId }),
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    recipeIds: number[];
+  }>;
+};
+
+/**
+ * Get viewed recipes for the authenticated user
+ *
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const getViewedRecipes = async (
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  recipeIds: number[];
+}> => {
+  return apiRequest(
+    API_ROUTES.GET_VIEWED_RECIPES.url,
+    {
+      method: API_ROUTES.GET_VIEWED_RECIPES.method,
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    recipeIds: number[];
+  }>;
+};
+
+/**
+ * Get count of viewed recipes for the authenticated user
+ *
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const getViewedRecipesCount = async (
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  count: number;
+}> => {
+  return apiRequest(
+    API_ROUTES.GET_VIEWED_RECIPES_COUNT.url,
+    {
+      method: API_ROUTES.GET_VIEWED_RECIPES_COUNT.method,
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    count: number;
   }>;
 };

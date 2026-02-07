@@ -783,9 +783,7 @@ const handleSearch = async () => {
       try {
         const token = await getAccessTokenSilently();
         const response = await setRecipesSearchHistory(params, token);
-        if (response.success) {
-          console.log("Search query added to history");
-        } else {
+        if (!response.success) {
           console.error(
             "Failed to add search query to history:",
             response.message
@@ -798,7 +796,6 @@ const handleSearch = async () => {
 
     // Store search params for pagination
     lastSearchParams.value = params;
-
     const response = await searchRecipes(params);
 
     if (response.success && response.recipes.results) {
@@ -810,7 +807,6 @@ const handleSearch = async () => {
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
       }
-      console.log(`Found ${searchResults.value.length} recipes`, response);
     } else {
       error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
     }
@@ -832,10 +828,6 @@ const handleRandomRecipe = async () => {
 
   try {
     const response = await getRandomRecipes(50);
-    console.log("Random recipe response:", response);
-    console.log("response.recipes:", response.recipes);
-    console.log("response.recipes.results:", response.recipes?.results);
-    console.log("Is array?", Array.isArray(response.recipes?.results));
 
     if (response.success && response.recipes.results) {
       searchResults.value = response.recipes.results;
@@ -847,10 +839,6 @@ const handleRandomRecipe = async () => {
       if (response.recipes.baseUri) {
         imageBaseUri.value = response.recipes.baseUri;
       }
-      console.log(
-        `Found ${searchResults.value.length} random recipes`,
-        searchResults.value
-      );
 
       // Wait for DOM to update then scroll to results
       await nextTick();
@@ -862,12 +850,6 @@ const handleRandomRecipe = async () => {
         }
       }, 100);
     } else {
-      console.log(
-        "Condition failed - success:",
-        response.success,
-        "has results:",
-        !!response.recipes?.results
-      );
       error.value = RECIPE_FINDER.ERROR_NO_RESULTS;
     }
   } catch (err) {
@@ -908,9 +890,6 @@ const handleInfiniteScroll = async ({ done }: any) => {
       appStore.setRecipes(searchResults.value);
       currentOffset.value = response.recipes.offset || nextOffset;
       totalResults.value = response.recipes.totalResults || 0;
-      console.log(
-        `Loaded more recipes. Total now: ${searchResults.value.length}`
-      );
       done("ok");
     } else {
       done("error");
@@ -928,15 +907,14 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const response = await getRecipeDetails(recipeId);
+    const token = await getAccessTokenSilently();
+    const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = {
         ...response.recipe,
         extendedIngredients: response.recipe.extendedIngredients || [],
       } as IRecipeDetails;
-
-      console.log("Recipe details:", response.recipe);
     } else {
       error.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
     }
@@ -958,7 +936,6 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
 
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
-      console.log("Favorites updated successfully");
       appStore.setFavoritesRecipes(favorites.value);
     } else {
       console.error("Failed to update favorites:", response.message);
@@ -978,10 +955,8 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
   recipeIdMapped.push(recipeId);
   try {
     const token = await getAccessTokenSilently();
-
     const response = await removeFavoriteRecipes(recipeIdMapped, token);
     if (response.success) {
-      console.log("Favorites removed successfully");
       appStore.setFavoritesRecipes(favorites.value);
     } else {
       console.error("Failed to remove favorites:", response.message);

@@ -65,6 +65,9 @@ const LABELS = {
 };
 
 const RECIPE_FINDER = {
+  THE_LIST_IS_EMPTY: "The list is empty",
+  NO_RECIPES_TITLE: "No recipes to display",
+  NO_RECIPES_MESSAGE: "The list is empty",
   ERROR_RECIPE_NOT_FOUND: "Recipe not found.",
   ERROR_FETCHING_RECIPE: "Error fetching recipe details.",
   TITLE: "Discover Your Next Meal",
@@ -365,6 +368,33 @@ const FAVORITE_RECIPES = {
   ERROR_FETCHING_DETAILS: "Failed to fetch recipe details",
 };
 
+const DASHBOARD = {
+  WELCOME_HEADING: "Welcome back!",
+  WELCOME_SUBHEADING: "Your personalized recipe dashboard",
+  FAVORITE_RECIPES_LABEL: "Favorite Recipes",
+  RECIPES_VIEWED_LABEL: "Recipes Viewed",
+  TOTAL_SEARCHES_LABEL: "Total Searches",
+  FAVORITE_RECIPES_TITLE: "Your Favorite Recipes",
+  FAVORITE_CHIP: "Favorite",
+  NO_FAVORITES_TITLE: "No favorite recipes yet",
+  NO_FAVORITES_MESSAGE: "Start exploring and save your favorite recipes",
+  DISCOVER_RECIPES_BUTTON: "Discover Recipes",
+  VIEW_ALL_FAVORITES: (count: number) => `View All ${count} Favorites`,
+  SEARCH_HISTORY_TITLE: "Recent Search History",
+  SEARCH_AGAIN_TOOLTIP: "Search Again",
+  NO_SEARCH_HISTORY_TITLE: "No search history",
+  NO_SEARCH_HISTORY_MESSAGE: "Your recent recipe searches will appear here",
+  START_SEARCHING_BUTTON: "Start Searching",
+  VIEW_ALL_SEARCHES: (count: number) => `View All ${count} Searches`,
+  RECIPE_TIME_UNIT: "min",
+  RECIPE_SERVINGS_UNIT: "servings",
+  TIME_JUST_NOW: "Just now",
+  TIME_MINUTES_AGO: (mins: number) =>
+    `${mins} minute${mins > 1 ? "s" : ""} ago`,
+  TIME_HOURS_AGO: (hours: number) => `${hours} hour${hours > 1 ? "s" : ""} ago`,
+  TIME_DAYS_AGO: (days: number) => `${days} day${days > 1 ? "s" : ""} ago`,
+};
+
 export {
   ROUTES,
   APP,
@@ -380,4 +410,5 @@ export {
   MAX_RECENT_ITEMS,
   RECENT_RECIPES,
   FAVORITE_RECIPES,
+  DASHBOARD,
 };

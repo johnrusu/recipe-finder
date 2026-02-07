@@ -100,6 +100,27 @@ const ROUTES = {
     protected: true,
     description: "Remove a search query from user's search history",
   },
+
+  SET_RECIPE_VIEWED: {
+    method: "POST",
+    path: "/recipes/recipe/:recipeId/view",
+    protected: true,
+    description: "Mark a recipe as viewed",
+  },
+
+  GET_VIEWED_RECIPES: {
+    method: "GET",
+    path: "/recipes/viewed",
+    protected: true,
+    description: "Get user's viewed recipes",
+  },
+
+  GET_VIEWED_RECIPES_COUNT: {
+    method: "GET",
+    path: "/recipes/viewed/count",
+    protected: true,
+    description: "Get count of user's viewed recipes",
+  },
 };
 
 module.exports = { ROUTES };

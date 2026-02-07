@@ -275,7 +275,8 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const response = await getRecipeDetails(recipeId);
+    const token = await getAccessTokenSilently();
+    const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = {
@@ -304,15 +305,6 @@ const handleRemoveFavorite = async (recipeId: number) => {
     const response = await removeFavoriteRecipes([recipeId], token);
 
     if (response.success) {
-      console.log(
-        "Favorite removed successfully",
-        recipes.value,
-        recipeId,
-        recipes.value.filter((recipe) => recipe.id !== recipeId),
-        (favoriteRecipeIds.value = favoriteRecipeIds.value.filter(
-          (id) => id !== recipeId
-        ))
-      );
       // Remove from local state
       recipes.value = recipes.value.filter((recipe) => recipe.id !== recipeId);
       favoriteRecipeIds.value = favoriteRecipeIds.value.filter(

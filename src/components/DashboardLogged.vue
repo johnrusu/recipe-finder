@@ -2,15 +2,24 @@
   <div class="dashboard-logged">
     <!-- Welcome Header -->
     <v-card class="mb-8 welcome-card" elevation="2">
-      <v-card-text class="pa-8">
-        <div class="d-flex align-center gap-4">
-          <v-avatar size="80" color="primary">
-            <v-icon size="40" icon="mdi-account-circle" />
+      <v-card-text class="pa-6 pa-md-8">
+        <div
+          class="d-flex flex-column flex-md-row align-center gap-4 justify-md-start justify-center"
+        >
+          <v-avatar
+            size="64"
+            class="avatar-responsive"
+            color="white"
+            variant="tonal"
+          >
+            <v-icon size="32" icon="mdi-account-circle" />
           </v-avatar>
-          <div>
-            <h1 class="text-h3 font-weight-bold mb-2">Welcome back!</h1>
-            <p class="text-h6 text-medium-emphasis">
-              Your personalized recipe dashboard
+          <div class="text-center text-md-left">
+            <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">
+              {{ DASHBOARD.WELCOME_HEADING }}
+            </h1>
+            <p class="text-body1 text-md-h6 text-medium-emphasis">
+              {{ DASHBOARD.WELCOME_SUBHEADING }}
             </p>
           </div>
         </div>
@@ -25,7 +34,7 @@
             <div class="d-flex align-center justify-space-between">
               <div>
                 <p class="text-caption text-medium-emphasis mb-1">
-                  Favorite Recipes
+                  {{ DASHBOARD.FAVORITE_RECIPES_LABEL }}
                 </p>
                 <h2 class="text-h4 font-weight-bold">{{ favoriteCount }}</h2>
               </div>
@@ -43,10 +52,16 @@
             <div class="d-flex align-center justify-space-between">
               <div>
                 <p class="text-caption text-medium-emphasis mb-1">
-                  Recipes Viewed
+                  {{ DASHBOARD.RECIPES_VIEWED_LABEL }}
                 </p>
                 <h2 class="text-h4 font-weight-bold">
-                  {{ totalRecipesViewed }}
+                  <a
+                    href="#"
+                    @click.prevent="fetchListOfViewedRecipes()"
+                    class="text-primary"
+                  >
+                    {{ totalRecipesViewedCount }}
+                  </a>
                 </h2>
               </div>
               <v-avatar size="56" color="primary" variant="tonal">
@@ -63,7 +78,7 @@
             <div class="d-flex align-center justify-space-between">
               <div>
                 <p class="text-caption text-medium-emphasis mb-1">
-                  Total Searches
+                  {{ DASHBOARD.TOTAL_SEARCHES_LABEL }}
                 </p>
                 <h2 class="text-h4 font-weight-bold">
                   {{ searchHistoryCount }}
@@ -83,7 +98,9 @@
       <v-card-title class="pa-6 d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-3">
           <v-icon icon="mdi-heart" size="large" color="error" />
-          <h2 class="text-h5 font-weight-bold">Your Favorite Recipes</h2>
+          <h2 class="text-h5 font-weight-bold">
+            {{ DASHBOARD.FAVORITE_RECIPES_TITLE }}
+          </h2>
         </div>
         <v-chip v-if="favoriteRecipes.length > 0" color="error" variant="flat">
           {{ favoriteRecipes.length }}
@@ -118,7 +135,11 @@
             sm="6"
             md="4"
           >
-            <v-card class="recipe-card h-100" color="white" ripple>
+            <v-card
+              class="recipe-card h-100 d-flex flex-column"
+              color="white"
+              ripple
+            >
               <v-img
                 :src="recipe.image"
                 :alt="recipe.title"
@@ -127,24 +148,50 @@
               >
                 <v-chip class="ma-2" color="error" variant="flat" size="small">
                   <v-icon start icon="mdi-heart" size="small" />
-                  Favorite
+                  {{ DASHBOARD.FAVORITE_CHIP }}
                 </v-chip>
               </v-img>
-              <v-card-text>
+              <v-card-text class="grow">
                 <h3 class="text-h6 font-weight-bold line-clamp-2 mb-2">
                   {{ recipe.title }}
                 </h3>
                 <div class="d-flex align-center gap-4 text-caption">
                   <div class="d-flex align-center gap-1">
                     <v-icon size="small" icon="mdi-clock" />
-                    {{ recipe.readyInMinutes }} min
+                    {{ recipe.readyInMinutes }} {{ DASHBOARD.RECIPE_TIME_UNIT }}
                   </div>
                   <div class="d-flex align-center gap-1">
                     <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                    {{ recipe.servings }} servings
+                    {{ recipe.servings }} {{ DASHBOARD.RECIPE_SERVINGS_UNIT }}
                   </div>
                 </div>
               </v-card-text>
+              <v-card-actions class="pt-0 d-flex gap-2">
+                <v-btn
+                  icon
+                  @click.stop="handleRemoveFavorite(recipe.id)"
+                  color="error"
+                  class="remove-btn"
+                  :loading="
+                    loadingForDetails && recipe.id == loadingFavoriteRecipeId
+                  "
+                >
+                  <v-icon icon="mdi-heart-off" />
+                  <v-tooltip activator="parent" location="top">
+                    {{ FAVORITE_RECIPES.REMOVE_BUTTON }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  variant="elevated"
+                  color="primary"
+                  size="large"
+                  @click.stop="handleGetRecipeDetails(recipe.id)"
+                  class="view-recipe-btn grow"
+                  append-icon="mdi-arrow-right"
+                >
+                  {{ RECIPE_FINDER.VIEW_RECIPE_BUTTON }}
+                </v-btn>
+              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
@@ -157,9 +204,11 @@
             color="grey-lighten-1"
             class="mb-4"
           />
-          <p class="text-h6 text-medium-emphasis">No favorite recipes yet</p>
+          <p class="text-h6 text-medium-emphasis">
+            {{ DASHBOARD.NO_FAVORITES_TITLE }}
+          </p>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            Start exploring and save your favorite recipes
+            {{ DASHBOARD.NO_FAVORITES_MESSAGE }}
           </p>
           <v-btn
             color="primary"
@@ -167,7 +216,7 @@
             to="/"
             prepend-icon="mdi-magnify"
           >
-            Discover Recipes
+            {{ DASHBOARD.DISCOVER_RECIPES_BUTTON }}
           </v-btn>
         </div>
 
@@ -179,18 +228,31 @@
             to="/"
             append-icon="mdi-arrow-right"
           >
-            View All {{ favoriteRecipes.length }} Favorites
+            {{ DASHBOARD.VIEW_ALL_FAVORITES(favoriteRecipes.length) }}
           </v-btn>
         </div>
       </v-card-text>
     </v-card>
+
+    <!-- Recipe Details Modal -->
+    <RecipeDetailsModal
+      :open="showRecipeModal"
+      :recipe="selectedRecipeDetails"
+      :isAddingFavorites="loadingForDetails"
+      :favorites="favoriteRecipeIds"
+      :image-base-uri="imageBaseUri"
+      @close="handleModalClose"
+      @favorite="handleFavoriteToggle"
+    />
 
     <!-- Search History Section -->
     <v-card elevation="2">
       <v-card-title class="pa-6 d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-3">
           <v-icon icon="mdi-history" size="large" color="primary" />
-          <h2 class="text-h5 font-weight-bold">Recent Search History</h2>
+          <h2 class="text-h5 font-weight-bold">
+            {{ DASHBOARD.SEARCH_HISTORY_TITLE }}
+          </h2>
         </div>
         <v-chip v-if="searchHistory.length > 0" color="primary" variant="flat">
           {{ searchHistory.length }}
@@ -246,7 +308,7 @@
               >
                 <v-icon icon="mdi-refresh" />
                 <v-tooltip activator="parent" location="top">
-                  Search Again
+                  {{ DASHBOARD.SEARCH_AGAIN_TOOLTIP }}
                 </v-tooltip>
               </v-btn>
             </template>
@@ -261,9 +323,11 @@
             color="grey-lighten-1"
             class="mb-4"
           />
-          <p class="text-h6 text-medium-emphasis">No search history</p>
+          <p class="text-h6 text-medium-emphasis">
+            {{ DASHBOARD.NO_SEARCH_HISTORY_TITLE }}
+          </p>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            Your recent recipe searches will appear here
+            {{ DASHBOARD.NO_SEARCH_HISTORY_MESSAGE }}
           </p>
           <v-btn
             color="primary"
@@ -271,18 +335,40 @@
             to="/"
             prepend-icon="mdi-magnify"
           >
-            Start Searching
+            {{ DASHBOARD.START_SEARCHING_BUTTON }}
           </v-btn>
         </div>
 
         <!-- View More Link -->
         <div v-if="searchHistory.length > 10" class="text-center mt-4">
           <v-btn color="primary" variant="text">
-            View All {{ searchHistory.length }} Searches
+            {{ DASHBOARD.VIEW_ALL_SEARCHES(searchHistory.length) }}
           </v-btn>
         </div>
       </v-card-text>
     </v-card>
+
+    <RecipesListModal
+      :open="isArrayNotEmpty(listOfViewedRecipesWithDetails)"
+      :recipes="listOfViewedRecipesWithDetails"
+      :loading="loadingViewedRecipes"
+      :error="errorViewedRecipes"
+      :favorites="favoriteRecipeIds"
+      :image-base-uri="imageBaseUri"
+      icon="mdi-eye"
+      icon-color="primary"
+      title="Recipes You've Viewed"
+      chip-color="primary"
+      remove-button-text="Remove from History"
+      empty-icon="mdi-history-off"
+      empty-title="No Viewed Recipes"
+      empty-message="You haven't viewed any recipes yet"
+      @close="handleCloseRecipesListModal"
+      @error-cleared="errorViewedRecipes = null"
+      @view-details="handleViewRecipeDetails"
+      @remove="handleRemoveFromViewed"
+      @favorite-toggle="handleToggleFavorite"
+    />
   </div>
 </template>
 
@@ -290,20 +376,46 @@
 import { ref, computed, onMounted, defineAsyncComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth0 } from "@auth0/auth0-vue";
+import { pathOr } from "ramda";
 
 // constants
-import { LOADING_CONFIG } from "@/constants";
+import {
+  LOADING_CONFIG,
+  DASHBOARD,
+  RECIPE_FINDER,
+  FAVORITE_RECIPES,
+} from "@/constants";
 
 // types
-import type { IRecipe } from "@/types";
+import type { IRecipe, IRecipeDetails, TViewedRecipe } from "@/types";
+
+// utils
+import { isNilOrEmpty, isArrayNotEmpty } from "@/utils";
 
 // services
-import { getFavoriteRecipes, getRecipeDetails } from "@/services";
+import {
+  getFavoriteRecipes,
+  getRecipesBulkDetails,
+  getViewedRecipesCount,
+  getViewedRecipes,
+  getRecipeDetails,
+  removeFavoriteRecipes,
+} from "@/services";
+
+// stores
+import { useAppStore } from "@/stores";
 
 // components
-
 const AppLoading = defineAsyncComponent(
   () => import("@/components/AppLoading.vue")
+);
+
+const RecipeDetailsModal = defineAsyncComponent(
+  () => import("@/components/RecipeDetailsModal.vue")
+);
+
+const RecipesListModal = defineAsyncComponent(
+  () => import("@/components/RecipesListModal.vue")
 );
 
 // auth
@@ -312,21 +424,34 @@ const { getAccessTokenSilently } = useAuth0();
 // router
 const router = useRouter();
 
+// store
+const appStore = useAppStore();
+
 // state
 const favoriteRecipes = ref<IRecipe[]>([]);
+const favoriteRecipeIds = ref<number[]>([]);
 const searchHistory = ref<Array<{ query: string; timestamp: string }>>([]);
 const loadingFavorites = ref(false);
 const loadingSearchHistory = ref(false);
 const favoritesError = ref<string | null>(null);
 const searchHistoryError = ref<string | null>(null);
+const totalRecipesViewed = ref(0);
+const listOfViewedRecipes = ref<TViewedRecipe[]>([]);
+const listOfViewedRecipesWithDetails = ref<IRecipeDetails[]>([]);
+const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
+const errorViewedRecipes = ref<string | null>(null);
+const loadingViewedRecipes = ref(false);
+
+// recipe details modal state
+const showRecipeModal = ref(false);
+const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
+const loadingForDetails = ref(false);
+const loadingFavoriteRecipeId = ref<number | null>(null);
 
 // computed
 const favoriteCount = computed(() => favoriteRecipes.value.length);
 const searchHistoryCount = computed(() => searchHistory.value.length);
-const totalRecipesViewed = computed(() => {
-  // This could be tracked separately, for now using favorites + searches as proxy
-  return favoriteCount.value + searchHistoryCount.value;
-});
+const totalRecipesViewedCount = computed(() => totalRecipesViewed.value);
 
 // methods
 const fetchFavorites = async () => {
@@ -337,27 +462,31 @@ const fetchFavorites = async () => {
     const token = await getAccessTokenSilently();
     const response = await getFavoriteRecipes(token);
 
-    if (response.success && response.recipeIds) {
+    const success = pathOr(false, ["success"], response);
+    const ids = pathOr([], ["recipeIds"], response);
+
+    if (success && isArrayNotEmpty(ids)) {
+      favoriteRecipeIds.value = ids;
       // Fetch recipe details for each favorite
-      const recipeDetailsPromises = response.recipeIds.map((id) =>
-        getRecipeDetails(id)
-      );
+      try {
+        const detailsResponse = await getRecipesBulkDetails(ids, token);
 
-      const recipeDetailsResults = await Promise.allSettled(
-        recipeDetailsPromises
-      );
-
-      favoriteRecipes.value = recipeDetailsResults
-        .filter(
-          (result) =>
-            result.status === "fulfilled" &&
-            result.value.success &&
-            result.value.recipe
-        )
-        .map(
-          (result) =>
-            (result as PromiseFulfilledResult<any>).value.recipe as IRecipe
-        );
+        if (!isNilOrEmpty(detailsResponse)) {
+          const recipesData = pathOr([], ["recipes"], detailsResponse);
+          favoriteRecipes.value = recipesData;
+        } else {
+          console.error(
+            "Failed to fetch favorite recipe details:",
+            detailsResponse
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching bulk recipe details:", e);
+        favoriteRecipes.value = [];
+      }
+    } else {
+      favoriteRecipes.value = [];
+      favoriteRecipeIds.value = [];
     }
   } catch (err) {
     const errorMessage =
@@ -367,6 +496,72 @@ const fetchFavorites = async () => {
   } finally {
     loadingFavorites.value = false;
   }
+};
+
+const handleGetRecipeDetails = async (recipeId: number) => {
+  loadingForDetails.value = true;
+  favoritesError.value = null;
+  showRecipeModal.value = true;
+
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await getRecipeDetails(recipeId, token);
+
+    if (response.success && response.recipe) {
+      selectedRecipeDetails.value = {
+        ...response.recipe,
+        extendedIngredients: response.recipe.extendedIngredients || [],
+      } as IRecipeDetails;
+    } else {
+      favoritesError.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : RECIPE_FINDER.ERROR_FETCHING_RECIPE;
+    favoritesError.value = errorMessage;
+    console.error("Get recipe details error:", err);
+  } finally {
+    loadingForDetails.value = false;
+  }
+};
+
+const handleRemoveFavorite = async (recipeId: number) => {
+  loadingForDetails.value = true;
+  loadingFavoriteRecipeId.value = recipeId;
+
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await removeFavoriteRecipes([recipeId], token);
+
+    if (response.success) {
+      // Remove from local state
+      favoriteRecipes.value = favoriteRecipes.value.filter(
+        (recipe) => recipe.id !== recipeId
+      );
+      favoriteRecipeIds.value = favoriteRecipeIds.value.filter(
+        (id) => id !== recipeId
+      );
+
+      appStore.setFavoritesRecipes(favoriteRecipeIds.value);
+    } else {
+      console.error("Failed to remove favorite:", response.message);
+    }
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+  } finally {
+    loadingForDetails.value = false;
+    loadingFavoriteRecipeId.value = null;
+  }
+};
+
+const handleModalClose = () => {
+  showRecipeModal.value = false;
+  selectedRecipeDetails.value = null;
+  loadingForDetails.value = false;
+};
+
+const handleFavoriteToggle = (recipeId: number) => {
+  handleRemoveFavorite(recipeId);
 };
 
 const fetchSearchHistory = async () => {
@@ -397,6 +592,46 @@ const fetchSearchHistory = async () => {
   }
 };
 
+const fetchListOfViewedRecipes = async () => {
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await getViewedRecipes(token);
+    if (response.success) {
+      const recipes: TViewedRecipe[] = pathOr([], ["recipes"], response);
+      listOfViewedRecipes.value = recipes;
+      if (isArrayNotEmpty(recipes)) {
+        // Fetch details for viewed recipes
+        const recipeIds = recipes.map((r) => r.recipeId);
+        const detailsResponse = await getRecipesBulkDetails(recipeIds, token);
+        if (detailsResponse.success) {
+          listOfViewedRecipesWithDetails.value = pathOr(
+            [],
+            ["recipes"],
+            detailsResponse
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching total recipes viewed:", err);
+  }
+  return 0; // Fallback to 0 if there's an error
+};
+
+const fetchTotalRecipesViewed = async () => {
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await getViewedRecipesCount(token);
+    if (response.success) {
+      const count = pathOr(0, ["count"], response);
+      totalRecipesViewed.value = count;
+    }
+  } catch (err) {
+    console.error("Error fetching total recipes viewed:", err);
+  }
+  return 0; // Fallback to 0 if there's an error
+};
+
 const formatDate = (timestamp: string): string => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -405,10 +640,10 @@ const formatDate = (timestamp: string): string => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  if (diffMins < 1) return DASHBOARD.TIME_JUST_NOW;
+  if (diffMins < 60) return DASHBOARD.TIME_MINUTES_AGO(diffMins);
+  if (diffHours < 24) return DASHBOARD.TIME_HOURS_AGO(diffHours);
+  if (diffDays < 7) return DASHBOARD.TIME_DAYS_AGO(diffDays);
 
   return date.toLocaleDateString();
 };
@@ -417,10 +652,55 @@ const searchAgain = (query: string) => {
   router.push({ path: "/", query: { q: query } });
 };
 
+const handleCloseRecipesListModal = () => {
+  listOfViewedRecipesWithDetails.value = [];
+  errorViewedRecipes.value = null;
+};
+
+const handleViewRecipeDetails = async (recipeId: number) => {
+  loadingForDetails.value = true;
+  errorViewedRecipes.value = null;
+
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await getRecipeDetails(recipeId, token);
+
+    if (response.success && response.recipe) {
+      selectedRecipeDetails.value = {
+        ...response.recipe,
+        extendedIngredients: response.recipe.extendedIngredients || [],
+      } as IRecipeDetails;
+      showRecipeModal.value = true;
+    } else {
+      errorViewedRecipes.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : RECIPE_FINDER.ERROR_FETCHING_RECIPE;
+    errorViewedRecipes.value = errorMessage;
+    console.error("Get recipe details error:", err);
+  } finally {
+    loadingForDetails.value = false;
+  }
+};
+
+const handleRemoveFromViewed = (recipeId: number) => {
+  // Remove from viewed recipes list
+  listOfViewedRecipesWithDetails.value =
+    listOfViewedRecipesWithDetails.value.filter(
+      (recipe) => recipe.id !== recipeId
+    );
+};
+
+const handleToggleFavorite = (recipeId: number) => {
+  handleRemoveFavorite(recipeId);
+};
+
 // lifecycle
 onMounted(() => {
   fetchFavorites();
   fetchSearchHistory();
+  fetchTotalRecipesViewed();
 });
 </script>
 
@@ -434,6 +714,10 @@ onMounted(() => {
 .welcome-card {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
+}
+
+.avatar-responsive {
+  flex-shrink: 0;
 }
 
 .stat-card {
@@ -467,5 +751,40 @@ onMounted(() => {
 
 .search-history-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
+}
+
+.remove-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.remove-btn:active {
+  transform: scale(0.95);
+}
+
+.view-recipe-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Mobile optimizations */
+@media (max-width: 960px) {
+  .welcome-card {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .recipe-card {
+    border-radius: 8px;
+  }
+
+  .recipe-card :deep(.v-card__actions) {
+    padding: 8px 8px;
+  }
+
+  .remove-btn,
+  .view-recipe-btn {
+    font-size: 0.875rem;
+    text-transform: none;
+  }
 }
 </style>

@@ -68,6 +68,9 @@ const {
   removeFavoritesRecipes,
   createRecipesSearchHistory,
   removeRecipesSearchHistory,
+  getViewedRecipesCount,
+  setRecipeViewed,
+  getViewedRecipes,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -205,9 +208,6 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
         // Fallback to mock data if API fails (quota exceeded, etc.)
         const mockData = fetchMockData("recipes");
         if (mockData) {
-          console.log(
-            `API failed with status ${response.status}, using mock data as fallback`
-          );
           return res.status(200).json({
             success: true,
             recipes: mockData,
@@ -351,7 +351,6 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
       }
 
       const favorites = await setFavoritesRecipes(auth0Id, recipeIds);
-      console.log(favorites, "favorites after setting"); // --- IGNORE ---
 
       if (favorites) {
         res.status(200).json({
@@ -726,6 +725,115 @@ router[ROUTES.REMOVE_SEARCH_HISTORY.method.toLowerCase()](
         message: "Search history removed (database offline)",
         offline: true,
       });
+    }
+  }
+);
+
+// Mark a recipe as viewed
+router[ROUTES.SET_RECIPE_VIEWED.method.toLowerCase()](
+  ROUTES.SET_RECIPE_VIEWED.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const recipeId = pathOr("", ["params", "recipeId"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (isNilOrEmpty(recipeId)) {
+        console.log("❌ Invalid recipeId");
+        return res
+          .status(400)
+          .json({ error: "recipeId must be a non-empty string" });
+      }
+
+      const setViewedResult = await setRecipeViewed(auth0Id, recipeId);
+
+      if (setViewedResult) {
+        res.status(200).json({
+          success: true,
+          message: `Recipe ${recipeId} marked as viewed for user ${auth0Id}`,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Recipe ${recipeId} marked as viewed for user ${auth0Id} (offline mode)`,
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in SET_RECIPE_VIEWED:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Recipe view recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// Get user's viewed recipes
+router[ROUTES.GET_VIEWED_RECIPES.method.toLowerCase()](
+  ROUTES.GET_VIEWED_RECIPES.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const viewedRecipes = await getViewedRecipes(auth0Id);
+
+      if (viewedRecipes) {
+        res.status(200).json({
+          success: true,
+          message: `Viewed recipes retrieved for user ${auth0Id}`,
+          recipes: viewedRecipes || [],
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `No viewed recipes found for user ${auth0Id}`,
+          recipes: [],
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in GET_VIEWED_RECIPES:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get user's viewed recipes count
+router[ROUTES.GET_VIEWED_RECIPES_COUNT.method.toLowerCase()](
+  ROUTES.GET_VIEWED_RECIPES_COUNT.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const count = await getViewedRecipesCount(auth0Id);
+
+      res.status(200).json({
+        success: true,
+        message: `Viewed recipes count retrieved for user ${auth0Id}`,
+        count: count || 0,
+      });
+    } catch (error) {
+      console.error("❌ Error in GET_VIEWED_RECIPES_COUNT:", error.message);
+      res.status(500).json({ error: error.message });
     }
   }
 );

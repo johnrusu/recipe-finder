@@ -50,34 +50,6 @@ export const API_ROUTES = {
     description: "Get current authenticated user",
   },
 
-  GET_RECEIPTS: {
-    method: "GET",
-    url: `${BASE_URL}/receipts`,
-    protected: true,
-    description: "Get saved receipts for the authenticated user",
-  },
-
-  SAVE_RECEIPT: {
-    method: "POST",
-    url: `${BASE_URL}/receipts`,
-    protected: true,
-    description: "Save a new receipt for the authenticated user",
-  },
-
-  DELETE_RECEIPT: {
-    method: "DELETE",
-    url: `${BASE_URL}/receipts/:id`,
-    protected: true,
-    description: "Delete a receipt by ID for the authenticated user",
-  },
-
-  UPDATE_RECEIPT: {
-    method: "PUT",
-    url: `${BASE_URL}/receipts/:id`,
-    protected: true,
-    description: "Update a receipt by ID for the authenticated user",
-  },
-
   // Recipe routes
   SEARCH_RECIPES: {
     method: "GET",
@@ -147,5 +119,26 @@ export const API_ROUTES = {
     url: `${BASE_URL}/recipes/search-history`,
     protected: true,
     description: "Remove a search query from user's search history",
+  },
+
+  SET_RECIPE_VIEWED: {
+    method: "POST",
+    url: `${BASE_URL}/recipes/recipe/:recipeId/view`,
+    protected: true,
+    description: "Mark a recipe as viewed",
+  },
+
+  GET_VIEWED_RECIPES: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/viewed`,
+    protected: true,
+    description: "Get user's viewed recipes",
+  },
+
+  GET_VIEWED_RECIPES_COUNT: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/viewed/count`,
+    protected: true,
+    description: "Get count of user's viewed recipes",
   },
 } as const;

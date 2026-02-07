@@ -3,6 +3,44 @@ const mongoose = require("mongoose");
 // constants
 const { MONGODB_URI } = require("../constants/index.js");
 
+// Define Mongoose schemas
+const usersSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  auth0Id: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: false },
+  name: { type: String, required: false },
+});
+
+const favoritesRecipesSchema = new mongoose.Schema({
+  recipeIds: [{ type: Number, required: true }],
+  auth0Id: { type: String, required: true, unique: true },
+});
+
+const recipesSearchHistorySchema = new mongoose.Schema({
+  auth0Id: { type: String, required: true, unique: false },
+  searchQueries: [
+    {
+      query: { type: String, required: true },
+      type: { type: String, required: false },
+      cuisine: { type: String, required: false },
+      diet: { type: String, required: false },
+      intolerances: { type: String, required: false },
+      maxReadyTime: { type: Number, required: false },
+      includeIngredients: { type: String, required: false },
+      excludeIngredients: { type: String, required: false },
+      number: { type: Number, required: false },
+      offset: { type: Number, required: false },
+      timestamp: { type: Date, default: Date.now },
+    },
+  ],
+});
+
+const recipeViewedSchema = new mongoose.Schema({
+  auth0Id: { type: String, required: true, unique: false },
+  recipeId: { type: Number, required: true },
+  viewedAt: { type: Date, default: Date.now },
+});
+
 const initializeDatabase = async () => {
   const maxRetries = 2; // Reduced from 3
   let lastError;
@@ -40,36 +78,9 @@ const initializeDatabase = async () => {
   throw lastError;
 };
 
-const usersSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  auth0Id: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: false },
-  name: { type: String, required: false },
-});
-
-const favoritesRecipesSchema = new mongoose.Schema({
-  recipeIds: [{ type: Number, required: true }],
-  auth0Id: { type: String, required: true, unique: true },
-});
-
-const recipesSearchHistorySchema = new mongoose.Schema({
-  auth0Id: { type: String, required: true, unique: false },
-  searchQueries: [
-    {
-      query: { type: String, required: true },
-      type: { type: String, required: false },
-      cuisine: { type: String, required: false },
-      diet: { type: String, required: false },
-      intolerances: { type: String, required: false },
-      maxReadyTime: { type: Number, required: false },
-      includeIngredients: { type: String, required: false },
-      excludeIngredients: { type: String, required: false },
-      number: { type: Number, required: false },
-      offset: { type: Number, required: false },
-      timestamp: { type: Date, default: Date.now },
-    },
-  ],
-});
+const closeDatabase = async () => {
+  await mongoose.connection.close();
+};
 
 const usersModel = mongoose.model("User", usersSchema, "users-collection");
 const favoritesRecipesModel = mongoose.model(
@@ -77,10 +88,17 @@ const favoritesRecipesModel = mongoose.model(
   favoritesRecipesSchema,
   "favorites-recipes-collection"
 );
+
 const recipesSearchHistoryModel = mongoose.model(
   "RecipesSearchHistory",
   recipesSearchHistorySchema,
   "recipes-search-history-collection"
+);
+
+const recipeViewedModel = mongoose.model(
+  "RecipeViewed",
+  recipeViewedSchema,
+  "recipe-viewed-collection"
 );
 
 // User database methods
@@ -239,8 +257,67 @@ const removeRecipesSearchHistory = async (auth0Id, searchQueryId) => {
   }
 };
 
-const closeDatabase = async () => {
-  await mongoose.connection.close();
+// Mark recipe as viewed
+const setRecipeViewed = async (auth0Id, recipeId) => {
+  try {
+    console.log(`[DB] Marking recipe as viewed for ${auth0Id}:`, recipeId);
+
+    let existingUser = await usersModel.findOne({ auth0Id });
+
+    // If user doesn't exist yet, create a placeholder user
+    if (!existingUser) {
+      console.log(`[DB] User ${auth0Id} not found, creating placeholder...`);
+      existingUser = new usersModel({
+        userId: auth0Id,
+        auth0Id,
+        email: `${auth0Id}@placeholder.local`,
+        name: "Placeholder User",
+      });
+      await existingUser.save();
+    }
+
+    try {
+      console.log("recipeId", recipeId);
+      const existingView = await recipeViewedModel.findOneAndUpdate(
+        { auth0Id, recipeId },
+        { viewedAt: new Date() },
+        { upsert: true, new: true }
+      );
+
+      return existingView;
+    } catch (error) {
+      throw new Error(`Error marking recipe as viewed: ${error.message}`);
+    }
+  } catch (error) {
+    console.error(`[DB] Error marking recipe as viewed:`, error.message);
+    throw new Error(`Error marking recipe as viewed: ${error.message}`);
+  }
+};
+
+// Get user's viewed recipes
+const getViewedRecipes = async (auth0Id) => {
+  try {
+    console.log(`[DB] Getting viewed recipes for ${auth0Id}`);
+    const viewedRecipes = await recipeViewedModel
+      .find({ auth0Id })
+      .sort({ viewedAt: -1 });
+    return viewedRecipes || [];
+  } catch (error) {
+    console.error(`[DB] Error getting viewed recipes:`, error.message);
+    throw new Error(`Error getting viewed recipes: ${error.message}`);
+  }
+};
+
+// Get count of user's viewed recipes
+const getViewedRecipesCount = async (auth0Id) => {
+  try {
+    console.log(`[DB] Getting viewed recipes count for ${auth0Id}`);
+    const count = await recipeViewedModel.countDocuments({ auth0Id });
+    return count;
+  } catch (error) {
+    console.error(`[DB] Error getting viewed recipes count:`, error.message);
+    throw new Error(`Error getting viewed recipes count: ${error.message}`);
+  }
 };
 
 module.exports = {
@@ -263,4 +340,8 @@ module.exports = {
   recipesSearchHistoryModel,
   createRecipesSearchHistory,
   removeRecipesSearchHistory,
+  recipeViewedModel,
+  setRecipeViewed,
+  getViewedRecipes,
+  getViewedRecipesCount,
 };
