@@ -272,7 +272,7 @@
               variant="tonal"
               rounded="lg"
               prepend-icon="mdi-dice-5"
-              @click="handleRandomRecipe"
+              @click="handleRandomRecipes"
               :loading="loadingRecipes"
               block
               class="action-btn"
@@ -820,7 +820,7 @@ const handleSearch = async () => {
   }
 };
 
-const handleRandomRecipe = async () => {
+const handleRandomRecipes = async () => {
   loadingRecipes.value = true;
   error.value = null;
   searchResults.value = [];

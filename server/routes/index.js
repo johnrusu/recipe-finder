@@ -210,7 +210,18 @@ router[ROUTES.SEARCH_RECIPES.method.toLowerCase()](
         if (mockData) {
           return res.status(200).json({
             success: true,
-            recipes: mockData,
+            recipes: {
+              results: mockData.recipes || [],
+              baseUri:
+                mockData.baseUri || "https://img.spoonacular.com/recipes/",
+              offset: mockData.offset || 0,
+              number: mockData.number || parseInt(number),
+              totalResults:
+                mockData.totalResults ||
+                (mockData.recipes ? mockData.recipes.length : 0),
+              processingTimeMs: 0,
+              expires: 0,
+            },
             usingMockData: true,
             apiError: result.message || "API unavailable",
           });
