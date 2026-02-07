@@ -218,7 +218,7 @@ const fetchFavorites = async (
   let token = "";
   // Check authentication before attempting to get token
   if (!isAuthenticated.value) {
-    console.warn('Cannot fetch favorites: User not authenticated');
+    console.warn("Cannot fetch favorites: User not authenticated");
     if (allFavorites) {
       loadingAllFavoriteRecipes.value = false;
     } else {
@@ -226,7 +226,7 @@ const fetchFavorites = async (
     }
     return;
   }
-  
+
   try {
     token = (await getAccessTokenSilently()) || "";
   } catch (authError) {
@@ -298,7 +298,10 @@ const handleGetRecipeDetails = async (recipeId: number) => {
 
   try {
     let token = "";
-    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
@@ -331,7 +334,10 @@ const handleRemoveFavorite = async (recipeId: number) => {
 
   try {
     let token = "";
-    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
@@ -403,10 +409,10 @@ watch(
     if (newLength > 0) {
       // Only fetch if authenticated
       if (!isAuthenticated.value) {
-        console.warn('Cannot fetch favorite details: User not authenticated');
+        console.warn("Cannot fetch favorite details: User not authenticated");
         return;
       }
-      
+
       let token = "";
       try {
         token = (await getAccessTokenSilently()) || "";

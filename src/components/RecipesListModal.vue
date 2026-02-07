@@ -4,7 +4,12 @@
     max-width="1200px"
     @update:model-value="$emit('close')"
   >
-    <v-card class="h-100">
+    <v-card class="h-100 relative">
+      <v-progress-linear
+        indeterminate
+        v-if="loadingForDetails"
+        class="absolute top-0 left-0 w-full"
+      ></v-progress-linear>
       <v-card-title class="pa-6 d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-3">
           <v-icon :icon="icon" size="large" :color="iconColor" />
@@ -33,18 +38,6 @@
           <AppLoading :config="LOADING_CONFIG" />
         </div>
 
-        <!-- Error State -->
-        <v-alert
-          v-else-if="error"
-          type="error"
-          variant="tonal"
-          closable
-          @click:close="$emit('error-cleared')"
-          class="mb-4"
-        >
-          {{ error }}
-        </v-alert>
-
         <!-- Recipes Grid -->
         <v-row v-else-if="recipes.length > 0">
           <v-col
@@ -72,25 +65,26 @@
                 </div>
                 <div class="d-flex align-center gap-2 mt-2 text-caption">
                   <v-icon size="small" icon="mdi-clock" />
-                  {{ recipe.readyInMinutes }} min
+                  {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
                 </div>
                 <div class="d-flex align-center gap-2 text-caption">
                   <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                  {{ recipe.servings }} servings
+                  {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
                 </div>
               </v-card-text>
               <v-card-actions class="pt-0 d-flex gap-2">
                 <v-btn
                   icon
-                  @click.stop="handleRemove(recipe.id)"
-                  color="error"
-                  class="remove-btn"
-                  :loading="loadingRecipeId === recipe.id && isRemoving"
+                  @click.stop="toggleFavorite(recipe.id)"
+                  :color="isFavorited(recipe.id) ? 'error' : 'default'"
+                  class="save-btn"
+                  :loading="loadingToggleFavorite && recipe.id == recipeId"
                 >
-                  <v-icon icon="mdi-heart-off" />
-                  <v-tooltip activator="parent" location="top">
-                    {{ removeButtonText }}
-                  </v-tooltip>
+                  <v-icon
+                    :icon="
+                      isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'
+                    "
+                  />
                 </v-btn>
                 <v-btn
                   variant="elevated"
@@ -155,7 +149,8 @@ const props = withDefaults(
     open: boolean;
     recipes: IRecipe[];
     loading?: boolean;
-    error?: string | null;
+    loadingForDetails: boolean;
+    loadingToggleFavorite: boolean;
     favorites?: number[];
     imageBaseUri?: string;
     icon?: string;
@@ -169,7 +164,8 @@ const props = withDefaults(
   }>(),
   {
     loading: false,
-    error: null,
+    loadingForDetails: false,
+    loadingToggleFavorite: false,
     favorites: () => [],
     imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
     icon: "mdi-list",
@@ -185,15 +181,12 @@ const props = withDefaults(
 // emits
 const emit = defineEmits<{
   (e: "close"): void;
-  (e: "error-cleared"): void;
   (e: "view-details", recipeId: number): void;
-  (e: "remove", recipeId: number): void;
   (e: "favorite-toggle", recipeId: number): void;
 }>();
 
 // state
-const loadingRecipeId = ref<number | null>(null);
-const isRemoving = ref(false);
+const recipeId = ref<number | null>(null);
 
 // methods
 const getImageUrl = (imageSrc: string): string => {
@@ -204,16 +197,18 @@ const getImageUrl = (imageSrc: string): string => {
   return `${props.imageBaseUri}${imageSrc}`;
 };
 
-const handleViewDetails = (recipeId: number) => {
-  loadingRecipeId.value = recipeId;
-  isRemoving.value = false;
-  emit("view-details", recipeId);
+const isFavorited = (recipeId: number) => {
+  return props.favorites.includes(recipeId);
 };
 
-const handleRemove = (recipeId: number) => {
-  loadingRecipeId.value = recipeId;
-  isRemoving.value = true;
-  emit("remove", recipeId);
+const handleViewDetails = (id: number) => {
+  recipeId.value = id;
+  emit("view-details", id);
+};
+
+const toggleFavorite = (id: number) => {
+  recipeId.value = id;
+  emit("favorite-toggle", id);
 };
 </script>
 

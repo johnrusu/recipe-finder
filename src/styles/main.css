@@ -68,7 +68,7 @@ body {
 .home-page,
 .about-page,
 .dashboard-page {
-  @apply flex flex-col h-full;
+  @apply flex flex-col h-full pb-0;
 }
 
 .about-page .v-list-item .v-list-item-title,

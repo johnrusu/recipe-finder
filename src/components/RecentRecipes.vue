@@ -264,7 +264,10 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   try {
     let token = "";
     // Only attempt to get token if user is authenticated
-    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
@@ -297,7 +300,10 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
   loadingFavoriteRecipeId.value = recipeId;
   try {
     let token = "";
-    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
@@ -329,7 +335,10 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
   recipeIdMapped.push(recipeId);
   try {
     let token = "";
-    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
