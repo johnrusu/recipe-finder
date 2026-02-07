@@ -907,7 +907,19 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    // Only attempt to get token if explicitly authenticated
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        // Continue with empty token - viewing recipes doesn't require auth
+      }
+    }
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
@@ -921,7 +933,16 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : RECIPE_FINDER.ERROR_FETCHING_RECIPE;
-    error.value = errorMessage;
+    // Don't show Auth0 errors to users - they can still view recipes without being logged in
+    if (
+      errorMessage.includes("Missing Refresh Token") ||
+      errorMessage.includes("missing_refresh_token")
+    ) {
+      console.warn("Auth0 session issue:", err);
+      error.value = null; // Don't show error to user
+    } else {
+      error.value = errorMessage;
+    }
     console.error("Get recipe details error:", err);
   } finally {
     loading.value = false;
@@ -932,7 +953,17 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
   loading.value = true;
   loadingFavoriteRecipeId.value = recipeId;
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loading.value = false;
+        loadingFavoriteRecipeId.value = null;
+        return;
+      }
+    }
 
     const response = await setFavoriteRecipes(favorites.value, token);
     if (response.success) {
@@ -954,7 +985,17 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
   const recipeIdMapped: number[] = [];
   recipeIdMapped.push(recipeId);
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loading.value = false;
+        loadingFavoriteRecipeId.value = null;
+        return;
+      }
+    }
     const response = await removeFavoriteRecipes(recipeIdMapped, token);
     if (response.success) {
       appStore.setFavoritesRecipes(favorites.value);

@@ -153,7 +153,7 @@ const props = defineProps<{
 }>();
 
 // auth
-const { getAccessTokenSilently } = useAuth0();
+const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
 // store
 const appStore = useAppStore();
@@ -215,7 +215,29 @@ const fetchFavorites = async (
   favoritesFromStore: number[],
   allFavorites: boolean
 ) => {
-  const token = await getAccessTokenSilently();
+  let token = "";
+  // Check authentication before attempting to get token
+  if (!isAuthenticated.value) {
+    console.warn('Cannot fetch favorites: User not authenticated');
+    if (allFavorites) {
+      loadingAllFavoriteRecipes.value = false;
+    } else {
+      loadingPartialFromState.value = false;
+    }
+    return;
+  }
+  
+  try {
+    token = (await getAccessTokenSilently()) || "";
+  } catch (authError) {
+    console.error("Failed to get access token:", authError);
+    if (allFavorites) {
+      loadingAllFavoriteRecipes.value = false;
+    } else {
+      loadingPartialFromState.value = false;
+    }
+    return;
+  }
   if (allFavorites) {
     loadingAllFavoriteRecipes.value = true;
     allRecipesIds.value = [];
@@ -275,7 +297,14 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+      }
+    }
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
@@ -301,7 +330,17 @@ const handleRemoveFavorite = async (recipeId: number) => {
   loadingFavoriteRecipeId.value = recipeId;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loadingForDetails.value = false;
+        loadingFavoriteRecipeId.value = null;
+        return;
+      }
+    }
     const response = await removeFavoriteRecipes([recipeId], token);
 
     if (response.success) {
@@ -362,7 +401,19 @@ watch(
   () => favoriteRecipeIds.value.length,
   async (newLength) => {
     if (newLength > 0) {
-      const token = await getAccessTokenSilently();
+      // Only fetch if authenticated
+      if (!isAuthenticated.value) {
+        console.warn('Cannot fetch favorite details: User not authenticated');
+        return;
+      }
+      
+      let token = "";
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return;
+      }
       allRecipesIds.value = Array.from(favoriteRecipeIds.value);
       await fetchBulkDetailsByIds(Array.from(favoriteRecipeIds.value), token);
     } else {

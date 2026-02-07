@@ -419,7 +419,7 @@ const RecipesListModal = defineAsyncComponent(
 );
 
 // auth
-const { getAccessTokenSilently } = useAuth0();
+const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
 // router
 const router = useRouter();
@@ -459,7 +459,16 @@ const fetchFavorites = async () => {
   favoritesError.value = null;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loadingFavorites.value = false;
+        return;
+      }
+    }
     const response = await getFavoriteRecipes(token);
 
     const success = pathOr(false, ["success"], response);
@@ -504,7 +513,14 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   showRecipeModal.value = true;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+      }
+    }
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
@@ -530,7 +546,17 @@ const handleRemoveFavorite = async (recipeId: number) => {
   loadingFavoriteRecipeId.value = recipeId;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loadingForDetails.value = false;
+        loadingFavoriteRecipeId.value = null;
+        return;
+      }
+    }
     const response = await removeFavoriteRecipes([recipeId], token);
 
     if (response.success) {
@@ -594,7 +620,15 @@ const fetchSearchHistory = async () => {
 
 const fetchListOfViewedRecipes = async () => {
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return 0;
+      }
+    }
     const response = await getViewedRecipes(token);
     if (response.success) {
       const recipes: TViewedRecipe[] = pathOr([], ["recipes"], response);
@@ -620,7 +654,15 @@ const fetchListOfViewedRecipes = async () => {
 
 const fetchTotalRecipesViewed = async () => {
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return 0;
+      }
+    }
     const response = await getViewedRecipesCount(token);
     if (response.success) {
       const count = pathOr(0, ["count"], response);
@@ -662,7 +704,14 @@ const handleViewRecipeDetails = async (recipeId: number) => {
   errorViewedRecipes.value = null;
 
   try {
-    const token = await getAccessTokenSilently();
+    let token = "";
+    if (isAuthenticated.value === true && typeof getAccessTokenSilently === 'function') {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+      }
+    }
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
