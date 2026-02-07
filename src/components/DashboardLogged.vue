@@ -1,26 +1,36 @@
 <template>
   <div class="dashboard-logged">
-    <!-- Welcome Header -->
-    <v-card class="mb-8 welcome-card" elevation="2">
+    <!-- User Profile Section -->
+    <v-card class="mb-8 profile-card" elevation="2">
       <v-card-text class="pa-6 pa-md-8">
         <div
           class="d-flex flex-column flex-md-row align-center gap-4 justify-md-start justify-center"
         >
           <v-avatar
-            size="64"
+            size="80"
             class="avatar-responsive"
-            color="white"
+            color="primary"
             variant="tonal"
           >
-            <v-icon size="32" icon="mdi-account-circle" />
+            <v-img
+              v-if="user?.picture"
+              :src="user.picture"
+              :alt="user?.name || 'User'"
+              cover
+            />
+            <v-icon v-else size="40" icon="mdi-account-circle" />
           </v-avatar>
-          <div class="text-center text-md-left">
+          <div class="text-center text-md-left flex-grow-1">
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">
-              {{ DASHBOARD.WELCOME_HEADING }}
+              {{ DASHBOARD.WELCOME_HEADING }}{{ user?.name ? `, ${user.name.split(' ')[0]}` : '' }}!
             </h1>
-            <p class="text-body1 text-md-h6 text-medium-emphasis">
+            <p class="text-body1 text-md-h6 text-medium-emphasis mb-2">
               {{ DASHBOARD.WELCOME_SUBHEADING }}
             </p>
+            <div class="d-flex align-center gap-2 justify-center justify-md-start" v-if="user?.email">
+              <v-icon size="small" icon="mdi-email" color="medium-emphasis" />
+              <span class="text-caption text-medium-emphasis">{{ user.email }}</span>
+            </div>
           </div>
         </div>
       </v-card-text>
@@ -425,7 +435,7 @@ const RecipesListModal = defineAsyncComponent(
 );
 
 // auth
-const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
 
 // router
 const router = useRouter();
@@ -856,9 +866,34 @@ watch(
   margin: 0 auto;
 }
 
-.welcome-card {
-  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+.profile-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.profile-card :deep(.v-card-text) {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card .avatar-responsive {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .avatar-responsive {
@@ -912,7 +947,7 @@ watch(
 
 /* Mobile optimizations */
 @media (max-width: 960px) {
-  .welcome-card {
+  .profile-card {
     margin-bottom: 1rem;
   }
 }
