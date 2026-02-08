@@ -9,18 +9,21 @@ Discover recipes based on ingredients you have. A modern web app built with Vue 
 ## Features
 
 **Smart Recipe Search**
+
 - Search by ingredients, cuisine, or dish name
 - Quick filters for meal types (Breakfast, Lunch, Dinner, Snacks, Desserts)
 - Advanced filtering: cuisine types, difficulty, dietary preferences, cooking time
 - Random recipe suggestions
 
 **User Features**
+
 - Auth0 authentication with guest browsing
 - Save favorite recipes
 - View recent searches
 - Personal dashboard
 
 **Modern UI**
+
 - Fully responsive design
 - Smooth animations and transitions
 - Dark/light mode support
@@ -50,20 +53,24 @@ Visit `http://localhost:5173`
 ## Tech Stack
 
 **Core**
+
 - Vue 3 (Composition API)
 - TypeScript
 - Vite
 
 **UI & Styling**
+
 - Vuetify 3
 - Tailwind CSS
 - Custom CSS
 
 **State & Routing**
+
 - Pinia
 - Vue Router
 
 **Quality & Testing**
+
 - Vitest
 - Playwright
 - ESLint
