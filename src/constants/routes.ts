@@ -62,7 +62,14 @@ export const API_ROUTES = {
     method: "GET",
     url: `${BASE_URL}/recipes/recipe/:recipeId`,
     protected: false,
-    description: "Get detailed information about a recipe",
+    description: "Get detailed information about a recipe (public, no tracking)",
+  },
+
+  GET_RECIPE_DETAILS_PROTECTED: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/recipe/:recipeId/view`,
+    protected: true,
+    description: "Get detailed information about a recipe (protected, with view tracking)",
   },
 
   GET_RECIPES_BULK_DETAILS: {

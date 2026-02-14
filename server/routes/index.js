@@ -422,9 +422,61 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
   }
 );
 
-// Get recipe details
+// Get recipe details (Public - no tracking)
 router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
   ROUTES.GET_RECIPE_DETAILS.path,
+  async (req, res) => {
+    try {
+      const recipeId = pathOr("", ["params", "recipeId"], req);
+      console.log(
+        `🔍 Fetching details for recipe ID: ${recipeId} (public request)`
+      );
+
+      if (isNilOrEmpty(recipeId)) {
+        return res
+          .status(400)
+          .json({ error: "Missing required recipeId parameter" });
+      }
+
+      const detailsUrl = `${SPOONACULAR_BASE_URL}/recipes/${recipeId}/information?includeNutrition=true&apiKey=${SPOONACULAR_API_KEY}`;
+      const response = await fetch(detailsUrl);
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Fallback to mock data if API fails (quota exceeded, etc.)
+        const mockRecipeDetails = fetchMockData("recipes");
+        if (mockRecipeDetails) {
+          console.log(
+            `API failed with status ${response.status}, using mock data as fallback`
+          );
+          const recipeDetailsMock =
+            mockRecipeDetails.recipes.find(
+              (r) => r.id === parseInt(recipeId)
+            ) || mockRecipeDetails.recipes[0];
+
+          return res.status(200).json({
+            success: true,
+            recipe: recipeDetailsMock,
+            usingMockData: true,
+            apiError: result.message || "API unavailable",
+          });
+        }
+        return res
+          .status(response.status)
+          .json({ error: result.message || "Failed to get recipe details" });
+      }
+
+      res.status(200).json({ success: true, recipe: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Get recipe details (Protected - with view tracking)
+router[ROUTES.GET_RECIPE_DETAILS_PROTECTED.method.toLowerCase()](
+  ROUTES.GET_RECIPE_DETAILS_PROTECTED.path,
+  checkJwt,
   async (req, res) => {
     try {
       const recipeId = pathOr("", ["params", "recipeId"], req);
@@ -456,6 +508,7 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
             ) || mockRecipeDetails.recipes[0];
 
           if (auth0Id) {
+            console.log("here");
             await setRecipeViewed(auth0Id, recipeDetailsMock);
           }
 

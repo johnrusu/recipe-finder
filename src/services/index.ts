@@ -10,7 +10,7 @@ import type {
   IRecipeDetailsResponse,
   IAutocompleteSuggestion,
   IRecipe,
-  IBaseRecipe
+  IBaseRecipe,
 } from "@/types";
 
 // ===== USER SERVICES =====
@@ -148,21 +148,24 @@ export const searchRecipes = async (
 
 /**
  * Get recipe details
- * GET /api/recipes/:recipeId
+ * GET /api/recipes/:recipeId (public, no tracking)
+ * GET /api/recipes/:recipeId/view (protected, with view tracking)
  */
 export const fetchRecipeDetails = async (
   recipeId: number,
   token: string
 ): Promise<IRecipeDetailsResponse> => {
-  const url = API_ROUTES.GET_RECIPE_DETAILS.url.replace(
-    ":recipeId",
-    String(recipeId)
-  );
+  // Use protected route with tracking if authenticated, otherwise use public route
+  const route = token
+    ? API_ROUTES.GET_RECIPE_DETAILS_PROTECTED
+    : API_ROUTES.GET_RECIPE_DETAILS;
+
+  const url = route.url.replace(":recipeId", recipeId.toString());
 
   return apiRequest(
     url,
     {
-      method: API_ROUTES.GET_RECIPE_DETAILS.method,
+      method: route.method,
     },
     token
   ) as Promise<IRecipeDetailsResponse>;

@@ -120,7 +120,6 @@ const recipeViewedSchema = new mongoose.Schema(
         summary: { type: String, required: false },
         instructions: { type: String, required: false },
         viewedAt: { type: Date, default: Date.now },
-        id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       },
     ],
   },
