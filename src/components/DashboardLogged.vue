@@ -674,7 +674,6 @@ const handleGetRecipeDetails = async (recipe: IRecipe) => {
 
 const handleToggleFavorite = (recipe: IRecipe) => {
   const foundFavorite = favoriteRecipes.value.find((r) => r.id === recipe.id);
-  favoriteRecipeId.value = recipe.id;
   if (foundFavorite) {
     handleDeleteRecipeFavorites(recipe);
     return;
@@ -683,6 +682,7 @@ const handleToggleFavorite = (recipe: IRecipe) => {
 };
 
 const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
+  favoriteRecipeId.value = recipe.id;
   loadingToggleFavorite.value = true;
 
   try {
@@ -719,6 +719,7 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
 
 const handleAddRecipeFavorites = async (recipe: IRecipe) => {
   loadingToggleFavorite.value = true;
+  favoriteRecipeId.value = recipe.id;
   try {
     let token = "";
     if (isAuthenticated.value) {
