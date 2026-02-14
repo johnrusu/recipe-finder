@@ -181,7 +181,7 @@ const getImageUrl = (imageSrc: string): string => {
   return `${imageBaseUri.value}${imageSrc}`;
 };
 
-const initializeFavorites = async () => {
+const fetchFavoritesRecipes = async () => {
   let token = "";
 
   try {
@@ -252,6 +252,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
 
 const handleRemoveFavorite = async (recipe: IRecipe) => {
   loadingForDetails.value = true;
+  favoriteRecipeId.value = recipe.id;
 
   try {
     let token = "";
@@ -283,6 +284,7 @@ const handleRemoveFavorite = async (recipe: IRecipe) => {
     console.error("Error removing favorite:", error);
   } finally {
     loadingForDetails.value = false;
+    favoriteRecipeId.value = null;
   }
 };
 
@@ -303,7 +305,7 @@ watch(
 // lifecycle
 onMounted(async () => {
   if (!isArrayNotEmpty(appStore.favoritesRecipes)) {
-    await initializeFavorites();
+    await fetchFavoritesRecipes();
   } else {
     // Initialize from store if already populated
     favoriteRecipes.value = appStore.favoritesRecipes;

@@ -343,9 +343,23 @@ const setRecipeViewed = async (auth0Id, recipe) => {
       await existingUser.save();
     }
 
+    // First, remove any existing entry with the same recipe ID to avoid duplicates
+    await recipeViewedModel.findOneAndUpdate(
+      { auth0Id },
+      { $pull: { recipes: { id: recipe.id } } }
+    );
+
+    // Then add the recipe with current timestamp at the beginning of the array
     const existingView = await recipeViewedModel.findOneAndUpdate(
       { auth0Id },
-      { auth0Id, recipes: [recipe] },
+      { 
+        $push: { 
+          recipes: { 
+            $each: [{ ...recipe, viewedAt: new Date() }], 
+            $position: 0 
+          } 
+        } 
+      },
       { upsert: true, new: true }
     );
 
@@ -372,7 +386,8 @@ const getViewedRecipes = async (auth0Id) => {
 const getViewedRecipesCount = async (auth0Id) => {
   try {
     console.log(`[DB] Getting viewed recipes count for ${auth0Id}`);
-    const count = await recipeViewedModel.countDocuments({ auth0Id });
+    const viewedRecipes = await recipeViewedModel.findOne({ auth0Id });
+    const count = viewedRecipes?.recipes?.length || 0;
     return count;
   } catch (error) {
     console.error(`[DB] Error getting viewed recipes count:`, error.message);

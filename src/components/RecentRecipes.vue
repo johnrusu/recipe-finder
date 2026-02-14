@@ -79,7 +79,7 @@
                   @click.stop="toggleFavorite(recipe)"
                   :color="isFavorited(recipe) ? 'error' : 'default'"
                   class="save-btn"
-                  :loading="loading && recipe.id == favoriteRecipeId"
+                  :loading="loading && recipe.id === favoriteRecipeId"
                 >
                   <v-icon
                     :icon="
@@ -197,14 +197,19 @@ const getImageUrl = (imageSrc: string): string => {
   return `${imageBaseUri.value}${imageSrc}`;
 };
 
-const initializeFavorites = async () => {
+const fetchFavoritesRecipes = async () => {
   try {
     let token = "";
-    try {
-      token = (await getAccessTokenSilently()) || "";
-    } catch (authError) {
-      console.error("Failed to get access token:", authError);
-      return;
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return;
+      }
     }
     const response = await getFavoriteRecipes(token);
 
@@ -372,6 +377,7 @@ const handleModalClose = () => {
 
 const handleFavoriteToggle = (recipe: IRecipe) => {
   toggleFavorite(recipe);
+  favoriteRecipeId.value = recipe.id;
 };
 
 const isFavorited = (recipe: IRecipe) => {
@@ -401,7 +407,7 @@ onMounted(async () => {
   if (hasFavorites) {
     favorites.value = appStore.favoritesRecipes;
   } else {
-    await initializeFavorites();
+    await fetchFavoritesRecipes();
   }
 
   // Fetch fresh recipes if we don't have any

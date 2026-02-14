@@ -543,6 +543,7 @@ const handleGetRecipeDetails = async (recipe: IRecipe) => {
 
     if (success && !isNilOrEmpty(recipeDetails)) {
       selectedRecipeDetails.value = recipeDetails;
+      await fetchTotalRecipesViewed();
     }
   } catch (err) {
     const errorMessage =
@@ -757,10 +758,7 @@ const handleViewRecipeDetails = async (recipe: IRecipe) => {
     const response = await getRecipeDetails(recipe.id, token);
 
     if (response.success && response.recipe) {
-      selectedRecipeDetails.value = {
-        ...response.recipe,
-        extendedIngredients: response.recipe.extendedIngredients || [],
-      } as IRecipeDetails;
+      selectedRecipeDetails.value = response.recipe as IRecipeDetails;
       showRecipeModal.value = true;
     } else {
       errorViewedRecipes.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;

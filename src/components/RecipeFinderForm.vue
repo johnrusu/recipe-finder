@@ -427,7 +427,7 @@
                       @click.stop="toggleFavorite(recipe)"
                       :color="isFavorited(recipe) ? 'error' : 'default'"
                       class="save-btn"
-                      :loading="loading && recipe.id == loadingFavoriteRecipeId"
+                      :loading="loading && recipe.id == favoriteRecipeId"
                     >
                       <v-icon
                         :icon="
@@ -548,7 +548,7 @@ const excludeIngredients = ref<string[]>([]);
 const showAdvanced = ref(false);
 const loading = ref(false);
 const loadingRecipes = ref(false);
-const loadingFavoriteRecipeId = ref<number | null>(null);
+const favoriteRecipeId = ref<number | null>(null);
 const loadingAutocomplete = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
@@ -1025,6 +1025,7 @@ const toggleFavorite = (recipe: IRecipe) => {
   } else {
     handleAddRecipeFavorites(recipe);
   }
+  favoriteRecipeId.value = recipe.id;
 };
 
 const clearFilters = () => {

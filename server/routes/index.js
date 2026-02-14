@@ -454,14 +454,13 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
               (r) => r.id === parseInt(recipeId)
             ) || mockRecipeDetails.recipes[0];
 
-          const RECIPE = { ...recipeDetailsMock, id: parseInt(recipeId) };
           if (auth0Id) {
-            await setRecipeViewed(auth0Id, RECIPE);
+            await setRecipeViewed(auth0Id, recipeDetailsMock);
           }
 
           return res.status(200).json({
             success: true,
-            recipe: RECIPE,
+            recipe: recipeDetailsMock,
             usingMockData: true,
             apiError: result.message || "API unavailable",
           });
