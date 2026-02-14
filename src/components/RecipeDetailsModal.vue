@@ -224,6 +224,9 @@ const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
 
 // Methods
 const getImageUrl = (imageSrc: string): string => {
+  if (!imageSrc) {
+    return "";
+  }
   if (imageSrc.startsWith("http")) {
     return imageSrc;
   }

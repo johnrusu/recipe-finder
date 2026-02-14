@@ -175,6 +175,9 @@ const displayedRecipes = computed(() =>
 
 // methods
 const getImageUrl = (imageSrc: string): string => {
+  if (!imageSrc) {
+    return "";
+  }
   if (imageSrc.startsWith("http")) {
     return imageSrc;
   }

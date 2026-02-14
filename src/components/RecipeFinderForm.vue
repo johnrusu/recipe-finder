@@ -490,14 +490,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  defineAsyncComponent,
-  nextTick,
-  watch,
-  onMounted,
-} from "vue";
+import { ref, computed, defineAsyncComponent, nextTick, onMounted } from "vue";
 import { pathOr } from "ramda";
 import { useDisplay } from "vuetify";
 
@@ -730,6 +723,9 @@ const handleAutoCompleteSearch = async () => {
 const debouncedAutoCompleteSearch = debounce(handleAutoCompleteSearch, 300);
 
 const getImageUrl = (imageSrc: string): string => {
+  if (!imageSrc) {
+    return "";
+  }
   // If it's already a full URL (starts with http), return as-is
   if (imageSrc.startsWith("http")) {
     return imageSrc;
@@ -1085,18 +1081,16 @@ const isFavorited = (recipe: IRecipe) => {
   return favorites.value.find((fav) => fav.id === recipe.id) !== undefined;
 };
 
-// watch store for changes from other components
-watch(
-  () => appStore.recipes,
-  (recipes) => {
-    searchResults.value = recipes;
-  },
-  { deep: true }
-);
-
 // lifecycle
 onMounted(async () => {
   const hasFavorites = isArrayNotEmpty(appStore.favoritesRecipes);
+  const hasRecipes = isArrayNotEmpty(appStore.recipes);
+
+  if (!hasRecipes) {
+    searchResults.value = [];
+  } else {
+    searchResults.value = appStore.recipes;
+  }
 
   // Handle favorites initialization
   if (hasFavorites) {

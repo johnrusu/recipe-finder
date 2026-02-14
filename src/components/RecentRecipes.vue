@@ -191,6 +191,9 @@ const limitedRecipes = computed(() => recipes.value.slice(0, props.maxItems));
 
 // methods
 const getImageUrl = (imageSrc: string): string => {
+  if (!imageSrc) {
+    return "";
+  }
   if (imageSrc.startsWith("http")) {
     return imageSrc;
   }

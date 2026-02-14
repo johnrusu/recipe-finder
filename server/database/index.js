@@ -13,42 +13,45 @@ const usersSchema = new mongoose.Schema({
 });
 const usersModel = mongoose.model("User", usersSchema, "users-collection");
 
-const favoritesRecipesSchema = new mongoose.Schema({
-  recipes: [
-    {
-      id: { type: Number, required: true },
-      title: { type: String, required: true },
-      image: { type: String, required: true },
-      imageType: { type: String, required: true },
-      readyInMinutes: { type: Number, required: true },
-      servings: { type: Number, required: true },
-      sourceUrl: { type: String, required: true },
-      vegetarian: { type: Boolean, required: true },
-      vegan: { type: Boolean, required: true },
-      glutenFree: { type: Boolean, required: true },
-      dairyFree: { type: Boolean, required: true },
-      veryHealthy: { type: Boolean, required: true },
-      cheap: { type: Boolean, required: true },
-      veryPopular: { type: Boolean, required: true },
-      sustainable: { type: Boolean, required: true },
-      lowFodmap: { type: Boolean, required: true },
-      weightWatcherSmartPoints: { type: Number, required: true },
-      gaps: { type: String, required: true },
-      preparationMinutes: { type: Number, required: false },
-      cookingMinutes: { type: Number, required: false },
-      aggregateLikes: { type: Number, required: true },
-      healthScore: { type: Number, required: true },
-      creditsText: { type: String, required: true },
-      license: { type: String, required: true },
-      sourceName: { type: String, required: true },
-      pricePerServing: { type: Number, required: true },
-      extendedIngredients: { type: [Object], required: false },
-      summary: { type: String, required: false },
-      instructions: { type: String, required: false },
-    },
-  ],
-  auth0Id: { type: String, required: true, unique: true },
-});
+const favoritesRecipesSchema = new mongoose.Schema(
+  {
+    recipes: [
+      {
+        id: { type: Number, required: true },
+        title: { type: String, required: true },
+        image: { type: String, required: false },
+        imageType: { type: String, required: false },
+        readyInMinutes: { type: Number, required: false },
+        servings: { type: Number, required: false },
+        sourceUrl: { type: String, required: false },
+        vegetarian: { type: Boolean, required: false },
+        vegan: { type: Boolean, required: false },
+        glutenFree: { type: Boolean, required: false },
+        dairyFree: { type: Boolean, required: false },
+        veryHealthy: { type: Boolean, required: false },
+        cheap: { type: Boolean, required: false },
+        veryPopular: { type: Boolean, required: false },
+        sustainable: { type: Boolean, required: false },
+        lowFodmap: { type: Boolean, required: false },
+        weightWatcherSmartPoints: { type: Number, required: false },
+        gaps: { type: String, required: false },
+        preparationMinutes: { type: Number, required: false },
+        cookingMinutes: { type: Number, required: false },
+        aggregateLikes: { type: Number, required: false },
+        healthScore: { type: Number, required: false },
+        creditsText: { type: String, required: false },
+        license: { type: String, required: false },
+        sourceName: { type: String, required: false },
+        pricePerServing: { type: Number, required: false },
+        extendedIngredients: { type: [Object], required: false },
+        summary: { type: String, required: false },
+        instructions: { type: String, required: false },
+      },
+    ],
+    auth0Id: { type: String, required: true, unique: true },
+  },
+  { strict: false }
+);
 
 const favoritesRecipesModel = mongoose.model(
   "FavoritesRecipe",
@@ -81,43 +84,46 @@ const recipesSearchHistoryModel = mongoose.model(
   "recipes-search-history-collection"
 );
 
-const recipeViewedSchema = new mongoose.Schema({
-  auth0Id: { type: String, required: true, unique: true },
-  recipes: [
-    {
-      id: { type: Number, required: true },
-      title: { type: String, required: true },
-      image: { type: String, required: true },
-      imageType: { type: String, required: true },
-      readyInMinutes: { type: Number, required: true },
-      servings: { type: Number, required: true },
-      sourceUrl: { type: String, required: true },
-      vegetarian: { type: Boolean, required: true },
-      vegan: { type: Boolean, required: true },
-      glutenFree: { type: Boolean, required: true },
-      dairyFree: { type: Boolean, required: true },
-      veryHealthy: { type: Boolean, required: true },
-      cheap: { type: Boolean, required: true },
-      veryPopular: { type: Boolean, required: true },
-      sustainable: { type: Boolean, required: true },
-      lowFodmap: { type: Boolean, required: true },
-      weightWatcherSmartPoints: { type: Number, required: true },
-      gaps: { type: String, required: true },
-      preparationMinutes: { type: Number, required: false },
-      cookingMinutes: { type: Number, required: false },
-      aggregateLikes: { type: Number, required: true },
-      healthScore: { type: Number, required: true },
-      creditsText: { type: String, required: true },
-      license: { type: String, required: true },
-      sourceName: { type: String, required: true },
-      pricePerServing: { type: Number, required: true },
-      extendedIngredients: { type: [Object], required: false },
-      summary: { type: String, required: false },
-      instructions: { type: String, required: false },
-      viewedAt: { type: Date, default: Date.now },
-    },
-  ],
-});
+const recipeViewedSchema = new mongoose.Schema(
+  {
+    auth0Id: { type: String, required: true, unique: true },
+    recipes: [
+      {
+        id: { type: Number, required: true },
+        title: { type: String, required: true },
+        image: { type: String, required: false },
+        imageType: { type: String, required: false },
+        readyInMinutes: { type: Number, required: false },
+        servings: { type: Number, required: false },
+        sourceUrl: { type: String, required: false },
+        vegetarian: { type: Boolean, required: false },
+        vegan: { type: Boolean, required: false },
+        glutenFree: { type: Boolean, required: false },
+        dairyFree: { type: Boolean, required: false },
+        veryHealthy: { type: Boolean, required: false },
+        cheap: { type: Boolean, required: false },
+        veryPopular: { type: Boolean, required: false },
+        sustainable: { type: Boolean, required: false },
+        lowFodmap: { type: Boolean, required: false },
+        weightWatcherSmartPoints: { type: Number, required: false },
+        gaps: { type: String, required: false },
+        preparationMinutes: { type: Number, required: false },
+        cookingMinutes: { type: Number, required: false },
+        aggregateLikes: { type: Number, required: false },
+        healthScore: { type: Number, required: false },
+        creditsText: { type: String, required: false },
+        license: { type: String, required: false },
+        sourceName: { type: String, required: false },
+        pricePerServing: { type: Number, required: false },
+        extendedIngredients: { type: [Object], required: false },
+        summary: { type: String, required: false },
+        instructions: { type: String, required: false },
+        viewedAt: { type: Date, default: Date.now },
+      },
+    ],
+  },
+  { strict: false }
+);
 
 const recipeViewedModel = mongoose.model(
   "RecipeViewed",
@@ -218,7 +224,7 @@ const getFavoritesRecipes = async (auth0Id) => {
 
 const setFavoritesRecipes = async (auth0Id, recipes) => {
   try {
-    console.log(`[DB] Setting favorites for ${auth0Id}:`, recipes);
+    console.log(`[DB] Adding favorites for ${auth0Id}:`, recipes);
 
     let existingUser = await usersModel.findOne({ auth0Id });
 
@@ -234,26 +240,30 @@ const setFavoritesRecipes = async (auth0Id, recipes) => {
       await existingUser.save();
     }
 
-    // First, remove any existing entry with the same recipe ID to avoid duplicates
-    await favoritesRecipesModel.findOneAndUpdate(
-      { auth0Id },
-      { $pull: { recipes: { id: recipe.id } } }
+    // Get existing favorites
+    const existingFavorites = await favoritesRecipesModel.findOne({ auth0Id });
+    const existingRecipes = existingFavorites?.recipes || [];
+
+    // Extract recipe IDs from the new recipes
+    const newRecipeIds = recipes.map((recipe) => recipe.id);
+
+    // Filter out recipes from existing that have the same ID as new ones (to avoid duplicates)
+    const filteredExisting = existingRecipes.filter(
+      (recipe) => !newRecipeIds.includes(recipe.id)
     );
 
-    // Then add the recipe with current timestamp at the beginning of the array
+    // Combine: new recipes first, then existing (without duplicates)
+    const combinedRecipes = [...recipes, ...filteredExisting];
+
+    // Update with the combined list
     const recipesFavorites = await favoritesRecipesModel.findOneAndUpdate(
       { auth0Id },
-      {
-        $push: {
-          recipes: {
-            $each: [{ ...recipe }],
-            $position: 0,
-          },
-        },
-      },
+      { $set: { recipes: combinedRecipes } },
       { upsert: true, new: true }
     );
-    console.log(`[DB] Favorites saved successfully`);
+    console.log(
+      `[DB] Favorites saved successfully. Total: ${combinedRecipes.length}`
+    );
     return recipesFavorites;
   } catch (error) {
     console.error(`[DB] Error saving favorites:`, error.message);
