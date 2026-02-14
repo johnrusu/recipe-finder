@@ -501,7 +501,7 @@ import { useAppStore } from "@/stores";
 // types
 import type {
   IRecipe,
-  IRecipeSearchParams,
+  IBaseRecipe,
   IRecipeDetails,
   IAutocompleteSuggestion,
 } from "@/types";
@@ -573,7 +573,7 @@ const hasMoreResults = computed(
     !isRandomSearch.value &&
     currentOffset.value + currentNumber.value < totalResults.value
 );
-const lastSearchParams = ref<IRecipeSearchParams | null>(null);
+const lastSearchParams = ref<IBaseRecipe | null>(null);
 
 // hooks
 const appStore = useAppStore();
@@ -754,8 +754,7 @@ const handleSearch = async () => {
 
   try {
     // Build filter parameters
-    type SafeOmitSearchParams = Omit<IRecipeSearchParams, 'id'> & { [key: string]: unknown };
-    const params: SafeOmitSearchParams = {
+    const params: IBaseRecipe = {
       query: searchQuery.value,
       number: currentNumber.value,
       offset: 0,
