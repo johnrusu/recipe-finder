@@ -234,10 +234,23 @@ const setFavoritesRecipes = async (auth0Id, recipes) => {
       await existingUser.save();
     }
 
-    // Find and update existing favorites, or create new one
+    // First, remove any existing entry with the same recipe ID to avoid duplicates
+    await favoritesRecipesModel.findOneAndUpdate(
+      { auth0Id },
+      { $pull: { recipes: { id: recipe.id } } }
+    );
+
+    // Then add the recipe with current timestamp at the beginning of the array
     const recipesFavorites = await favoritesRecipesModel.findOneAndUpdate(
       { auth0Id },
-      { auth0Id, recipes },
+      {
+        $push: {
+          recipes: {
+            $each: [{ ...recipe }],
+            $position: 0,
+          },
+        },
+      },
       { upsert: true, new: true }
     );
     console.log(`[DB] Favorites saved successfully`);
@@ -352,13 +365,13 @@ const setRecipeViewed = async (auth0Id, recipe) => {
     // Then add the recipe with current timestamp at the beginning of the array
     const existingView = await recipeViewedModel.findOneAndUpdate(
       { auth0Id },
-      { 
-        $push: { 
-          recipes: { 
-            $each: [{ ...recipe, viewedAt: new Date() }], 
-            $position: 0 
-          } 
-        } 
+      {
+        $push: {
+          recipes: {
+            $each: [{ ...recipe, viewedAt: new Date() }],
+            $position: 0,
+          },
+        },
       },
       { upsert: true, new: true }
     );
