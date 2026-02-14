@@ -202,7 +202,9 @@
                   @click.stop="handleDeleteRecipeFavorites(recipe)"
                   color="error"
                   class="remove-btn"
-                  :loading="loadingForDetails && recipe.id == favoriteRecipeId"
+                  :loading="
+                    loadingToggleFavorite && recipe.id == favoriteRecipeId
+                  "
                 >
                   <v-icon icon="mdi-heart-off" />
                   <v-tooltip activator="parent" location="top">
