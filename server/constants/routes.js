@@ -101,6 +101,13 @@ const ROUTES = {
     description: "Remove a search query from user's search history",
   },
 
+  GET_SEARCH_HISTORY: {
+    method: "GET",
+    path: "/recipes/search-history",
+    protected: true,
+    description: "Get user's search history",
+  },
+
   SET_RECIPE_VIEWED: {
     method: "POST",
     path: "/recipes/recipe/:recipeId/view",

@@ -149,7 +149,7 @@ export const searchRecipes = async (
  * Get recipe details
  * GET /api/recipes/:recipeId
  */
-export const getRecipeDetails = async (
+export const fetchRecipeDetails = async (
   recipeId: number,
   token: string
 ): Promise<IRecipeDetailsResponse> => {
@@ -176,7 +176,7 @@ export const getRecipeDetails = async (
  * @returns {Promise<IRecipeDetailsResponse>} - Response data
  *
  */
-export const getRecipesBulkDetails = async (
+export const fetchRecipesBulkDetails = async (
   recipesIds: number[],
   token?: string
 ): Promise<IRecipeDetailsResponse> => {
@@ -215,7 +215,7 @@ export const getRandomRecipes = async (
  * @param token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
-export const getFavoriteRecipes = async (
+export const fetchFavoriteRecipes = async (
   token: string
 ): Promise<{
   success: boolean;
@@ -366,12 +366,38 @@ export const removeRecipesSearchHistory = async (
 };
 
 /**
+ * Fetch user's search history
+ *
+ * @param token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const fetchRecipesSearchHistory = async (
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  searchHistory: IRecipeSearchParams[];
+}> => {
+  return apiRequest(
+    API_ROUTES.GET_SEARCH_HISTORY.url,
+    {
+      method: API_ROUTES.GET_SEARCH_HISTORY.method,
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    searchHistory: IRecipeSearchParams[];
+  }>;
+};
+
+/**
  * Get viewed recipes for the authenticated user
  *
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
-export const getViewedRecipes = async (
+export const fetchViewedRecipes = async (
   token: string
 ): Promise<{
   success: boolean;

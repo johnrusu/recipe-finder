@@ -369,6 +369,7 @@ const FAVORITE_RECIPES = {
 };
 
 const DASHBOARD = {
+  REMOVE_SEARCH_HISTORY_TOOLTIP: "Remove from Search History",
   WELCOME_HEADING: "Welcome back!",
   WELCOME_SUBHEADING: "Your personalized recipe dashboard",
   FAVORITE_RECIPES_LABEL: "Favorite Recipes",

@@ -130,8 +130,8 @@ const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
 
 // services
 import {
-  getFavoriteRecipes,
-  getRecipeDetails,
+  fetchFavoriteRecipes,
+  fetchRecipeDetails,
   removeFavoriteRecipe,
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
@@ -194,7 +194,7 @@ const fetchFavoritesRecipes = async () => {
   }
 
   try {
-    const response = await getFavoriteRecipes(token);
+    const response = await fetchFavoriteRecipes(token);
     if (!isNilOrEmpty(response)) {
       const success = pathOr(false, ["success"], response);
       const recipes = pathOr([], ["recipes"], response);
@@ -236,7 +236,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
         console.warn("Failed to get access token:", authError);
       }
     }
-    const response = await getRecipeDetails(recipeId, token);
+    const response = await fetchRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = response.recipe as IRecipeDetails;

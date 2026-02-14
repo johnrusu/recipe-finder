@@ -493,6 +493,7 @@
 import { ref, computed, defineAsyncComponent, nextTick, onMounted } from "vue";
 import { pathOr } from "ramda";
 import { useDisplay } from "vuetify";
+import { useRoute } from "vue-router";
 
 // state
 import { useAppStore } from "@/stores";
@@ -516,12 +517,12 @@ import {
 import {
   searchRecipes,
   getRandomRecipes,
-  getRecipeDetails,
+  fetchRecipeDetails,
   setFavoriteRecipes,
   removeFavoriteRecipe,
   autoCompleteRecipeSearch,
   setRecipesSearchHistory,
-  getFavoriteRecipes,
+  fetchFavoriteRecipes,
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty, debounce } from "@/utils";
 
@@ -577,6 +578,7 @@ const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 // hooks
 const appStore = useAppStore();
 const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+const route = useRoute();
 
 // constants
 const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
@@ -928,7 +930,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
         // Continue with empty token - viewing recipes doesn't require auth
       }
     }
-    const response = await getRecipeDetails(recipeId, token);
+    const response = await fetchRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = response.recipe as IRecipeDetails;
@@ -1034,7 +1036,7 @@ const fetchFavoritesRecipes = async () => {
         return;
       }
     }
-    const response = await getFavoriteRecipes(token);
+    const response = await fetchFavoriteRecipes(token);
 
     if (response.success && response.recipes) {
       appStore.setFavoritesRecipes(response.recipes);
@@ -1097,6 +1099,79 @@ onMounted(async () => {
     favorites.value = appStore.favoritesRecipes;
   } else {
     await fetchFavoritesRecipes();
+  }
+
+  // Parse query parameters from URL
+  const query = route.query;
+  let shouldTriggerSearch = false;
+
+  // Populate search query
+  if (query.q && typeof query.q === 'string') {
+    searchQuery.value = query.q;
+    shouldTriggerSearch = true;
+  }
+
+  // Populate meal type
+  if (query.type && typeof query.type === 'string') {
+    selectedMealType.value = query.type;
+    shouldTriggerSearch = true;
+  }
+
+  // Populate dietary preferences (diet can be comma-separated)
+  if (query.diet && typeof query.diet === 'string') {
+    dietaryPreferences.value = query.diet.split(',').map(d => d.trim());
+    shouldTriggerSearch = true;
+  }
+
+  // Populate intolerances (can be comma-separated)
+  if (query.intolerances && typeof query.intolerances === 'string') {
+    intolerances.value = query.intolerances.split(',').map(i => i.trim());
+    shouldTriggerSearch = true;
+  }
+
+  // Populate cuisine (can be comma-separated)
+  if (query.cuisine && typeof query.cuisine === 'string') {
+    selectedCuisine.value = query.cuisine.split(',').map(c => c.trim());
+    shouldTriggerSearch = true;
+  }
+
+  // Populate max ready time
+  if (query.maxReadyTime && typeof query.maxReadyTime === 'string') {
+    const time = parseInt(query.maxReadyTime, 10);
+    if (!isNaN(time) && time > 0) {
+      maxCookingTime.value = time;
+      shouldTriggerSearch = true;
+    }
+  }
+
+  // Populate include ingredients (can be comma-separated)
+  if (query.includeIngredients && typeof query.includeIngredients === 'string') {
+    includeIngredients.value = query.includeIngredients.split(',').map(i => i.trim());
+    shouldTriggerSearch = true;
+  }
+
+  // Populate exclude ingredients (can be comma-separated)
+  if (query.excludeIngredients && typeof query.excludeIngredients === 'string') {
+    excludeIngredients.value = query.excludeIngredients.split(',').map(e => e.trim());
+    shouldTriggerSearch = true;
+  }
+
+  // If we have filters from query params, automatically expand advanced section
+  if (
+    query.cuisine ||
+    query.diet ||
+    query.intolerances ||
+    query.maxReadyTime ||
+    query.includeIngredients ||
+    query.excludeIngredients
+  ) {
+    showAdvanced.value = true;
+  }
+
+  // Trigger search if any query parameters were found
+  if (shouldTriggerSearch && searchQuery.value.trim()) {
+    await nextTick();
+    handleSearch();
   }
 });
 </script>

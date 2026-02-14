@@ -36,6 +36,7 @@ interface IRecipeSearchParams {
   maxReadyTime?: number;
   includeIngredients?: string;
   excludeIngredients?: string;
+  id: number | string;
   [key: string]: unknown;
 }
 

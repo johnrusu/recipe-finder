@@ -74,6 +74,7 @@ const recipesSearchHistorySchema = new mongoose.Schema({
       number: { type: Number, required: false },
       offset: { type: Number, required: false },
       timestamp: { type: Date, default: Date.now },
+      id: { type: mongoose.Schema.Types.ObjectId, auto: true },
     },
   ],
 });
@@ -119,6 +120,7 @@ const recipeViewedSchema = new mongoose.Schema(
         summary: { type: String, required: false },
         instructions: { type: String, required: false },
         viewedAt: { type: Date, default: Date.now },
+        id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       },
     ],
   },
@@ -339,13 +341,25 @@ const removeRecipesSearchHistory = async (auth0Id, searchQueryId) => {
     const searchHistoryAfterRemove =
       await recipesSearchHistoryModel.findOneAndUpdate(
         { auth0Id },
-        { $pull: { searchQueries: { _id: searchQueryId } } },
+        { $pull: { searchQueries: { id: searchQueryId } } },
         { new: true }
       );
     return searchHistoryAfterRemove;
   } catch (error) {
     console.error(`[DB] Error removing search history:`, error.message);
     throw new Error(`Error removing search history: ${error.message}`);
+  }
+};
+
+// get search history
+const fetchRecipesSearchHistory = async (auth0Id) => {
+  try {
+    console.log(`[DB] Getting search history for ${auth0Id}`);
+    const searchHistory = await recipesSearchHistoryModel.findOne({ auth0Id });
+    return searchHistory || [];
+  } catch (error) {
+    console.error(`[DB] Error getting search history:`, error.message);
+    throw new Error(`Error getting search history: ${error.message}`);
   }
 };
 
@@ -394,7 +408,7 @@ const setRecipeViewed = async (auth0Id, recipe) => {
 };
 
 // Get user's viewed recipes
-const getViewedRecipes = async (auth0Id) => {
+const fetchViewedRecipes = async (auth0Id) => {
   try {
     console.log(`[DB] Getting viewed recipes for ${auth0Id}`);
     const viewedRecipes = await recipeViewedModel.findOne({ auth0Id });
@@ -438,8 +452,11 @@ module.exports = {
   recipesSearchHistoryModel,
   createRecipesSearchHistory,
   removeRecipesSearchHistory,
+  fetchRecipesSearchHistory,
+
+  // Recipe Viewed methods
   recipeViewedModel,
   setRecipeViewed,
-  getViewedRecipes,
+  fetchViewedRecipes,
   getViewedRecipesCount,
 };

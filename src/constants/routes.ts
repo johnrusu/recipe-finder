@@ -121,6 +121,13 @@ export const API_ROUTES = {
     description: "Remove a search query from user's search history",
   },
 
+  GET_SEARCH_HISTORY: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/search-history`,
+    protected: true,
+    description: "Get user's search history",
+  },
+
   SET_RECIPE_VIEWED: {
     method: "POST",
     url: `${BASE_URL}/recipes/recipe/:recipeId/view`,

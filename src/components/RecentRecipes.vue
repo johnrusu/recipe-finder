@@ -147,10 +147,10 @@ const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
 // services
 import {
   getRandomRecipes,
-  getRecipeDetails,
+  fetchRecipeDetails,
   setFavoriteRecipes,
   removeFavoriteRecipe,
-  getFavoriteRecipes,
+  fetchFavoriteRecipes,
 } from "@/services";
 import { isArrayNotEmpty } from "@/utils";
 
@@ -214,7 +214,7 @@ const fetchFavoritesRecipes = async () => {
         return;
       }
     }
-    const response = await getFavoriteRecipes(token);
+    const response = await fetchFavoriteRecipes(token);
 
     if (response.success && response.recipes) {
       appStore.setFavoritesRecipes(response.recipes);
@@ -279,7 +279,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
         // Continue with empty token - viewing recipes doesn't require auth
       }
     }
-    const response = await getRecipeDetails(recipeId, token);
+    const response = await fetchRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = response.recipe as IRecipeDetails;

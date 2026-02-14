@@ -311,7 +311,7 @@
         <!-- Search History List -->
         <v-list v-else-if="searchHistory.length > 0" lines="two">
           <v-list-item
-            v-for="(search, index) in searchHistory.slice(0, 10)"
+            v-for="(search, index) in searchHistory"
             :key="index"
             class="search-history-item"
           >
@@ -326,7 +326,42 @@
             </v-list-item-title>
 
             <v-list-item-subtitle>
-              {{ formatDate(search.timestamp) }}
+              <div class="d-flex flex-wrap gap-2 align-center mt-1">
+                <span v-if="search.cuisine" class="search-param-chip">
+                  <v-icon size="x-small" icon="mdi-earth" />
+                  {{ search.cuisine }}
+                </span>
+                <span v-if="search.diet" class="search-param-chip">
+                  <v-icon size="x-small" icon="mdi-food-apple" />
+                  {{ search.diet }}
+                </span>
+                <span v-if="search.type" class="search-param-chip">
+                  <v-icon size="x-small" icon="mdi-silverware" />
+                  {{ search.type }}
+                </span>
+                <span v-if="search.intolerances" class="search-param-chip">
+                  <v-icon size="x-small" icon="mdi-alert-circle" />
+                  {{ search.intolerances }}
+                </span>
+                <span
+                  v-if="search.includeIngredients"
+                  class="search-param-chip search-param-include"
+                >
+                  <v-icon size="x-small" icon="mdi-plus-circle" />
+                  Include: {{ search.includeIngredients }}
+                </span>
+                <span
+                  v-if="search.excludeIngredients"
+                  class="search-param-chip search-param-exclude"
+                >
+                  <v-icon size="x-small" icon="mdi-minus-circle" />
+                  Exclude: {{ search.excludeIngredients }}
+                </span>
+                <span v-if="search.maxReadyTime" class="search-param-chip">
+                  <v-icon size="x-small" icon="mdi-clock-outline" />
+                  ≤{{ search.maxReadyTime }} min
+                </span>
+              </div>
             </v-list-item-subtitle>
 
             <template #append>
@@ -334,11 +369,24 @@
                 icon
                 variant="text"
                 size="small"
-                @click="searchAgain(search.query)"
+                @click="searchAgain(search)"
               >
                 <v-icon icon="mdi-refresh" />
                 <v-tooltip activator="parent" location="top">
                   {{ DASHBOARD.SEARCH_AGAIN_TOOLTIP }}
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                color="error"
+                @click="handleRemoveSearchHistory(search.id as string)"
+              >
+                <v-icon icon="mdi-delete" />
+                <v-tooltip activator="parent" location="top">
+                  {{ DASHBOARD.REMOVE_SEARCH_HISTORY_TOOLTIP }}
                 </v-tooltip>
               </v-btn>
             </template>
@@ -416,19 +464,21 @@ import {
 } from "@/constants";
 
 // types
-import type { IRecipe, IRecipeDetails } from "@/types";
+import type { IRecipe, IRecipeDetails, IRecipeSearchParams } from "@/types";
 
 // utils
 import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
 
 // services
 import {
-  getFavoriteRecipes,
+  fetchFavoriteRecipes,
   getViewedRecipesCount,
-  getViewedRecipes,
-  getRecipeDetails,
+  fetchViewedRecipes,
+  fetchRecipeDetails,
   removeFavoriteRecipe,
   setFavoriteRecipes,
+  fetchRecipesSearchHistory,
+  removeRecipesSearchHistory,
 } from "@/services";
 
 // stores
@@ -450,7 +500,7 @@ const appStore = useAppStore();
 
 // state
 const favoriteRecipes = ref<IRecipe[]>([]);
-const searchHistory = ref<Array<{ query: string; timestamp: string }>>([]);
+const searchHistory = ref<IRecipeSearchParams[]>([]);
 
 const favoritesError = ref<string | null>(null);
 const viewDetailsError = ref<string | null>(null);
@@ -478,6 +528,75 @@ const searchHistoryCount = computed(() => searchHistory.value.length);
 const totalRecipesViewedCount = computed(() => totalRecipesViewed.value);
 
 // methods
+
+const fetchSearchHistoryForRecipes = async () => {
+  loadingSearchHistory.value = true;
+  searchHistoryError.value = null;
+
+  try {
+    let token = "";
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        loadingSearchHistory.value = false;
+        return;
+      }
+    }
+    const response = await fetchRecipesSearchHistory(token);
+
+    const success = pathOr(false, ["success"], response);
+    const history = pathOr([], ["history"], response);
+
+    if (success && isArrayNotEmpty(history)) {
+      appStore.setSearchHistory(history);
+      searchHistory.value = history;
+    } else {
+      appStore.setSearchHistory([]);
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Failed to load search history";
+    searchHistoryError.value = errorMessage;
+    console.error("Error loading search history:", err);
+  } finally {
+    loadingSearchHistory.value = false;
+  }
+};
+
+const handleRemoveSearchHistory = async (searchId: string) => {
+  try {
+    let token = "";
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return;
+      }
+    }
+    const response = await removeRecipesSearchHistory(searchId, token);
+    if (response.success) {
+      const updatedHistory = searchHistory.value.filter(
+        (s) => s.id !== searchId
+      ) as IRecipeSearchParams[];
+      searchHistory.value = updatedHistory;
+      appStore.setSearchHistory(updatedHistory);
+    } else {
+      console.error("Failed to remove search history:", response.message);
+    }
+  } catch (error) {
+    console.error("Error removing search history:", error);
+  }
+};
+
 const fetchFavorites = async () => {
   loadingFavorites.value = true;
   favoritesError.value = null;
@@ -496,7 +615,7 @@ const fetchFavorites = async () => {
         return;
       }
     }
-    const response = await getFavoriteRecipes(token);
+    const response = await fetchFavoriteRecipes(token);
 
     const success = pathOr(false, ["success"], response);
     const recipes = pathOr([], ["recipes"], response);
@@ -533,7 +652,7 @@ const handleGetRecipeDetails = async (recipe: IRecipe) => {
         console.warn("Failed to get access token:", authError);
       }
     }
-    const response = await getRecipeDetails(recipe.id, token);
+    const response = await fetchRecipeDetails(recipe.id, token);
     const success = pathOr(false, ["success"], response);
     const recipeDetails: IRecipeDetails | null = pathOr(
       null,
@@ -633,34 +752,6 @@ const handleModalClose = () => {
   loadingForDetails.value = false;
 };
 
-const fetchSearchHistory = async () => {
-  loadingSearchHistory.value = true;
-  searchHistoryError.value = null;
-
-  try {
-    // TODO: Implement API endpoint to fetch search history
-    // For now, using mock data
-    searchHistory.value = [
-      { query: "Chicken pasta", timestamp: new Date().toISOString() },
-      {
-        query: "Vegetarian tacos",
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        query: "Chocolate cake",
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-      },
-    ];
-  } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : "Failed to load search history";
-    searchHistoryError.value = errorMessage;
-    console.error("Error loading search history:", err);
-  } finally {
-    loadingSearchHistory.value = false;
-  }
-};
-
 const fetchListOfViewedRecipes = async () => {
   loadingOfViewedRecipes.value = true;
   errorViewedRecipes.value = null;
@@ -678,7 +769,7 @@ const fetchListOfViewedRecipes = async () => {
         return 0;
       }
     }
-    const response = await getViewedRecipes(token);
+    const response = await fetchViewedRecipes(token);
     if (response.success) {
       const recipes: IRecipe[] = pathOr([], ["recipes"], response);
       listOfViewedRecipes.value = recipes;
@@ -716,24 +807,19 @@ const fetchTotalRecipesViewed = async () => {
   return 0; // Fallback to 0 if there's an error
 };
 
-const formatDate = (timestamp: string): string => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return DASHBOARD.TIME_JUST_NOW;
-  if (diffMins < 60) return DASHBOARD.TIME_MINUTES_AGO(diffMins);
-  if (diffHours < 24) return DASHBOARD.TIME_HOURS_AGO(diffHours);
-  if (diffDays < 7) return DASHBOARD.TIME_DAYS_AGO(diffDays);
-
-  return date.toLocaleDateString();
-};
-
-const searchAgain = (query: string) => {
-  router.push({ path: "/", query: { q: query } });
+const searchAgain = (search: IRecipeSearchParams) => {
+  const queryParams: Record<string, string> = { q: search.query };
+  if (search.cuisine) queryParams.cuisine = search.cuisine;
+  if (search.diet) queryParams.diet = search.diet;
+  if (search.type) queryParams.type = search.type;
+  if (search.intolerances) queryParams.intolerances = search.intolerances;
+  if (search.includeIngredients)
+    queryParams.includeIngredients = search.includeIngredients;
+  if (search.excludeIngredients)
+    queryParams.excludeIngredients = search.excludeIngredients;
+  if (search.maxReadyTime)
+    queryParams.maxReadyTime = search.maxReadyTime.toString();
+  router.push({ path: "/", query: queryParams });
 };
 
 const handleCloseRecipesListModal = () => {
@@ -757,7 +843,7 @@ const handleViewRecipeDetails = async (recipe: IRecipe) => {
         console.warn("Failed to get access token:", authError);
       }
     }
-    const response = await getRecipeDetails(recipe.id, token);
+    const response = await fetchRecipeDetails(recipe.id, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = response.recipe as IRecipeDetails;
@@ -783,7 +869,7 @@ onMounted(async () => {
     // Initialize from store if already populated
     favoriteRecipes.value = appStore.favoritesRecipes;
   }
-  await fetchSearchHistory();
+  await fetchSearchHistoryForRecipes();
   await fetchTotalRecipesViewed();
 });
 
@@ -869,6 +955,28 @@ watch(
 
 .search-history-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
+}
+
+.search-param-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: rgb(var(--v-theme-primary));
+  white-space: nowrap;
+}
+
+.search-param-include {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: rgb(76, 175, 80);
+}
+
+.search-param-exclude {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: rgb(244, 67, 54);
 }
 
 .remove-btn {

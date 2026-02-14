@@ -30,8 +30,6 @@ const fetchMockData = (mockName = "") => {
   }
 };
 
-// Version: 1.0.1 - Timestamp fixes
-
 // Constants
 const {
   APP_NAME,
@@ -57,8 +55,9 @@ const {
   removeRecipesSearchHistory,
   getViewedRecipesCount,
   setRecipeViewed,
-  getViewedRecipes,
+  fetchViewedRecipes,
   removeViewedRecipes,
+  fetchRecipesSearchHistory,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -699,7 +698,7 @@ router[ROUTES.REMOVE_SEARCH_HISTORY.method.toLowerCase()](
         searchQueryId
       );
 
-      if (removeSearchHistoryResult) {
+      if (!isNilOrEmpty(removeSearchHistoryResult)) {
         res.status(200).json({
           success: true,
           message: `Search history item removed for user ${auth0Id}`,
@@ -725,6 +724,41 @@ router[ROUTES.REMOVE_SEARCH_HISTORY.method.toLowerCase()](
   }
 );
 
+// get search history
+router[ROUTES.GET_SEARCH_HISTORY.method.toLowerCase()](
+  ROUTES.GET_SEARCH_HISTORY.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const searchHistory = await fetchRecipesSearchHistory(auth0Id);
+
+      if (isArrayNotEmpty(searchHistory.searchQueries)) {
+        res.status(200).json({
+          success: true,
+          message: `Search history retrieved for user ${auth0Id}`,
+          history: searchHistory.searchQueries || [],
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `No search history found for user ${auth0Id}`,
+          history: [],
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in GET_SEARCH_HISTORY:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 // Get user's viewed recipes
 router[ROUTES.GET_VIEWED_RECIPES.method.toLowerCase()](
   ROUTES.GET_VIEWED_RECIPES.path,
@@ -738,7 +772,7 @@ router[ROUTES.GET_VIEWED_RECIPES.method.toLowerCase()](
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const viewedRecipes = await getViewedRecipes(auth0Id);
+      const viewedRecipes = await fetchViewedRecipes(auth0Id);
 
       if (isArrayNotEmpty(viewedRecipes.recipes)) {
         res.status(200).json({
