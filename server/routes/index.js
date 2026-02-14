@@ -508,7 +508,6 @@ router[ROUTES.GET_RECIPE_DETAILS_PROTECTED.method.toLowerCase()](
             ) || mockRecipeDetails.recipes[0];
 
           if (auth0Id) {
-            console.log("here");
             await setRecipeViewed(auth0Id, recipeDetailsMock);
           }
 

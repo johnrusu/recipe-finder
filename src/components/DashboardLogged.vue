@@ -311,7 +311,7 @@
         <!-- Search History List -->
         <v-list v-else-if="searchHistory.length > 0" lines="two">
           <v-list-item
-            v-for="(search, index) in searchHistory"
+            v-for="(search, index) in visibleSearchHistory"
             :key="index"
             class="search-history-item"
           >
@@ -359,7 +359,7 @@
                 </span>
                 <span v-if="search.maxReadyTime" class="search-param-chip">
                   <v-icon size="x-small" icon="mdi-clock-outline" />
-                  ≤{{ search.maxReadyTime }} min
+                  ≤{{ search.maxReadyTime }} {{ DASHBOARD.RECIPE_TIME_UNIT }}
                 </span>
               </div>
             </v-list-item-subtitle>
@@ -382,7 +382,7 @@
                 variant="text"
                 size="small"
                 color="error"
-                @click="handleRemoveSearchHistory(search.id as string)"
+                @click="handleRemoveSearchHistory(search._id as string)"
               >
                 <v-icon icon="mdi-delete" />
                 <v-tooltip activator="parent" location="top">
@@ -417,10 +417,20 @@
           </v-btn>
         </div>
 
-        <!-- View More Link -->
-        <div v-if="searchHistory.length > 10" class="text-center mt-4">
-          <v-btn color="primary" variant="text">
-            {{ DASHBOARD.VIEW_ALL_SEARCHES(searchHistory.length) }}
+        <!-- Load More Button -->
+        <div v-if="hasMoreSearchHistory" class="text-center mt-4">
+          <v-btn
+            color="primary"
+            variant="outlined"
+            @click="searchHistoryItemsToShow += ITEMS_PER_PAGE"
+            prepend-icon="mdi-chevron-down"
+          >
+            {{ DASHBOARD.LOAD_MORE_BUTTON }}
+            {{
+              DASHBOARD.LOAD_MORE_REMAINING(
+                searchHistory.length - searchHistoryItemsToShow
+              )
+            }}
           </v-btn>
         </div>
       </v-card-text>
@@ -516,6 +526,10 @@ const loadingViewedRecipes = ref(false);
 const loadingOfViewedRecipes = ref(false);
 const loadingToggleFavorite = ref(false);
 
+// pagination
+const searchHistoryItemsToShow = ref(10);
+const ITEMS_PER_PAGE = 2;
+
 // recipe details modal state
 const showRecipeModal = ref(false);
 const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
@@ -526,6 +540,12 @@ const favoriteRecipeId = ref<number | null>(null);
 const favoriteCount = computed(() => favoriteRecipes.value.length);
 const searchHistoryCount = computed(() => searchHistory.value.length);
 const totalRecipesViewedCount = computed(() => totalRecipesViewed.value);
+const visibleSearchHistory = computed(() =>
+  searchHistory.value.slice(0, searchHistoryItemsToShow.value)
+);
+const hasMoreSearchHistory = computed(
+  () => searchHistory.value.length > searchHistoryItemsToShow.value
+);
 
 // methods
 
@@ -555,6 +575,8 @@ const fetchSearchHistoryForRecipes = async () => {
     if (success && isArrayNotEmpty(history)) {
       appStore.setSearchHistory(history);
       searchHistory.value = history;
+      // Reset pagination when loading new history
+      searchHistoryItemsToShow.value = ITEMS_PER_PAGE;
     } else {
       appStore.setSearchHistory([]);
     }
@@ -585,10 +607,18 @@ const handleRemoveSearchHistory = async (searchId: string) => {
     const response = await removeRecipesSearchHistory(searchId, token);
     if (response.success) {
       const updatedHistory = searchHistory.value.filter(
-        (s) => s.id !== searchId
+        (s) => s._id !== searchId
       ) as IRecipeSearchParams[];
       searchHistory.value = updatedHistory;
       appStore.setSearchHistory(updatedHistory);
+
+      // Adjust pagination if needed - maintain the same visible count
+      if (searchHistoryItemsToShow.value > updatedHistory.length) {
+        searchHistoryItemsToShow.value = Math.max(
+          ITEMS_PER_PAGE,
+          updatedHistory.length
+        );
+      }
     } else {
       console.error("Failed to remove search history:", response.message);
     }

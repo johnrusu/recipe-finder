@@ -74,7 +74,6 @@ const recipesSearchHistorySchema = new mongoose.Schema({
       number: { type: Number, required: false },
       offset: { type: Number, required: false },
       timestamp: { type: Date, default: Date.now },
-      id: { type: mongoose.Schema.Types.ObjectId, auto: true },
     },
   ],
 });
@@ -340,7 +339,7 @@ const removeRecipesSearchHistory = async (auth0Id, searchQueryId) => {
     const searchHistoryAfterRemove =
       await recipesSearchHistoryModel.findOneAndUpdate(
         { auth0Id },
-        { $pull: { searchQueries: { id: searchQueryId } } },
+        { $pull: { searchQueries: { _id: searchQueryId } } },
         { new: true }
       );
     return searchHistoryAfterRemove;

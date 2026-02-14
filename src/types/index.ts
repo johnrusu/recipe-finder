@@ -25,7 +25,6 @@ interface IUser extends IUserData {
   updatedAt: string;
 }
 
-
 interface IBaseRecipe {
   query: string;
   number?: number;
@@ -46,7 +45,7 @@ interface IRecipeSearch extends IBaseRecipe {
 
 // 3. The version used for Results (ID is mandatory)
 interface IRecipeSearchParams extends IBaseRecipe {
-  id: number | string;
+  _id: number | string;
   [key: string]: unknown;
 }
 

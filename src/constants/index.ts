@@ -389,6 +389,8 @@ const DASHBOARD = {
   NO_SEARCH_HISTORY_MESSAGE: "Your recent recipe searches will appear here",
   START_SEARCHING_BUTTON: "Start Searching",
   VIEW_ALL_SEARCHES: (count: number) => `View All ${count} Searches`,
+  LOAD_MORE_BUTTON: "Load More",
+  LOAD_MORE_REMAINING: (count: number) => `(${count} remaining)`,
   RECIPE_TIME_UNIT: "min",
   RECIPE_SERVINGS_UNIT: "servings",
   TIME_JUST_NOW: "Just now",
