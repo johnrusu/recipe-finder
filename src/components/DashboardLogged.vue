@@ -587,6 +587,7 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
       const filteredFavorites = favoriteRecipes.value.filter(
         (r) => r.id !== recipe.id
       );
+      favoriteRecipes.value = filteredFavorites;
       appStore.setFavoritesRecipes(filteredFavorites);
     } else {
       console.error("Failed to remove favorite:", response.message);
@@ -614,6 +615,7 @@ const handleAddRecipeFavorites = async (recipe: IRecipe) => {
     const favoritesToAdd = [...favoriteRecipes.value, recipe];
     const response = await setFavoriteRecipes(favoritesToAdd, token);
     if (response.success) {
+      favoriteRecipes.value = favoritesToAdd;
       appStore.setFavoritesRecipes(favoritesToAdd);
     } else {
       console.error("Failed to update favorites:", response.message);

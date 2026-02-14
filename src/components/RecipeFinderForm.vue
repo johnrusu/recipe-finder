@@ -490,7 +490,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  watch,
+  onMounted,
+} from "vue";
 import { pathOr } from "ramda";
 import { useDisplay } from "vuetify";
 
@@ -521,6 +528,7 @@ import {
   removeFavoriteRecipe,
   autoCompleteRecipeSearch,
   setRecipesSearchHistory,
+  getFavoriteRecipes,
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty, debounce } from "@/utils";
 
@@ -535,6 +543,7 @@ const RecipeDetailsModal = defineAsyncComponent(
 
 // auth
 import { useAuth0 } from "@auth0/auth0-vue";
+import { fa } from "vuetify/locale";
 
 // State
 const searchQuery = ref("");
@@ -970,6 +979,7 @@ const handleAddRecipeFavorites = async (recipe: IRecipe) => {
     const response = await setFavoriteRecipes(updatedFavorites, token);
     if (response.success) {
       // Update store with new favorites
+      favorites.value = updatedFavorites;
       appStore.setFavoritesRecipes(updatedFavorites);
     } else {
       console.error("Failed to update favorites:", response.message);
@@ -1015,17 +1025,42 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
   }
 };
 
+const fetchFavoritesRecipes = async () => {
+  try {
+    let token = "";
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
+      try {
+        token = (await getAccessTokenSilently()) || "";
+      } catch (authError) {
+        console.warn("Failed to get access token:", authError);
+        return;
+      }
+    }
+    const response = await getFavoriteRecipes(token);
+
+    if (response.success && response.recipes) {
+      appStore.setFavoritesRecipes(response.recipes);
+      favorites.value = response.recipes;
+    }
+  } catch (err) {
+    console.error("Error initializing favorites:", err);
+  }
+};
+
 const toggleFavorite = (recipe: IRecipe) => {
   if (!isAuthenticated.value) {
     return;
   }
+  favoriteRecipeId.value = recipe.id;
   const alreadyFavorited = isFavorited(recipe);
   if (alreadyFavorited) {
     handleDeleteRecipeFavorites(recipe);
   } else {
     handleAddRecipeFavorites(recipe);
   }
-  favoriteRecipeId.value = recipe.id;
 };
 
 const clearFilters = () => {
@@ -1048,13 +1083,29 @@ const handleModalClose = () => {
 };
 
 const isFavorited = (recipe: IRecipe) => {
-  return favorites.value.some((fav) => fav.id === recipe.id) !== undefined;
+  return favorites.value.find((fav) => fav.id === recipe.id) !== undefined;
 };
 
-const recipesFromState = computed(() => appStore.recipes);
-if (isArrayNotEmpty(recipesFromState.value)) {
-  searchResults.value = recipesFromState.value;
-}
+// watch store for changes from other components
+watch(
+  () => appStore.recipes,
+  (recipes) => {
+    searchResults.value = recipes;
+  },
+  { deep: true }
+);
+
+// lifecycle
+onMounted(async () => {
+  const hasFavorites = isArrayNotEmpty(appStore.favoritesRecipes);
+
+  // Handle favorites initialization
+  if (hasFavorites) {
+    favorites.value = appStore.favoritesRecipes;
+  } else {
+    await fetchFavoritesRecipes();
+  }
+});
 </script>
 
 <style scoped>

@@ -313,6 +313,7 @@ const handleAddRecipeFavorites = async (recipe: IRecipe) => {
     const response = await setFavoriteRecipes(updatedFavorites, token);
     if (response.success) {
       // Update store with new favorites
+      favorites.value = updatedFavorites;
       appStore.setFavoritesRecipes(updatedFavorites);
     } else {
       console.error("Failed to update favorites:", response.message);
