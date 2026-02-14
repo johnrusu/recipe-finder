@@ -425,11 +425,13 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
 // Get recipe details
 router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
   ROUTES.GET_RECIPE_DETAILS.path,
-  checkJwt,
   async (req, res) => {
     try {
       const recipeId = pathOr("", ["params", "recipeId"], req);
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      console.log(
+        `🔍 Fetching details for recipe ID: ${recipeId} (requested by ${auth0Id})`
+      );
 
       if (isNilOrEmpty(recipeId)) {
         return res

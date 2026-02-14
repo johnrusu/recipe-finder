@@ -201,6 +201,9 @@ const getImageUrl = (imageSrc: string): string => {
 };
 
 const fetchFavoritesRecipes = async () => {
+  if (!isAuthenticated.value) {
+    return;
+  }
   try {
     let token = "";
     if (

@@ -1023,6 +1023,9 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
 };
 
 const fetchFavoritesRecipes = async () => {
+  if (!isAuthenticated.value) {
+    return;
+  }
   try {
     let token = "";
     if (
@@ -1106,37 +1109,37 @@ onMounted(async () => {
   let shouldTriggerSearch = false;
 
   // Populate search query
-  if (query.q && typeof query.q === 'string') {
+  if (query.q && typeof query.q === "string") {
     searchQuery.value = query.q;
     shouldTriggerSearch = true;
   }
 
   // Populate meal type
-  if (query.type && typeof query.type === 'string') {
+  if (query.type && typeof query.type === "string") {
     selectedMealType.value = query.type;
     shouldTriggerSearch = true;
   }
 
   // Populate dietary preferences (diet can be comma-separated)
-  if (query.diet && typeof query.diet === 'string') {
-    dietaryPreferences.value = query.diet.split(',').map(d => d.trim());
+  if (query.diet && typeof query.diet === "string") {
+    dietaryPreferences.value = query.diet.split(",").map((d) => d.trim());
     shouldTriggerSearch = true;
   }
 
   // Populate intolerances (can be comma-separated)
-  if (query.intolerances && typeof query.intolerances === 'string') {
-    intolerances.value = query.intolerances.split(',').map(i => i.trim());
+  if (query.intolerances && typeof query.intolerances === "string") {
+    intolerances.value = query.intolerances.split(",").map((i) => i.trim());
     shouldTriggerSearch = true;
   }
 
   // Populate cuisine (can be comma-separated)
-  if (query.cuisine && typeof query.cuisine === 'string') {
-    selectedCuisine.value = query.cuisine.split(',').map(c => c.trim());
+  if (query.cuisine && typeof query.cuisine === "string") {
+    selectedCuisine.value = query.cuisine.split(",").map((c) => c.trim());
     shouldTriggerSearch = true;
   }
 
   // Populate max ready time
-  if (query.maxReadyTime && typeof query.maxReadyTime === 'string') {
+  if (query.maxReadyTime && typeof query.maxReadyTime === "string") {
     const time = parseInt(query.maxReadyTime, 10);
     if (!isNaN(time) && time > 0) {
       maxCookingTime.value = time;
@@ -1145,14 +1148,24 @@ onMounted(async () => {
   }
 
   // Populate include ingredients (can be comma-separated)
-  if (query.includeIngredients && typeof query.includeIngredients === 'string') {
-    includeIngredients.value = query.includeIngredients.split(',').map(i => i.trim());
+  if (
+    query.includeIngredients &&
+    typeof query.includeIngredients === "string"
+  ) {
+    includeIngredients.value = query.includeIngredients
+      .split(",")
+      .map((i) => i.trim());
     shouldTriggerSearch = true;
   }
 
   // Populate exclude ingredients (can be comma-separated)
-  if (query.excludeIngredients && typeof query.excludeIngredients === 'string') {
-    excludeIngredients.value = query.excludeIngredients.split(',').map(e => e.trim());
+  if (
+    query.excludeIngredients &&
+    typeof query.excludeIngredients === "string"
+  ) {
+    excludeIngredients.value = query.excludeIngredients
+      .split(",")
+      .map((e) => e.trim());
     shouldTriggerSearch = true;
   }
 
