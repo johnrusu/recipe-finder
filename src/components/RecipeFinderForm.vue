@@ -754,7 +754,7 @@ const handleSearch = async () => {
 
   try {
     // Build filter parameters
-    const params: Omit<IRecipeSearchParams, 'id'> = {
+    const params: Pick<IRecipeSearchParams, 'query' | 'number' | 'offset'> = {
       query: searchQuery.value,
       number: currentNumber.value,
       offset: 0,
