@@ -10,6 +10,7 @@ import type {
   IRecipeDetailsResponse,
   IAutocompleteSuggestion,
   IRecipe,
+  IBaseRecipe
 } from "@/types";
 
 // ===== USER SERVICES =====
@@ -316,12 +317,12 @@ export const autoCompleteRecipeSearch = async (
  * @returns {Promise<any>} - Response data
  */
 export const setRecipesSearchHistory = async (
-  searchQuery: IRecipeSearchParams,
+  searchQuery: IBaseRecipe,
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  searchQuery: IRecipeSearchParams;
+  searchQuery: IBaseRecipe;
 }> => {
   return apiRequest(
     API_ROUTES.ADD_SEARCH_HISTORY.url,
@@ -333,7 +334,7 @@ export const setRecipesSearchHistory = async (
   ) as Promise<{
     success: boolean;
     message: string;
-    searchQuery: IRecipeSearchParams;
+    searchQuery: IBaseRecipe;
   }>;
 };
 
