@@ -19,31 +19,18 @@
       v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
     />
 
-    <Suspense>
-      <template #default>
-        <div>
-          <FavoriteRecipes
-            v-if="
-              isAuthenticated &&
-              (isVisibleRecipeFinderForm || appState.skipWelcome)
-            "
-            :max-items="MAX_FAVORITE_ITEMS"
-          />
+    <FavoriteRecipes
+      v-if="
+        isAuthenticated && (isVisibleRecipeFinderForm || appState.skipWelcome)
+      "
+      :max-items="MAX_FAVORITE_ITEMS"
+    />
 
-          <RecentRecipes
-            v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
-            :max-items="MAX_RECENT_ITEMS"
-            :title="LABELS.RECENT_RECIPES_TITLE"
-          />
-        </div>
-      </template>
-
-      <template #fallback>
-        <div class="d-flex justify-center align-center my-8">
-          <AppLoading />
-        </div>
-      </template>
-    </Suspense>
+    <RecentRecipes
+      v-if="isVisibleRecipeFinderForm || appState.skipWelcome"
+      :max-items="MAX_RECENT_ITEMS"
+      :title="LABELS.RECENT_RECIPES_TITLE"
+    />
 
     <HomePageConfirmAuthDialog
       :show-guest-dialog="showGuestDialog"
@@ -71,7 +58,6 @@ const showGuestDialog = ref(false);
 const appState = useAppStore();
 
 // components
-import AppLoading from "@/components/AppLoading.vue";
 import FavoriteRecipes from "@/components/FavoriteRecipes.vue";
 import RecentRecipes from "@/components/RecentRecipes.vue";
 import RecipeFinderForm from "@/components/RecipeFinderForm.vue";

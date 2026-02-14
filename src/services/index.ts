@@ -9,6 +9,7 @@ import type {
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
   IAutocompleteSuggestion,
+  IRecipe,
 } from "@/types";
 
 // ===== USER SERVICES =====
@@ -157,14 +158,13 @@ export const getRecipeDetails = async (
     String(recipeId)
   );
 
-  if (token) {
-    // If auth token is provided, also mark the recipe as viewed
-    await setRecipeViewed(recipeId, token);
-  }
-
-  return apiRequest(url, {
-    method: API_ROUTES.GET_RECIPE_DETAILS.method,
-  }) as Promise<IRecipeDetailsResponse>;
+  return apiRequest(
+    url,
+    {
+      method: API_ROUTES.GET_RECIPE_DETAILS.method,
+    },
+    token
+  ) as Promise<IRecipeDetailsResponse>;
 };
 
 /**
@@ -220,7 +220,7 @@ export const getFavoriteRecipes = async (
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: number[];
+  recipes: IRecipe[];
 }> => {
   return apiRequest(
     API_ROUTES.GET_FAVORITE_RECIPES.url,
@@ -231,65 +231,65 @@ export const getFavoriteRecipes = async (
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: number[];
+    recipes: IRecipe[];
   }>;
 };
 
 /**
  * Set favorite recipes for the authenticated user
  *
- * @param {number[]} recipeIds Array of recipe IDs to set as favorites
+ * @param {IRecipe[]} recipes Array of recipe objects to set as favorites
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
 export const setFavoriteRecipes = async (
-  recipeIds: number[],
+  recipes: IRecipe[],
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: number[];
+  recipes: IRecipe[];
 }> => {
   return apiRequest(
     API_ROUTES.SET_FAVORITE_RECIPES.url,
     {
       method: API_ROUTES.SET_FAVORITE_RECIPES.method,
-      body: JSON.stringify({ recipeIds }),
+      body: JSON.stringify({ recipes }),
     },
     token
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: number[];
+    recipes: IRecipe[];
   }>;
 };
 
 /**
  * Remove favorite recipes for the authenticated user
  *
- * @param {number[]} recipeIds Array of recipe IDs to remove from favorites
+ * @param {IRecipe[]} recipes Array of recipe objects to remove from favorites
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
-export const removeFavoriteRecipes = async (
-  recipeIds: number[],
+export const removeFavoriteRecipe = async (
+  recipes: IRecipe[],
   token: string
 ): Promise<{
   success: boolean;
   message: string;
-  recipeIds: number[];
+  recipes: IRecipe[];
 }> => {
   return apiRequest(
     API_ROUTES.REMOVE_FAVORITE_RECIPES.url,
     {
       method: API_ROUTES.REMOVE_FAVORITE_RECIPES.method,
-      body: JSON.stringify({ recipeIds }),
+      body: JSON.stringify({ recipes }),
     },
     token
   ) as Promise<{
     success: boolean;
     message: string;
-    recipeIds: number[];
+    recipes: IRecipe[];
   }>;
 };
 
@@ -362,35 +362,6 @@ export const removeRecipesSearchHistory = async (
     success: boolean;
     message: string;
     searchQueryId: string;
-  }>;
-};
-
-/**
- * Set a recipe as viewed for the authenticated user
- *
- * @param {number} recipeId - The ID of the recipe to mark as viewed
- * @param {string | null} token - Auth0 JWT token
- * @returns {Promise<any>} - Response data
- */
-export const setRecipeViewed = async (
-  recipeId: number,
-  token: string
-): Promise<{
-  success: boolean;
-  message: string;
-  recipeIds: number[];
-}> => {
-  return apiRequest(
-    API_ROUTES.SET_RECIPE_VIEWED.url.replace(":recipeId", String(recipeId)),
-    {
-      method: API_ROUTES.SET_RECIPE_VIEWED.method,
-      body: JSON.stringify({ recipeId }),
-    },
-    token
-  ) as Promise<{
-    success: boolean;
-    message: string;
-    recipeIds: number[];
   }>;
 };
 

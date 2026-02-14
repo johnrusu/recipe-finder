@@ -2,7 +2,7 @@
   <v-dialog
     :model-value="open"
     max-width="1200px"
-    @update:model-value="$emit('close')"
+    @update:model-value="$emit('on-close')"
   >
     <v-card class="d-flex flex-column modal-card">
       <v-progress-linear
@@ -23,7 +23,7 @@
           <v-chip v-if="recipes.length > 0" :color="chipColor" variant="flat">
             {{ recipes.length }}
           </v-chip>
-          <v-btn icon variant="text" @click="$emit('close')">
+          <v-btn icon variant="text" @click="$emit('on-close')">
             <v-icon icon="mdi-close" />
             <v-tooltip activator="parent" location="bottom">
               {{ RECIPE_MODAL.CLOSE_BUTTON }}
@@ -77,14 +77,14 @@
               <v-card-actions class="pt-0 d-flex gap-2">
                 <v-btn
                   icon
-                  @click.stop="toggleFavorite(recipe.id)"
-                  :color="isFavorited(recipe.id) ? 'error' : 'default'"
+                  @click.stop="toggleFavorite(recipe)"
+                  :color="isFavorited(recipe) ? 'error' : 'default'"
                   class="save-btn"
-                  :loading="loadingToggleFavorite && recipe.id == recipeId"
+                  :loading="isLoading(recipe)"
                 >
                   <v-icon
                     :icon="
-                      isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'
+                      isFavorited(recipe) ? 'mdi-heart' : 'mdi-heart-outline'
                     "
                   />
                 </v-btn>
@@ -92,7 +92,7 @@
                   variant="elevated"
                   color="primary"
                   size="large"
-                  @click.stop="handleViewDetails(recipe.id)"
+                  @click.stop="handleViewDetails(recipe)"
                   class="view-recipe-btn grow"
                   append-icon="mdi-arrow-right"
                 >
@@ -142,7 +142,7 @@ const AppLoading = defineAsyncComponent(
   () => import("@/components/AppLoading.vue")
 );
 
-// Constants
+// constants
 const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
 
 // props
@@ -153,7 +153,7 @@ const props = withDefaults(
     loading?: boolean;
     loadingForDetails: boolean;
     loadingToggleFavorite: boolean;
-    favorites?: number[];
+    favorites?: IRecipe[];
     imageBaseUri?: string;
     icon?: string;
     iconColor?: string;
@@ -182,13 +182,13 @@ const props = withDefaults(
 
 // emits
 const emit = defineEmits<{
-  (e: "close"): void;
-  (e: "view-details", recipeId: number): void;
-  (e: "favorite-toggle", recipeId: number): void;
+  (e: "on-close"): void;
+  (e: "on-view-details", recipe: IRecipe): void;
+  (e: "on-toggle-favorite", recipe: IRecipe): void;
 }>();
 
-// state
-const recipeId = ref<number | null>(null);
+// ref
+const favoriteRecipeSelected = ref<IRecipe>();
 
 // methods
 const getImageUrl = (imageSrc: string): string => {
@@ -199,18 +199,24 @@ const getImageUrl = (imageSrc: string): string => {
   return `${props.imageBaseUri}${imageSrc}`;
 };
 
-const isFavorited = (recipeId: number) => {
-  return props.favorites.includes(recipeId);
+const isLoading = (recipe: IRecipe) => {
+  return (
+    props.loadingToggleFavorite &&
+    recipe.id === favoriteRecipeSelected.value?.id
+  );
 };
 
-const handleViewDetails = (id: number) => {
-  recipeId.value = id;
-  emit("view-details", id);
+const isFavorited = (recipe: IRecipe) => {
+  return props.favorites?.find((fav) => fav.id === recipe.id);
 };
 
-const toggleFavorite = (id: number) => {
-  recipeId.value = id;
-  emit("favorite-toggle", id);
+const handleViewDetails = (recipe: IRecipe) => {
+  emit("on-view-details", recipe);
+};
+
+const toggleFavorite = (recipe: IRecipe) => {
+  favoriteRecipeSelected.value = recipe;
+  emit("on-toggle-favorite", recipe);
 };
 </script>
 

@@ -414,24 +414,24 @@
                     </div>
                     <div class="d-flex align-center gap-2 mt-2 text-caption">
                       <v-icon size="small" icon="mdi-clock" />
-                      {{ recipe.readyInMinutes }} min
+                      {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
                     </div>
                     <div class="d-flex align-center gap-2 text-caption">
                       <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                      {{ recipe.servings }} servings
+                      {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
                     </div>
                   </v-card-text>
                   <v-card-actions class="pt-0 d-flex gap-2">
                     <v-btn
                       icon
-                      @click.stop="toggleFavorite(recipe.id)"
-                      :color="isFavorited(recipe.id) ? 'error' : 'default'"
+                      @click.stop="toggleFavorite(recipe)"
+                      :color="isFavorited(recipe) ? 'error' : 'default'"
                       class="save-btn"
                       :loading="loading && recipe.id == loadingFavoriteRecipeId"
                     >
                       <v-icon
                         :icon="
-                          isFavorited(recipe.id)
+                          isFavorited(recipe)
                             ? 'mdi-heart'
                             : 'mdi-heart-outline'
                         "
@@ -440,7 +440,7 @@
                         {{
                           !isAuthenticated
                             ? RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP
-                            : isFavorited(recipe.id)
+                            : isFavorited(recipe)
                               ? RECIPE_FINDER.SAVED_RECIPE_TOOLTIP
                               : RECIPE_FINDER.SAVE_RECIPE_TOOLTIP
                         }}
@@ -483,8 +483,8 @@
       :isAddingFavorites="loading"
       :favorites="favorites"
       :image-base-uri="imageBaseUri"
-      @close="handleModalClose"
-      @favorite="handleFavoriteToggle"
+      @on-close="handleModalClose"
+      @on-toggle-favorite="toggleFavorite"
     />
   </div>
 </template>
@@ -518,7 +518,7 @@ import {
   getRandomRecipes,
   getRecipeDetails,
   setFavoriteRecipes,
-  removeFavoriteRecipes,
+  removeFavoriteRecipe,
   autoCompleteRecipeSearch,
   setRecipesSearchHistory,
 } from "@/services";
@@ -553,7 +553,7 @@ const loadingAutocomplete = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchResults = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
-const favorites = ref<number[]>([]);
+const favorites = ref<IRecipe[]>([]);
 const suggestionsAutocomplete = ref<IAutocompleteSuggestion[]>([]);
 
 // Recipe details modal state
@@ -576,6 +576,9 @@ const lastSearchParams = ref<IRecipeSearchParams | null>(null);
 // hooks
 const appStore = useAppStore();
 const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+
+// constants
+const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
 
 const { xs } = useDisplay();
 
@@ -674,6 +677,7 @@ const handleClearBtnInput = () => {
   searchQuery.value = "";
   suggestionsAutocomplete.value = [];
 };
+
 const handleAutoCompleteItemSelected = (data: {
   title: string;
   suggestion: IAutocompleteSuggestion;
@@ -923,10 +927,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
-      selectedRecipeDetails.value = {
-        ...response.recipe,
-        extendedIngredients: response.recipe.extendedIngredients || [],
-      } as IRecipeDetails;
+      selectedRecipeDetails.value = response.recipe as IRecipeDetails;
     } else {
       error.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
     }
@@ -949,25 +950,27 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleAddRecipesFavorites = async (recipeId: number) => {
+const handleAddRecipeFavorites = async (recipe: IRecipe) => {
   loading.value = true;
-  loadingFavoriteRecipeId.value = recipeId;
   try {
     let token = "";
-    if (isAuthenticated.value) {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
         console.warn("Failed to get access token:", authError);
         loading.value = false;
-        loadingFavoriteRecipeId.value = null;
         return;
       }
     }
-
-    const response = await setFavoriteRecipes(favorites.value, token);
+    const updatedFavorites = [...favorites.value, recipe];
+    const response = await setFavoriteRecipes(updatedFavorites, token);
     if (response.success) {
-      appStore.setFavoritesRecipes(favorites.value);
+      // Update store with new favorites
+      appStore.setFavoritesRecipes(updatedFavorites);
     } else {
       console.error("Failed to update favorites:", response.message);
     }
@@ -975,30 +978,33 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
     console.error("Error updating favorites:", error);
   } finally {
     loading.value = false;
-    loadingFavoriteRecipeId.value = null;
   }
 };
 
-const handleDeleteRecipesFavorites = async (recipeId: number) => {
+const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
   loading.value = true;
-  loadingFavoriteRecipeId.value = recipeId;
-  const recipeIdMapped: number[] = [];
-  recipeIdMapped.push(recipeId);
   try {
     let token = "";
-    if (isAuthenticated.value) {
+    if (
+      isAuthenticated.value === true &&
+      typeof getAccessTokenSilently === "function"
+    ) {
       try {
         token = (await getAccessTokenSilently()) || "";
       } catch (authError) {
         console.warn("Failed to get access token:", authError);
         loading.value = false;
-        loadingFavoriteRecipeId.value = null;
         return;
       }
     }
-    const response = await removeFavoriteRecipes(recipeIdMapped, token);
+
+    const response = await removeFavoriteRecipe([recipe], token);
     if (response.success) {
-      appStore.setFavoritesRecipes(favorites.value);
+      const updatedFavorites = favorites.value.filter(
+        (r) => r.id !== recipe.id
+      );
+      favorites.value = updatedFavorites;
+      appStore.setFavoritesRecipes(updatedFavorites);
     } else {
       console.error("Failed to remove favorites:", response.message);
     }
@@ -1006,7 +1012,18 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
     console.error("Error removing favorites:", error);
   } finally {
     loading.value = false;
-    loadingFavoriteRecipeId.value = null;
+  }
+};
+
+const toggleFavorite = (recipe: IRecipe) => {
+  if (!isAuthenticated.value) {
+    return;
+  }
+  const alreadyFavorited = isFavorited(recipe);
+  if (alreadyFavorited) {
+    handleDeleteRecipeFavorites(recipe);
+  } else {
+    handleAddRecipeFavorites(recipe);
   }
 };
 
@@ -1024,32 +1041,13 @@ const clearFilters = () => {
   error.value = null;
 };
 
-const toggleFavorite = (recipeId: number) => {
-  if (!isAuthenticated.value) {
-    return;
-  }
-  if (favorites.value.includes(recipeId)) {
-    favorites.value = favorites.value.filter((id) => id !== recipeId);
-    appStore.setFavoritesRecipes(favorites.value);
-    handleDeleteRecipesFavorites(recipeId);
-  } else {
-    favorites.value.push(recipeId);
-    appStore.setFavoritesRecipes(favorites.value);
-    handleAddRecipesFavorites(recipeId);
-  }
-};
-
 const handleModalClose = () => {
   showRecipeModal.value = false;
   selectedRecipeDetails.value = null;
 };
 
-const handleFavoriteToggle = (recipeId: number) => {
-  toggleFavorite(recipeId);
-};
-
-const isFavorited = (recipeId: number) => {
-  return favorites.value.includes(recipeId);
+const isFavorited = (recipe: IRecipe) => {
+  return favorites.value.some((fav) => fav.id === recipe.id) !== undefined;
 };
 
 const recipesFromState = computed(() => appStore.recipes);

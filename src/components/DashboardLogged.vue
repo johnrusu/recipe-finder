@@ -146,6 +146,15 @@
         >
           {{ favoritesError }}
         </v-alert>
+        <v-alert
+          v-else-if="viewDetailsError"
+          type="error"
+          variant="tonal"
+          closable
+          @click:close="viewDetailsError = null"
+        >
+          {{ viewDetailsError }}
+        </v-alert>
 
         <!-- Recipes Grid -->
         <v-row v-else-if="favoriteRecipes.length > 0">
@@ -190,7 +199,7 @@
               <v-card-actions class="pt-0 d-flex gap-2">
                 <v-btn
                   icon
-                  @click.stop="handleDeleteRecipesFavorites(recipe.id)"
+                  @click.stop="handleDeleteRecipeFavorites(recipe)"
                   color="error"
                   class="remove-btn"
                   :loading="
@@ -206,7 +215,7 @@
                   variant="elevated"
                   color="primary"
                   size="large"
-                  @click.stop="handleGetRecipeDetails(recipe.id)"
+                  @click.stop="handleGetRecipeDetails(recipe)"
                   class="view-recipe-btn grow"
                   append-icon="mdi-arrow-right"
                 >
@@ -260,10 +269,10 @@
       :open="showRecipeModal"
       :recipe="selectedRecipeDetails"
       :isAddingFavorites="loadingForDetails"
-      :favorites="favoriteRecipeIds"
+      :favorites="favoriteRecipes"
       :image-base-uri="imageBaseUri"
-      @close="handleModalClose"
-      @favorite="handleToggleFavorite"
+      @on-close="handleModalClose"
+      @on-toggle-favorite="handleToggleFavorite"
     />
 
     <!-- Search History Section -->
@@ -370,12 +379,12 @@
     </v-card>
 
     <RecipesListModal
-      :open="isArrayNotEmpty(listOfViewedRecipesWithDetails)"
-      :recipes="listOfViewedRecipesWithDetails"
+      :open="isArrayNotEmpty(listOfViewedRecipes)"
+      :recipes="listOfViewedRecipes"
       :loading="loadingViewedRecipes"
       :loadingForDetails="loadingForDetails"
       :loadingToggleFavorite="loadingToggleFavorite"
-      :favorites="favoriteRecipeIds"
+      :favorites="favoriteRecipes"
       :image-base-uri="imageBaseUri"
       icon="mdi-eye"
       icon-color="primary"
@@ -385,10 +394,9 @@
       empty-icon="mdi-history-off"
       empty-title="No Viewed Recipes"
       empty-message="You haven't viewed any recipes yet"
-      @close="handleCloseRecipesListModal"
-      @view-details="handleViewRecipeDetails"
-      @remove="handleRemoveFromViewed"
-      @favorite-toggle="handleToggleFavorite"
+      @on-close="handleCloseRecipesListModal"
+      @on-view-details="handleViewRecipeDetails"
+      @on-toggle-favorite="handleToggleFavorite"
     />
   </div>
 </template>
@@ -408,19 +416,18 @@ import {
 } from "@/constants";
 
 // types
-import type { IRecipe, IRecipeDetails, TViewedRecipe } from "@/types";
+import type { IRecipe, IRecipeDetails } from "@/types";
 
 // utils
-import { isNilOrEmpty, isArrayNotEmpty } from "@/utils";
+import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
 
 // services
 import {
   getFavoriteRecipes,
-  getRecipesBulkDetails,
   getViewedRecipesCount,
   getViewedRecipes,
   getRecipeDetails,
-  removeFavoriteRecipes,
+  removeFavoriteRecipe,
   setFavoriteRecipes,
 } from "@/services";
 
@@ -443,14 +450,13 @@ const appStore = useAppStore();
 
 // state
 const favoriteRecipes = ref<IRecipe[]>([]);
-const favoriteRecipeIds = ref<number[]>([]);
 const searchHistory = ref<Array<{ query: string; timestamp: string }>>([]);
 
 const favoritesError = ref<string | null>(null);
+const viewDetailsError = ref<string | null>(null);
 const searchHistoryError = ref<string | null>(null);
 const totalRecipesViewed = ref(0);
-const listOfViewedRecipes = ref<TViewedRecipe[]>([]);
-const listOfViewedRecipesWithDetails = ref<IRecipeDetails[]>([]);
+const listOfViewedRecipes = ref<IRecipe[]>([]);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 const errorViewedRecipes = ref<string | null>(null);
 
@@ -493,30 +499,12 @@ const fetchFavorites = async () => {
     const response = await getFavoriteRecipes(token);
 
     const success = pathOr(false, ["success"], response);
-    const ids = pathOr([], ["recipeIds"], response);
+    const recipes = pathOr([], ["recipes"], response);
 
-    if (success && isArrayNotEmpty(ids)) {
-      favoriteRecipeIds.value = ids;
-      // Fetch recipe details for each favorite
-      try {
-        const detailsResponse = await getRecipesBulkDetails(ids, token);
-
-        if (!isNilOrEmpty(detailsResponse)) {
-          const recipesData = pathOr([], ["recipes"], detailsResponse);
-          favoriteRecipes.value = recipesData;
-        } else {
-          console.error(
-            "Failed to fetch favorite recipe details:",
-            detailsResponse
-          );
-        }
-      } catch (e) {
-        console.error("Error fetching bulk recipe details:", e);
-        favoriteRecipes.value = [];
-      }
+    if (success && isArrayNotEmpty(recipes)) {
+      appStore.setFavoritesRecipes(recipes);
     } else {
-      favoriteRecipes.value = [];
-      favoriteRecipeIds.value = [];
+      appStore.setFavoritesRecipes([]);
     }
   } catch (err) {
     const errorMessage =
@@ -528,10 +516,10 @@ const fetchFavorites = async () => {
   }
 };
 
-const handleGetRecipeDetails = async (recipeId: number) => {
+const handleGetRecipeDetails = async (recipe: IRecipe) => {
   loadingForDetails.value = true;
-  favoritesError.value = null;
   showRecipeModal.value = true;
+  viewDetailsError.value = null;
 
   try {
     let token = "";
@@ -545,43 +533,38 @@ const handleGetRecipeDetails = async (recipeId: number) => {
         console.warn("Failed to get access token:", authError);
       }
     }
-    const response = await getRecipeDetails(recipeId, token);
+    const response = await getRecipeDetails(recipe.id, token);
+    const success = pathOr(false, ["success"], response);
+    const recipeDetails: IRecipeDetails | null = pathOr(
+      null,
+      ["recipe"],
+      response
+    );
 
-    if (response.success && response.recipe) {
-      selectedRecipeDetails.value = {
-        ...response.recipe,
-        extendedIngredients: response.recipe.extendedIngredients || [],
-      } as IRecipeDetails;
-    } else {
-      favoritesError.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
+    if (success && !isNilOrEmpty(recipeDetails)) {
+      selectedRecipeDetails.value = recipeDetails;
     }
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : RECIPE_FINDER.ERROR_FETCHING_RECIPE;
-    favoritesError.value = errorMessage;
+    viewDetailsError.value = errorMessage;
     console.error("Get recipe details error:", err);
   } finally {
     loadingForDetails.value = false;
   }
 };
 
-const handleToggleFavorite = (recipeId: number) => {
-  if (favoriteRecipeIds.value.includes(recipeId)) {
-    favoriteRecipeIds.value = favoriteRecipeIds.value.filter(
-      (id) => id !== recipeId
-    );
-    appStore.setFavoritesRecipes(favoriteRecipeIds.value);
-    handleDeleteRecipesFavorites(recipeId);
-  } else {
-    favoriteRecipeIds.value.push(recipeId);
-    appStore.setFavoritesRecipes(favoriteRecipeIds.value);
-    handleAddRecipesFavorites(recipeId);
+const handleToggleFavorite = (recipe: IRecipe) => {
+  const foundFavorite = favoriteRecipes.value.find((r) => r.id === recipe.id);
+  if (foundFavorite) {
+    handleDeleteRecipeFavorites(recipe);
+    return;
   }
+  handleAddRecipeFavorites(recipe);
 };
 
-const handleDeleteRecipesFavorites = async (recipeId: number) => {
+const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
   loadingToggleFavorite.value = true;
-  loadingFavoriteRecipeId.value = recipeId;
 
   try {
     let token = "";
@@ -594,22 +577,16 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
       } catch (authError) {
         console.warn("Failed to get access token:", authError);
         loadingToggleFavorite.value = false;
-        loadingFavoriteRecipeId.value = null;
         return;
       }
     }
-    const response = await removeFavoriteRecipes([recipeId], token);
+    const response = await removeFavoriteRecipe([recipe], token);
 
     if (response.success) {
-      // Remove from local state
-      favoriteRecipes.value = favoriteRecipes.value.filter(
-        (recipe) => recipe.id !== recipeId
+      const filteredFavorites = favoriteRecipes.value.filter(
+        (r) => r.id !== recipe.id
       );
-      favoriteRecipeIds.value = favoriteRecipeIds.value.filter(
-        (id) => id !== recipeId
-      );
-
-      appStore.setFavoritesRecipes(favoriteRecipeIds.value);
+      appStore.setFavoritesRecipes(filteredFavorites);
     } else {
       console.error("Failed to remove favorite:", response.message);
     }
@@ -617,13 +594,11 @@ const handleDeleteRecipesFavorites = async (recipeId: number) => {
     console.error("Error removing favorite:", error);
   } finally {
     loadingToggleFavorite.value = false;
-    loadingFavoriteRecipeId.value = null;
   }
 };
 
-const handleAddRecipesFavorites = async (recipeId: number) => {
+const handleAddRecipeFavorites = async (recipe: IRecipe) => {
   loadingToggleFavorite.value = true;
-  loadingFavoriteRecipeId.value = recipeId;
   try {
     let token = "";
     if (isAuthenticated.value) {
@@ -632,14 +607,13 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
       } catch (authError) {
         console.warn("Failed to get access token:", authError);
         loadingToggleFavorite.value = false;
-        loadingFavoriteRecipeId.value = null;
         return;
       }
     }
-
-    const response = await setFavoriteRecipes(favoriteRecipeIds.value, token);
+    const favoritesToAdd = [...favoriteRecipes.value, recipe];
+    const response = await setFavoriteRecipes(favoritesToAdd, token);
     if (response.success) {
-      appStore.setFavoritesRecipes(favoriteRecipeIds.value);
+      appStore.setFavoritesRecipes(favoritesToAdd);
     } else {
       console.error("Failed to update favorites:", response.message);
     }
@@ -647,7 +621,6 @@ const handleAddRecipesFavorites = async (recipeId: number) => {
     console.error("Error updating favorites:", error);
   } finally {
     loadingToggleFavorite.value = false;
-    loadingFavoriteRecipeId.value = null;
   }
 };
 
@@ -704,20 +677,8 @@ const fetchListOfViewedRecipes = async () => {
     }
     const response = await getViewedRecipes(token);
     if (response.success) {
-      const recipes: TViewedRecipe[] = pathOr([], ["recipes"], response);
+      const recipes: IRecipe[] = pathOr([], ["recipes"], response);
       listOfViewedRecipes.value = recipes;
-      if (isArrayNotEmpty(recipes)) {
-        // Fetch details for viewed recipes
-        const recipeIds = recipes.map((r) => r.recipeId);
-        const detailsResponse = await getRecipesBulkDetails(recipeIds, token);
-        if (detailsResponse.success) {
-          listOfViewedRecipesWithDetails.value = pathOr(
-            [],
-            ["recipes"],
-            detailsResponse
-          );
-        }
-      }
     }
   } catch (err) {
     console.error("Error fetching total recipes viewed:", err);
@@ -773,11 +734,11 @@ const searchAgain = (query: string) => {
 };
 
 const handleCloseRecipesListModal = () => {
-  listOfViewedRecipesWithDetails.value = [];
+  listOfViewedRecipes.value = [];
   errorViewedRecipes.value = null;
 };
 
-const handleViewRecipeDetails = async (recipeId: number) => {
+const handleViewRecipeDetails = async (recipe: IRecipe) => {
   loadingForDetails.value = true;
   errorViewedRecipes.value = null;
 
@@ -793,7 +754,7 @@ const handleViewRecipeDetails = async (recipeId: number) => {
         console.warn("Failed to get access token:", authError);
       }
     }
-    const response = await getRecipeDetails(recipeId, token);
+    const response = await getRecipeDetails(recipe.id, token);
 
     if (response.success && response.recipe) {
       selectedRecipeDetails.value = {
@@ -814,44 +775,23 @@ const handleViewRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleRemoveFromViewed = async (recipeId: number) => {
-  try {
-    let token = "";
-    if (isAuthenticated.value) {
-      try {
-        token = (await getAccessTokenSilently()) || "";
-      } catch (authError) {
-        console.warn("Failed to get access token:", authError);
-        return;
-      }
-    }
-    const response = await removeFavoriteRecipes([recipeId], token);
-    if (response.success) {
-      listOfViewedRecipesWithDetails.value =
-        listOfViewedRecipesWithDetails.value.filter(
-          (recipe) => recipe.id !== recipeId
-        );
-    } else {
-      console.error("Failed to remove viewed recipe:", response.message);
-    }
-  } catch (error) {
-    console.error("Error removing viewed recipe:", error);
-  }
-};
-
 // lifecycle
-onMounted(() => {
-  fetchFavorites();
-  fetchSearchHistory();
-  fetchTotalRecipesViewed();
+onMounted(async () => {
+  if (!isArrayNotEmpty(appStore.favoritesRecipes)) {
+    await fetchFavorites();
+  } else {
+    // Initialize from store if already populated
+    favoriteRecipes.value = appStore.favoritesRecipes;
+  }
+  await fetchSearchHistory();
+  await fetchTotalRecipesViewed();
 });
 
 // watch store for changes from other components
 watch(
   () => appStore.favoritesRecipes,
-  (newFavorites) => {
-    favoriteRecipeIds.value = Array.from(newFavorites);
-    fetchFavorites();
+  (storeFavorites) => {
+    favoriteRecipes.value = storeFavorites;
   },
   { deep: true }
 );

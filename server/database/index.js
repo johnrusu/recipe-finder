@@ -4,20 +4,60 @@ const mongoose = require("mongoose");
 const { MONGODB_URI } = require("../constants/index.js");
 
 // Define Mongoose schemas
+
 const usersSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   auth0Id: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: false },
   name: { type: String, required: false },
 });
+const usersModel = mongoose.model("User", usersSchema, "users-collection");
 
 const favoritesRecipesSchema = new mongoose.Schema({
-  recipeIds: [{ type: Number, required: true }],
+  recipes: [
+    {
+      id: { type: Number, required: true },
+      title: { type: String, required: true },
+      image: { type: String, required: true },
+      imageType: { type: String, required: true },
+      readyInMinutes: { type: Number, required: true },
+      servings: { type: Number, required: true },
+      sourceUrl: { type: String, required: true },
+      vegetarian: { type: Boolean, required: true },
+      vegan: { type: Boolean, required: true },
+      glutenFree: { type: Boolean, required: true },
+      dairyFree: { type: Boolean, required: true },
+      veryHealthy: { type: Boolean, required: true },
+      cheap: { type: Boolean, required: true },
+      veryPopular: { type: Boolean, required: true },
+      sustainable: { type: Boolean, required: true },
+      lowFodmap: { type: Boolean, required: true },
+      weightWatcherSmartPoints: { type: Number, required: true },
+      gaps: { type: String, required: true },
+      preparationMinutes: { type: Number, required: false },
+      cookingMinutes: { type: Number, required: false },
+      aggregateLikes: { type: Number, required: true },
+      healthScore: { type: Number, required: true },
+      creditsText: { type: String, required: true },
+      license: { type: String, required: true },
+      sourceName: { type: String, required: true },
+      pricePerServing: { type: Number, required: true },
+      extendedIngredients: { type: [Object], required: false },
+      summary: { type: String, required: false },
+      instructions: { type: String, required: false },
+    },
+  ],
   auth0Id: { type: String, required: true, unique: true },
 });
 
+const favoritesRecipesModel = mongoose.model(
+  "FavoritesRecipe",
+  favoritesRecipesSchema,
+  "favorites-recipes-collection"
+);
+
 const recipesSearchHistorySchema = new mongoose.Schema({
-  auth0Id: { type: String, required: true, unique: false },
+  auth0Id: { type: String, required: true, unique: true },
   searchQueries: [
     {
       query: { type: String, required: true },
@@ -35,12 +75,57 @@ const recipesSearchHistorySchema = new mongoose.Schema({
   ],
 });
 
+const recipesSearchHistoryModel = mongoose.model(
+  "RecipesSearchHistory",
+  recipesSearchHistorySchema,
+  "recipes-search-history-collection"
+);
+
 const recipeViewedSchema = new mongoose.Schema({
-  auth0Id: { type: String, required: true, unique: false },
-  recipeId: { type: Number, required: true },
-  viewedAt: { type: Date, default: Date.now },
+  auth0Id: { type: String, required: true, unique: true },
+  recipes: [
+    {
+      id: { type: Number, required: true },
+      title: { type: String, required: true },
+      image: { type: String, required: true },
+      imageType: { type: String, required: true },
+      readyInMinutes: { type: Number, required: true },
+      servings: { type: Number, required: true },
+      sourceUrl: { type: String, required: true },
+      vegetarian: { type: Boolean, required: true },
+      vegan: { type: Boolean, required: true },
+      glutenFree: { type: Boolean, required: true },
+      dairyFree: { type: Boolean, required: true },
+      veryHealthy: { type: Boolean, required: true },
+      cheap: { type: Boolean, required: true },
+      veryPopular: { type: Boolean, required: true },
+      sustainable: { type: Boolean, required: true },
+      lowFodmap: { type: Boolean, required: true },
+      weightWatcherSmartPoints: { type: Number, required: true },
+      gaps: { type: String, required: true },
+      preparationMinutes: { type: Number, required: false },
+      cookingMinutes: { type: Number, required: false },
+      aggregateLikes: { type: Number, required: true },
+      healthScore: { type: Number, required: true },
+      creditsText: { type: String, required: true },
+      license: { type: String, required: true },
+      sourceName: { type: String, required: true },
+      pricePerServing: { type: Number, required: true },
+      extendedIngredients: { type: [Object], required: false },
+      summary: { type: String, required: false },
+      instructions: { type: String, required: false },
+      viewedAt: { type: Date, default: Date.now },
+    },
+  ],
 });
 
+const recipeViewedModel = mongoose.model(
+  "RecipeViewed",
+  recipeViewedSchema,
+  "recipe-viewed-collection"
+);
+
+// Database connection and methods
 const initializeDatabase = async () => {
   const maxRetries = 2; // Reduced from 3
   let lastError;
@@ -81,25 +166,6 @@ const initializeDatabase = async () => {
 const closeDatabase = async () => {
   await mongoose.connection.close();
 };
-
-const usersModel = mongoose.model("User", usersSchema, "users-collection");
-const favoritesRecipesModel = mongoose.model(
-  "FavoritesRecipe",
-  favoritesRecipesSchema,
-  "favorites-recipes-collection"
-);
-
-const recipesSearchHistoryModel = mongoose.model(
-  "RecipesSearchHistory",
-  recipesSearchHistorySchema,
-  "recipes-search-history-collection"
-);
-
-const recipeViewedModel = mongoose.model(
-  "RecipeViewed",
-  recipeViewedSchema,
-  "recipe-viewed-collection"
-);
 
 // User database methods
 const createOrUpdateUser = async (userData) => {
@@ -150,9 +216,9 @@ const getFavoritesRecipes = async (auth0Id) => {
   }
 };
 
-const setFavoritesRecipes = async (auth0Id, recipeIds) => {
+const setFavoritesRecipes = async (auth0Id, recipes) => {
   try {
-    console.log(`[DB] Setting favorites for ${auth0Id}:`, recipeIds);
+    console.log(`[DB] Setting favorites for ${auth0Id}:`, recipes);
 
     let existingUser = await usersModel.findOne({ auth0Id });
 
@@ -171,7 +237,7 @@ const setFavoritesRecipes = async (auth0Id, recipeIds) => {
     // Find and update existing favorites, or create new one
     const recipesFavorites = await favoritesRecipesModel.findOneAndUpdate(
       { auth0Id },
-      { auth0Id, recipeIds },
+      { auth0Id, recipes },
       { upsert: true, new: true }
     );
     console.log(`[DB] Favorites saved successfully`);
@@ -183,17 +249,20 @@ const setFavoritesRecipes = async (auth0Id, recipeIds) => {
 };
 
 // remove favorite recipes
-const removeFavoritesRecipes = async (auth0Id, recipeIds) => {
+const removeFavoritesRecipes = async (auth0Id, recipes) => {
   try {
-    console.log(`[DB] Removing favorites for ${auth0Id}:`, recipeIds);
+    console.log(`[DB] Removing favorites for ${auth0Id}:`, recipes);
 
-    // Remove recipe IDs from favorites
+    // Extract recipe IDs from recipe objects
+    const recipeIds = recipes.map((recipe) => recipe.id);
+
+    // Remove recipes by their ID
     const removedFavorites = await favoritesRecipesModel.findOneAndUpdate(
       { auth0Id },
-      { $pull: { recipeIds: { $in: recipeIds } } },
+      { $pull: { recipes: { id: { $in: recipeIds } } } },
       { new: true }
     );
-    console.log(`[DB] Favorites removed successfully: ${removedFavorites}`);
+    console.log(`[DB] Favorites removed successfully`);
     return removedFavorites;
   } catch (error) {
     console.error(`[DB] Error removing favorites:`, error.message);
@@ -258,10 +327,8 @@ const removeRecipesSearchHistory = async (auth0Id, searchQueryId) => {
 };
 
 // Mark recipe as viewed
-const setRecipeViewed = async (auth0Id, recipeId) => {
+const setRecipeViewed = async (auth0Id, recipe) => {
   try {
-    console.log(`[DB] Marking recipe as viewed for ${auth0Id}:`, recipeId);
-
     let existingUser = await usersModel.findOne({ auth0Id });
 
     // If user doesn't exist yet, create a placeholder user
@@ -276,18 +343,13 @@ const setRecipeViewed = async (auth0Id, recipeId) => {
       await existingUser.save();
     }
 
-    try {
-      console.log("recipeId", recipeId);
-      const existingView = await recipeViewedModel.findOneAndUpdate(
-        { auth0Id, recipeId },
-        { viewedAt: new Date() },
-        { upsert: true, new: true }
-      );
+    const existingView = await recipeViewedModel.findOneAndUpdate(
+      { auth0Id },
+      { auth0Id, recipes: [recipe] },
+      { upsert: true, new: true }
+    );
 
-      return existingView;
-    } catch (error) {
-      throw new Error(`Error marking recipe as viewed: ${error.message}`);
-    }
+    return existingView;
   } catch (error) {
     console.error(`[DB] Error marking recipe as viewed:`, error.message);
     throw new Error(`Error marking recipe as viewed: ${error.message}`);
@@ -298,9 +360,7 @@ const setRecipeViewed = async (auth0Id, recipeId) => {
 const getViewedRecipes = async (auth0Id) => {
   try {
     console.log(`[DB] Getting viewed recipes for ${auth0Id}`);
-    const viewedRecipes = await recipeViewedModel
-      .find({ auth0Id })
-      .sort({ viewedAt: -1 });
+    const viewedRecipes = await recipeViewedModel.findOne({ auth0Id });
     return viewedRecipes || [];
   } catch (error) {
     console.error(`[DB] Error getting viewed recipes:`, error.message);
@@ -317,22 +377,6 @@ const getViewedRecipesCount = async (auth0Id) => {
   } catch (error) {
     console.error(`[DB] Error getting viewed recipes count:`, error.message);
     throw new Error(`Error getting viewed recipes count: ${error.message}`);
-  }
-};
-
-// Remove viewed recipes by recipe IDs
-const removeViewedRecipes = async (auth0Id, recipeIds) => {
-  try {
-    console.log(`[DB] Removing viewed recipes for ${auth0Id}:`, recipeIds);
-    const result = await recipeViewedModel.deleteMany({
-      auth0Id,
-      recipeId: { $in: recipeIds },
-    });
-    console.log(`[DB] Removed ${result.deletedCount} viewed recipes`);
-    return result;
-  } catch (error) {
-    console.error(`[DB] Error removing viewed recipes:`, error.message);
-    throw new Error(`Error removing viewed recipes: ${error.message}`);
   }
 };
 
@@ -360,5 +404,4 @@ module.exports = {
   setRecipeViewed,
   getViewedRecipes,
   getViewedRecipesCount,
-  removeViewedRecipes,
 };

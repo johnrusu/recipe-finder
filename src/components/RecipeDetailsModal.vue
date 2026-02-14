@@ -3,7 +3,7 @@
     v-model="isOpen"
     :fullscreen="$vuetify.display.mobile"
     max-width="1024px"
-    @update:model-value="$emit('close')"
+    @update:model-value="$emit('on-close')"
     :persistent="!recipe"
     scrim="black"
     :opacity="0.9"
@@ -116,7 +116,7 @@
 
         <!-- Modal Actions -->
         <v-card-actions
-          class="pa-6 d-flex flex-column flex-sm-row gap-2 justify-space-between flex-shrink-0"
+          class="pa-6 d-flex flex-column flex-sm-row gap-2 justify-space-between shrink-0"
         >
           <div
             class="d-flex flex-column flex-sm-row align-center gap-2 w-100 w-sm-auto"
@@ -124,26 +124,24 @@
             <v-btn
               v-if="recipe.id"
               :prepend-icon="
-                isFavorited(recipe.id) ? 'mdi-heart' : 'mdi-heart-outline'
+                isFavorited(recipe) ? 'mdi-heart' : 'mdi-heart-outline'
               "
               variant="tonal"
-              @click.stop="toggleFavorite(recipe.id)"
+              @click.stop="toggleFavorite(recipe)"
               :loading="isAddingFavorites"
-              :color="isFavorited(recipe.id) ? 'primary' : 'default'"
+              :color="isFavorited(recipe) ? 'primary' : 'default'"
               class="w-100 w-sm-auto"
             >
               <v-tooltip activator="parent" location="top">
                 {{
-                  !isAuthenticated
-                    ? LOGIN_REQUIRED_TOOLTIP
-                    : isFavorited(recipe.id)
-                      ? SAVED_RECIPE_TOOLTIP
-                      : SAVE_RECIPE_TOOLTIP
+                  isFavorited(recipe)
+                    ? SAVED_RECIPE_TOOLTIP
+                    : SAVE_RECIPE_TOOLTIP
                 }}
               </v-tooltip>
               <span class="text-wrap">
                 {{
-                  isFavorited(recipe.id)
+                  isFavorited(recipe)
                     ? LABELS.REMOVE_FROM_FAVORITES
                     : LABELS.ADD_TO_FAVORITES
                 }}</span
@@ -155,12 +153,12 @@
               variant="tonal"
               class="w-100 w-sm-auto"
             >
-              <span class="text-wrap"> {{ LABELS.PRINT }}</span>
+              <span class="text-wrap">{{ LABELS.PRINT }}</span>
             </v-btn>
           </div>
           <v-btn
             variant="flat"
-            @click="$emit('close')"
+            @click="$emit('on-close')"
             prepend-icon="mdi-close"
             class="w-100 w-sm-auto"
           >
@@ -179,7 +177,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from "vue";
-import { useAuth0 } from "@auth0/auth0-vue";
 
 // components
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
@@ -188,13 +185,13 @@ const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
 import { RECIPE_FINDER, LOADING_CONFIG, LABELS } from "@/constants";
 
 // types
-import type { IRecipeDetails } from "@/types";
+import type { IRecipe, IRecipeDetails } from "@/types";
 
 // Props
 interface Props {
   open: boolean;
   recipe: IRecipeDetails | null;
-  favorites: number[];
+  favorites: IRecipe[];
   imageBaseUri: string;
   isAddingFavorites: boolean;
 }
@@ -206,25 +203,21 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  close: [];
-  favorite: [recipeId: number];
+  (e: "on-toggle-favorite", recipe: IRecipe): void;
+  (e: "on-close"): void;
 }>();
-
-// Auth
-const { isAuthenticated } = useAuth0();
 
 // Computed
 const isOpen = computed({
   get: () => props.open,
   set: (value) => {
     if (!value) {
-      emit("close");
+      emit("on-close");
     }
   },
 });
 
 // Constants
-const LOGIN_REQUIRED_TOOLTIP = RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP;
 const SAVED_RECIPE_TOOLTIP = RECIPE_FINDER.SAVED_RECIPE_TOOLTIP;
 const SAVE_RECIPE_TOOLTIP = RECIPE_FINDER.SAVE_RECIPE_TOOLTIP;
 const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
@@ -237,15 +230,12 @@ const getImageUrl = (imageSrc: string): string => {
   return `${props.imageBaseUri}${imageSrc}`;
 };
 
-const toggleFavorite = (recipeId: number) => {
-  if (!isAuthenticated.value) {
-    return;
-  }
-  emit("favorite", recipeId);
+const toggleFavorite = (recipe: IRecipe) => {
+  emit("on-toggle-favorite", recipe);
 };
 
-const isFavorited = (recipeId: number) => {
-  return props.favorites.includes(recipeId);
+const isFavorited = (recipe: IRecipe) => {
+  return props.favorites.find((r) => r.id === recipe.id);
 };
 
 const printRecipe = () => {

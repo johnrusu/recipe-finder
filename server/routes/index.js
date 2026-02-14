@@ -46,19 +46,6 @@ const { checkJwt } = require("../middleware/auth.js");
 // utils
 const { isNilOrEmpty, isArrayNotEmpty } = require("../utils/index.js");
 
-// Helper function to normalize recipe IDs to numbers
-const normalizeRecipeIds = (recipeIds) => {
-  if (!Array.isArray(recipeIds)) {
-    return [];
-  }
-  return recipeIds
-    .map((id) => {
-      const parsed = Number(id);
-      return Number.isFinite(parsed) ? parsed : null;
-    })
-    .filter((id) => id !== null);
-};
-
 // Database functions
 const {
   createOrUpdateUser,
@@ -322,13 +309,13 @@ router[ROUTES.GET_FAVORITE_RECIPES.method.toLowerCase()](
         res.status(200).json({
           success: true,
           message: `Favorites retrieved for user ${auth0Id}`,
-          recipeIds: favorites.recipeIds || [],
+          recipes: favorites.recipes || [],
         });
       } else {
         res.status(200).json({
           success: true,
           message: `No favorites found for user ${auth0Id}`,
-          recipeIds: [],
+          recipes: [],
         });
       }
     } catch (error) {
@@ -345,43 +332,36 @@ router[ROUTES.SET_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      let recipeIds = pathOr([], ["body", "recipeIds"], req);
+      let recipes = pathOr([], ["body", "recipes"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Normalize recipe IDs to numbers
-      recipeIds = normalizeRecipeIds(recipeIds);
-
-      if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
-        console.log("❌ Invalid recipeIds");
+      if (!isArrayNotEmpty(recipes)) {
+        console.log("❌ Invalid recipes");
         return res.status(400).json({
-          error: "recipeIds must be a non-empty array of valid numbers",
+          error: "recipes must be a non-empty array of valid objects",
         });
       }
 
-      const favorites = await setFavoritesRecipes(auth0Id, recipeIds);
+      const favorites = await setFavoritesRecipes(auth0Id, recipes);
 
       if (favorites) {
         res.status(200).json({
           success: true,
-          message: `Recipes [${recipeIds.join(
-            ", "
-          )}] set as favorite for user ${auth0Id}`,
-          recipeIds: favorites.recipeIds || [],
+          message: `Recipes [${recipes.map((r) => r.id).join(", ")}] set as favorite for user ${auth0Id}`,
+          recipes: favorites.recipes || [],
         });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: `Recipes [${recipeIds.join(
-            ", "
-          )}] marked as favorite for user ${auth0Id} (offline mode)`,
-          recipeIds: favorites.recipeIds || [],
-          offline: true,
-        });
+        return;
       }
+      res.status(200).json({
+        success: true,
+        message: `Recipes [${recipes.map((r) => r.id).join(", ")}] marked as favorite for user ${auth0Id} (offline mode)`,
+        recipes: favorites.recipes || [],
+        offline: true,
+      });
     } catch (error) {
       console.error("❌ Error in SET_FAVORITE_RECIPES:", error.message);
       // Don't fail - return success even if DB is down
@@ -401,40 +381,33 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
   async (req, res) => {
     try {
       const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      let recipeIds = pathOr([], ["body", "recipeIds"], req);
+      let recipes = pathOr([], ["body", "recipes"], req);
 
       if (isNilOrEmpty(auth0Id)) {
         console.log("❌ No auth0Id found");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Normalize recipe IDs to numbers
-      recipeIds = normalizeRecipeIds(recipeIds);
-
-      if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
-        console.log("❌ Invalid recipeIds");
+      if (!isArrayNotEmpty(recipes)) {
+        console.log("❌ Invalid recipes");
         return res.status(400).json({
-          error: "recipeIds must be a non-empty array of valid numbers",
+          error: "recipes must be a non-empty array of valid objects",
         });
       }
 
-      const favorites = await removeFavoritesRecipes(auth0Id, recipeIds);
+      const favorites = await removeFavoritesRecipes(auth0Id, recipes);
 
       if (favorites) {
         res.status(200).json({
           success: true,
-          message: `Recipes [${recipeIds.join(
-            ", "
-          )}] removed from favorites for user ${auth0Id}`,
-          recipeIds: favorites.recipeIds || [],
+          message: `Recipes [${recipes.map((r) => r.id).join(", ")}] removed from favorites for user ${auth0Id}`,
+          recipes: favorites.recipes || [],
         });
       } else {
         res.status(200).json({
           success: true,
-          message: `Recipes [${recipeIds.join(
-            ", "
-          )}] removed from favorites for user ${auth0Id} (offline mode)`,
-          recipeIds: favorites.recipeIds || [],
+          message: `Recipes [${recipes.map((r) => r.id).join(", ")}] removed from favorites for user ${auth0Id} (offline mode)`,
+          recipes: favorites.recipes || [],
           offline: true,
         });
       }
@@ -453,9 +426,11 @@ router[ROUTES.REMOVE_FAVORITE_RECIPES.method.toLowerCase()](
 // Get recipe details
 router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
   ROUTES.GET_RECIPE_DETAILS.path,
+  checkJwt,
   async (req, res) => {
     try {
       const recipeId = pathOr("", ["params", "recipeId"], req);
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
 
       if (isNilOrEmpty(recipeId)) {
         return res
@@ -479,9 +454,14 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
               (r) => r.id === parseInt(recipeId)
             ) || mockRecipeDetails.recipes[0];
 
+          const RECIPE = { ...recipeDetailsMock, id: parseInt(recipeId) };
+          if (auth0Id) {
+            await setRecipeViewed(auth0Id, RECIPE);
+          }
+
           return res.status(200).json({
             success: true,
-            recipe: { ...recipeDetailsMock, id: parseInt(recipeId) },
+            recipe: RECIPE,
             usingMockData: true,
             apiError: result.message || "API unavailable",
           });
@@ -489,6 +469,9 @@ router[ROUTES.GET_RECIPE_DETAILS.method.toLowerCase()](
         return res
           .status(response.status)
           .json({ error: result.message || "Failed to get recipe details" });
+      }
+      if (auth0Id) {
+        await setRecipeViewed(auth0Id, result);
       }
 
       res.status(200).json({ success: true, recipe: result });
@@ -565,7 +548,7 @@ router[ROUTES.GET_RECIPES_BULK_DETAILS.method.toLowerCase()](
           .json({ error: result.message || "Failed to get recipes details" });
       }
 
-      recipes = Array.isArray(result) ? result : [];
+      recipes = isArrayNotEmpty(result) ? result : [];
 
       // Find missing recipe IDs from API response
       const returnedIds = recipes.map((r) => r.id);
@@ -743,53 +726,6 @@ router[ROUTES.REMOVE_SEARCH_HISTORY.method.toLowerCase()](
   }
 );
 
-// Mark a recipe as viewed
-router[ROUTES.SET_RECIPE_VIEWED.method.toLowerCase()](
-  ROUTES.SET_RECIPE_VIEWED.path,
-  checkJwt,
-  async (req, res) => {
-    try {
-      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
-      const recipeId = pathOr("", ["params", "recipeId"], req);
-
-      if (isNilOrEmpty(auth0Id)) {
-        console.log("❌ No auth0Id found");
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      if (isNilOrEmpty(recipeId)) {
-        console.log("❌ Invalid recipeId");
-        return res
-          .status(400)
-          .json({ error: "recipeId must be a non-empty string" });
-      }
-
-      const setViewedResult = await setRecipeViewed(auth0Id, recipeId);
-
-      if (setViewedResult) {
-        res.status(200).json({
-          success: true,
-          message: `Recipe ${recipeId} marked as viewed for user ${auth0Id}`,
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: `Recipe ${recipeId} marked as viewed for user ${auth0Id} (offline mode)`,
-          offline: true,
-        });
-      }
-    } catch (error) {
-      console.error("❌ Error in SET_RECIPE_VIEWED:", error.message);
-      // Don't fail - return success even if DB is down
-      res.status(200).json({
-        success: true,
-        message: "Recipe view recorded (database offline)",
-        offline: true,
-      });
-    }
-  }
-);
-
 // Get user's viewed recipes
 router[ROUTES.GET_VIEWED_RECIPES.method.toLowerCase()](
   ROUTES.GET_VIEWED_RECIPES.path,
@@ -805,11 +741,11 @@ router[ROUTES.GET_VIEWED_RECIPES.method.toLowerCase()](
 
       const viewedRecipes = await getViewedRecipes(auth0Id);
 
-      if (viewedRecipes) {
+      if (isArrayNotEmpty(viewedRecipes.recipes)) {
         res.status(200).json({
           success: true,
           message: `Viewed recipes retrieved for user ${auth0Id}`,
-          recipes: viewedRecipes || [],
+          recipes: viewedRecipes.recipes || [],
         });
       } else {
         res.status(200).json({

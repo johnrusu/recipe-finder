@@ -1,7 +1,7 @@
 <template>
   <div
     class="favorite-recipes-container mb-12"
-    v-if="isArrayNotEmpty(allRecipesIds)"
+    v-if="isArrayNotEmpty(favoriteRecipes)"
   >
     <!-- Header Section -->
     <div class="d-flex align-center justify-center mb-6">
@@ -14,11 +14,6 @@
     </div>
 
     <v-card class="relative">
-      <v-progress-linear
-        indeterminate
-        v-if="loadingPartialFromState"
-        class="absolute top-0 left-0 w-full"
-      ></v-progress-linear>
       <v-card-text class="px-6 py-8 relative!">
         <!-- Loading State -->
         <div
@@ -67,22 +62,20 @@
                 </div>
                 <div class="d-flex align-center gap-2 mt-2 text-caption">
                   <v-icon size="small" icon="mdi-clock" />
-                  {{ recipe.readyInMinutes }} min
+                  {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
                 </div>
                 <div class="d-flex align-center gap-2 text-caption">
                   <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                  {{ recipe.servings }} servings
+                  {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
                 </div>
               </v-card-text>
               <v-card-actions class="pt-0 d-flex gap-2">
                 <v-btn
                   icon
-                  @click.stop="handleRemoveFavorite(recipe.id)"
+                  @click.stop="handleRemoveFavorite(recipe)"
                   color="error"
                   class="remove-btn"
-                  :loading="
-                    loadingForDetails && recipe.id == loadingFavoriteRecipeId
-                  "
+                  :loading="loadingForDetails && recipe.id == favoriteRecipeId"
                 >
                   <v-icon icon="mdi-heart-off" />
                   <v-tooltip activator="parent" location="top">
@@ -111,10 +104,10 @@
       :open="showRecipeModal"
       :recipe="selectedRecipeDetails"
       :isAddingFavorites="loadingForDetails"
-      :favorites="favoriteRecipeIds"
+      :favorites="favoriteRecipes"
       :image-base-uri="imageBaseUri"
-      @close="handleModalClose"
-      @favorite="handleFavoriteToggle"
+      @on-close="handleModalClose"
+      @on-toggle-favorite="handleRemoveFavorite"
     />
   </div>
 </template>
@@ -133,12 +126,13 @@ import type { IRecipe, IRecipeDetails } from "@/types";
 // constants
 import { RECIPE_FINDER, LOADING_CONFIG, FAVORITE_RECIPES } from "@/constants";
 
+const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
+
 // services
 import {
   getFavoriteRecipes,
   getRecipeDetails,
-  removeFavoriteRecipes,
-  getRecipesBulkDetails,
+  removeFavoriteRecipe,
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
 
@@ -159,15 +153,12 @@ const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 const appStore = useAppStore();
 
 // state
-const allRecipesIds = ref<number[]>([]);
-const recipes = ref<IRecipe[]>([]);
-const favoriteRecipeIds = ref<number[]>([]);
-const loadingFavoriteRecipeId = ref<number | null>(null);
+const favoriteRecipes = ref<IRecipe[]>([]);
+const favoriteRecipeId = ref<number | null>(null);
 const error = ref<string | null>(null);
 const imageBaseUri = ref(RECIPE_FINDER.IMAGE_BASE_URI);
 
 const loadingAllFavoriteRecipes = ref(false);
-const loadingPartialFromState = ref(false);
 const loadingForDetails = ref(false);
 
 // recipe details modal state
@@ -177,7 +168,9 @@ const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
 // computed
 const title = ref(props.title || FAVORITE_RECIPES.DEFAULT_TITLE);
 const displayedRecipes = computed(() =>
-  isArrayNotEmpty(recipes.value) ? recipes.value.slice(0, props.maxItems) : []
+  isArrayNotEmpty(favoriteRecipes.value)
+    ? favoriteRecipes.value.slice(0, props.maxItems)
+    : []
 );
 
 // methods
@@ -188,106 +181,38 @@ const getImageUrl = (imageSrc: string): string => {
   return `${imageBaseUri.value}${imageSrc}`;
 };
 
-const fetchBulkDetailsByIds = async (ids: number[], token: string) => {
-  recipes.value = [];
-  if (isArrayNotEmpty(ids)) {
-    // Fetch recipe details in bulk
-    try {
-      const detailsResponse = await getRecipesBulkDetails(ids, token);
-
-      if (!isNilOrEmpty(detailsResponse)) {
-        const recipesData = pathOr([], ["recipes"], detailsResponse);
-        recipes.value = recipesData;
-      } else {
-        console.error(
-          "Failed to fetch favorite recipe details:",
-          detailsResponse
-        );
-      }
-    } catch (e) {
-      console.error("Error fetching bulk recipe details:", e);
-      recipes.value = [];
-    }
-  }
-};
-
-const fetchFavorites = async (
-  favoritesFromStore: number[],
-  allFavorites: boolean
-) => {
+const initializeFavorites = async () => {
   let token = "";
-  // Check authentication before attempting to get token
-  if (!isAuthenticated.value) {
-    console.warn("Cannot fetch favorites: User not authenticated");
-    if (allFavorites) {
-      loadingAllFavoriteRecipes.value = false;
-    } else {
-      loadingPartialFromState.value = false;
-    }
-    return;
-  }
 
   try {
     token = (await getAccessTokenSilently()) || "";
   } catch (authError) {
     console.error("Failed to get access token:", authError);
-    if (allFavorites) {
-      loadingAllFavoriteRecipes.value = false;
-    } else {
-      loadingPartialFromState.value = false;
-    }
-    return;
-  }
-  if (allFavorites) {
-    loadingAllFavoriteRecipes.value = true;
-    allRecipesIds.value = [];
-  } else {
-    loadingPartialFromState.value = true;
   }
 
-  favoriteRecipeIds.value = [];
-  error.value = null;
+  try {
+    const response = await getFavoriteRecipes(token);
+    if (!isNilOrEmpty(response)) {
+      const success = pathOr(false, ["success"], response);
+      const recipes = pathOr([], ["recipes"], response);
 
-  if (isArrayNotEmpty(favoritesFromStore)) {
-    favoriteRecipeIds.value = favoritesFromStore;
-    await fetchBulkDetailsByIds(Array.from(favoritesFromStore), token);
-  } else {
-    try {
-      const response = await getFavoriteRecipes(token);
-      if (!isNilOrEmpty(response)) {
-        const success = pathOr(false, ["success"], response);
-        const recipeIds = pathOr([], ["recipeIds"], response);
+      if (success) {
+        if (isArrayNotEmpty(recipes)) {
+          favoriteRecipes.value = recipes;
+          loadingAllFavoriteRecipes.value = false;
 
-        if (success) {
-          if (isArrayNotEmpty(recipeIds)) {
-            favoriteRecipeIds.value = recipeIds;
-            allRecipesIds.value = recipeIds;
-            loadingAllFavoriteRecipes.value = false;
-
-            appStore.setFavoritesRecipes(recipeIds);
-            await fetchBulkDetailsByIds(recipeIds, token);
-            return;
-          }
+          appStore.setFavoritesRecipes(recipes);
         }
       }
-
-      favoriteRecipeIds.value = [];
-      recipes.value = [];
-      allRecipesIds.value = [];
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : FAVORITE_RECIPES.ERROR_GENERIC;
-      error.value = errorMessage;
-      console.error("Error loading favorite recipes:", err);
-      favoriteRecipeIds.value = [];
-      recipes.value = [];
-      allRecipesIds.value = [];
     }
-  }
-  if (allFavorites) {
-    loadingAllFavoriteRecipes.value = false;
-  } else {
-    loadingPartialFromState.value = false;
+
+    favoriteRecipes.value = [];
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : FAVORITE_RECIPES.ERROR_GENERIC;
+    error.value = errorMessage;
+    console.error("Error loading favorite recipes:", err);
+    favoriteRecipes.value = [];
   }
 };
 
@@ -311,10 +236,7 @@ const handleGetRecipeDetails = async (recipeId: number) => {
     const response = await getRecipeDetails(recipeId, token);
 
     if (response.success && response.recipe) {
-      selectedRecipeDetails.value = {
-        ...response.recipe,
-        extendedIngredients: response.recipe.extendedIngredients || [],
-      } as IRecipeDetails;
+      selectedRecipeDetails.value = response.recipe as IRecipeDetails;
     } else {
       error.value = RECIPE_FINDER.ERROR_RECIPE_NOT_FOUND;
     }
@@ -328,9 +250,8 @@ const handleGetRecipeDetails = async (recipeId: number) => {
   }
 };
 
-const handleRemoveFavorite = async (recipeId: number) => {
+const handleRemoveFavorite = async (recipe: IRecipe) => {
   loadingForDetails.value = true;
-  loadingFavoriteRecipeId.value = recipeId;
 
   try {
     let token = "";
@@ -343,21 +264,18 @@ const handleRemoveFavorite = async (recipeId: number) => {
       } catch (authError) {
         console.warn("Failed to get access token:", authError);
         loadingForDetails.value = false;
-        loadingFavoriteRecipeId.value = null;
         return;
       }
     }
-    const response = await removeFavoriteRecipes([recipeId], token);
+    const response = await removeFavoriteRecipe([recipe], token);
 
     if (response.success) {
       // Remove from local state
-      recipes.value = recipes.value.filter((recipe) => recipe.id !== recipeId);
-      favoriteRecipeIds.value = favoriteRecipeIds.value.filter(
-        (id) => id !== recipeId
+      const filteredRecipes = favoriteRecipes.value.filter(
+        (r) => r.id !== recipe.id
       );
-      allRecipesIds.value = allRecipesIds.value.filter((id) => id !== recipeId);
-
-      appStore.setFavoritesRecipes(favoriteRecipeIds.value);
+      favoriteRecipes.value = filteredRecipes;
+      appStore.setFavoritesRecipes(filteredRecipes);
     } else {
       console.error("Failed to remove favorite:", response.message);
     }
@@ -365,7 +283,6 @@ const handleRemoveFavorite = async (recipeId: number) => {
     console.error("Error removing favorite:", error);
   } finally {
     loadingForDetails.value = false;
-    loadingFavoriteRecipeId.value = null;
   }
 };
 
@@ -374,60 +291,24 @@ const handleModalClose = () => {
   selectedRecipeDetails.value = null;
 };
 
-const handleFavoriteToggle = (recipeId: number) => {
-  handleRemoveFavorite(recipeId);
-};
-
-// lifecycle
-onMounted(async () => {
-  const hasFavorites = isArrayNotEmpty(appStore.favoritesRecipes);
-
-  if (hasFavorites) {
-    favoriteRecipeIds.value = appStore.favoritesRecipes;
-    return;
-  }
-  await fetchFavorites([], true);
-});
-
 // watch store for changes from other components
 watch(
   () => appStore.favoritesRecipes,
-  (newFavorites) => {
-    if (!isArrayNotEmpty(newFavorites)) {
-      favoriteRecipeIds.value = [];
-      return;
-    }
-    favoriteRecipeIds.value = Array.from(newFavorites);
+  (storeFavorites) => {
+    favoriteRecipes.value = storeFavorites;
   },
   { deep: true }
 );
 
-// watch favorite recipe ids length and refetch details when it changes
-watch(
-  () => favoriteRecipeIds.value.length,
-  async (newLength) => {
-    if (newLength > 0) {
-      // Only fetch if authenticated
-      if (!isAuthenticated.value) {
-        console.warn("Cannot fetch favorite details: User not authenticated");
-        return;
-      }
-
-      let token = "";
-      try {
-        token = (await getAccessTokenSilently()) || "";
-      } catch (authError) {
-        console.warn("Failed to get access token:", authError);
-        return;
-      }
-      allRecipesIds.value = Array.from(favoriteRecipeIds.value);
-      await fetchBulkDetailsByIds(Array.from(favoriteRecipeIds.value), token);
-    } else {
-      recipes.value = [];
-      allRecipesIds.value = [];
-    }
+// lifecycle
+onMounted(async () => {
+  if (!isArrayNotEmpty(appStore.favoritesRecipes)) {
+    await initializeFavorites();
+  } else {
+    // Initialize from store if already populated
+    favoriteRecipes.value = appStore.favoritesRecipes;
   }
-);
+});
 </script>
 
 <style scoped>
