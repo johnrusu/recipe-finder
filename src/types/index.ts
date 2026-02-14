@@ -178,6 +178,7 @@ export type {
   IUser,
   IRecipeSearchParams,
   IBaseRecipe,
+  IRecipeSearch,
   IRecipeDetails,
   IExtendedIngredient,
   IRecipe,
