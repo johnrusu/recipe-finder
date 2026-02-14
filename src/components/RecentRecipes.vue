@@ -362,6 +362,7 @@ const toggleFavorite = (recipe: IRecipe) => {
   if (!isAuthenticated.value) {
     return;
   }
+  favoriteRecipeId.value = recipe.id;
   const alreadyFavorited = isFavorited(recipe);
   if (alreadyFavorited) {
     handleDeleteRecipeFavorites(recipe);
@@ -377,7 +378,6 @@ const handleModalClose = () => {
 
 const handleFavoriteToggle = (recipe: IRecipe) => {
   toggleFavorite(recipe);
-  favoriteRecipeId.value = recipe.id;
 };
 
 const isFavorited = (recipe: IRecipe) => {
