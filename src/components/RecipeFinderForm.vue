@@ -543,7 +543,6 @@ const RecipeDetailsModal = defineAsyncComponent(
 
 // auth
 import { useAuth0 } from "@auth0/auth0-vue";
-import { fa } from "vuetify/locale";
 
 // State
 const searchQuery = ref("");
