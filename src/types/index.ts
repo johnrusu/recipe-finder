@@ -25,7 +25,8 @@ interface IUser extends IUserData {
   updatedAt: string;
 }
 
-interface IRecipeSearchParams {
+
+interface IBaseRecipe {
   query: string;
   number?: number;
   offset?: number;
@@ -36,6 +37,15 @@ interface IRecipeSearchParams {
   maxReadyTime?: number;
   includeIngredients?: string;
   excludeIngredients?: string;
+}
+
+// 2. The version used for Search (No ID needed)
+interface IRecipeSearch extends IBaseRecipe {
+  [key: string]: unknown;
+}
+
+// 3. The version used for Results (ID is mandatory)
+interface IRecipeSearchParams extends IBaseRecipe {
   id: number | string;
   [key: string]: unknown;
 }
@@ -167,6 +177,7 @@ export type {
   IUserData,
   IUser,
   IRecipeSearchParams,
+  IBaseRecipe,
   IRecipeDetails,
   IExtendedIngredient,
   IRecipe,
