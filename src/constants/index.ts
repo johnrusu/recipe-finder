@@ -376,6 +376,8 @@ const DASHBOARD = {
   RECIPES_VIEWED_LABEL: "Recipes Viewed",
   TOTAL_SEARCHES_LABEL: "Total Searches",
   FAVORITE_RECIPES_TITLE: "Your Favorite Recipes",
+  INCLUDE_LABEL: "Include",
+  EXCLUDE_LABEL: "Exclude",
   FAVORITE_CHIP: "Favorite",
   NO_FAVORITES_TITLE: "No favorite recipes yet",
   NO_FAVORITES_MESSAGE: "Start exploring and save your favorite recipes",

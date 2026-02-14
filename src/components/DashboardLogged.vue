@@ -202,9 +202,7 @@
                   @click.stop="handleDeleteRecipeFavorites(recipe)"
                   color="error"
                   class="remove-btn"
-                  :loading="
-                    loadingForDetails && recipe.id == loadingFavoriteRecipeId
-                  "
+                  :loading="loadingForDetails && recipe.id == favoriteRecipeId"
                 >
                   <v-icon icon="mdi-heart-off" />
                   <v-tooltip activator="parent" location="top">
@@ -348,14 +346,14 @@
                   class="search-param-chip search-param-include"
                 >
                   <v-icon size="x-small" icon="mdi-plus-circle" />
-                  Include: {{ search.includeIngredients }}
+                  {{ DASHBOARD.INCLUDE_LABEL }}: {{ search.includeIngredients }}
                 </span>
                 <span
                   v-if="search.excludeIngredients"
                   class="search-param-chip search-param-exclude"
                 >
                   <v-icon size="x-small" icon="mdi-minus-circle" />
-                  Exclude: {{ search.excludeIngredients }}
+                  {{ DASHBOARD.EXCLUDE_LABEL }}: {{ search.excludeIngredients }}
                 </span>
                 <span v-if="search.maxReadyTime" class="search-param-chip">
                   <v-icon size="x-small" icon="mdi-clock-outline" />
@@ -520,7 +518,7 @@ const loadingToggleFavorite = ref(false);
 const showRecipeModal = ref(false);
 const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
 const loadingForDetails = ref(false);
-const loadingFavoriteRecipeId = ref<number | null>(null);
+const favoriteRecipeId = ref<number | null>(null);
 
 // computed
 const favoriteCount = computed(() => favoriteRecipes.value.length);
@@ -676,6 +674,7 @@ const handleGetRecipeDetails = async (recipe: IRecipe) => {
 
 const handleToggleFavorite = (recipe: IRecipe) => {
   const foundFavorite = favoriteRecipes.value.find((r) => r.id === recipe.id);
+  favoriteRecipeId.value = recipe.id;
   if (foundFavorite) {
     handleDeleteRecipeFavorites(recipe);
     return;
