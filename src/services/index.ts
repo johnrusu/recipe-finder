@@ -102,7 +102,7 @@ export const getCurrentUser = async (token: string): Promise<IUser> => {
  * GET /api/recipes/search?query=...&filters...
  */
 export const searchRecipes = async (
-  params: IRecipeSearchParams
+  params: IBaseRecipe
 ): Promise<IRecipeSearchResponse> => {
   const queryParams = new URLSearchParams({
     query: params.query,
