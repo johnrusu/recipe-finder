@@ -716,6 +716,7 @@ const handleToggleFavorite = (recipe: IRecipe) => {
 const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
   favoriteRecipeId.value = recipe.id;
   loadingToggleFavorite.value = true;
+  loadingForDetails.value = true;
 
   try {
     let token = "";
@@ -746,11 +747,13 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
     console.error("Error removing favorite:", error);
   } finally {
     loadingToggleFavorite.value = false;
+    loadingForDetails.value = false;
   }
 };
 
 const handleAddRecipeFavorites = async (recipe: IRecipe) => {
   loadingToggleFavorite.value = true;
+  loadingForDetails.value = true;
   favoriteRecipeId.value = recipe.id;
   try {
     let token = "";
@@ -775,6 +778,7 @@ const handleAddRecipeFavorites = async (recipe: IRecipe) => {
     console.error("Error updating favorites:", error);
   } finally {
     loadingToggleFavorite.value = false;
+    loadingForDetails.value = false;
   }
 };
 
