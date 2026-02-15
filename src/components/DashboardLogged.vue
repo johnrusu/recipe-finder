@@ -922,7 +922,6 @@ watch(
 <style scoped>
 .dashboard-logged {
   width: 100%;
-  max-width: 1400px;
   margin: 0 auto;
 }
 
