@@ -58,6 +58,8 @@ const {
   fetchViewedRecipes,
   removeViewedRecipes,
   fetchRecipesSearchHistory,
+  getRecipesRatings,
+  setRecipesRatings,
 } = require("../database/index.js");
 
 // Root route - Public
@@ -870,6 +872,112 @@ router[ROUTES.GET_VIEWED_RECIPES_COUNT.method.toLowerCase()](
       });
     } catch (error) {
       console.error("❌ Error in GET_VIEWED_RECIPES_COUNT:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Set recipes ratings
+router[ROUTES.SET_RECIPES_RATINGS.method.toLowerCase()](
+  ROUTES.SET_RECIPES_RATINGS.path,
+  checkJwt,
+  async (req, res) => {
+    try {
+      const auth0Id = pathOr(null, ["auth", "payload", "sub"], req);
+      const rating = pathOr(0, ["body", "rating"], req);
+      const recipeId = pathOr(null, ["body", "recipeId"], req);
+
+      if (isNilOrEmpty(auth0Id)) {
+        console.log("❌ No auth0Id found");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (isNilOrEmpty(rating)) {
+        console.log("❌ Invalid rating");
+        return res.status(400).json({
+          error: "rating must be a valid object",
+        });
+      }
+
+      const onlyRatings = [];
+      const updatedRatings = await setRecipesRatings(auth0Id, recipeId, rating);
+      if (isArrayNotEmpty(updatedRatings)) {
+        updatedRatings.forEach((r) => {
+          if (isArrayNotEmpty(r.ratings)) {
+            r.ratings.forEach((rating) => {
+              onlyRatings.push({
+                userId: r.auth0Id,
+                recipeId: rating.recipeId,
+                rating: rating.rating,
+                id: rating.id,
+              });
+            });
+          }
+        });
+      }
+
+      if (isArrayNotEmpty(onlyRatings)) {
+        res.status(200).json({
+          success: true,
+          message: `Ratings updated for user ${auth0Id}`,
+          ratings: onlyRatings || [],
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `Ratings updated for user ${auth0Id} (offline mode)`,
+          ratings: onlyRatings || [],
+          offline: true,
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in SET_RECIPES_RATINGS:", error.message);
+      // Don't fail - return success even if DB is down
+      res.status(200).json({
+        success: true,
+        message: "Ratings recorded (database offline)",
+        offline: true,
+      });
+    }
+  }
+);
+
+// Get recipes ratings
+router[ROUTES.GET_RECIPES_RATINGS.method.toLowerCase()](
+  ROUTES.GET_RECIPES_RATINGS.path,
+  async (req, res) => {
+    try {
+      const ratings = await getRecipesRatings();
+
+      if (isArrayNotEmpty(ratings)) {
+        const onlyRatings = [];
+        ratings.forEach((r) => {
+          if (isArrayNotEmpty(r.ratings)) {
+            r.ratings.forEach((rating) => {
+              onlyRatings.push({
+                userId: r.auth0Id,
+                recipeId: rating.recipeId,
+                rating: rating.rating,
+                id: rating.id,
+              });
+            });
+          }
+        });
+
+        res.status(200).json({
+          success: true,
+          message: `Ratings retrieved for all users`,
+          ratings: onlyRatings || [],
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: `No ratings found for any users`,
+          ratings: [],
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in GET_RECIPES_RATINGS:", error.message);
       res.status(500).json({ error: error.message });
     }
   }

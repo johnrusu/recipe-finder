@@ -131,6 +131,23 @@ const recipeViewedModel = mongoose.model(
   "recipe-viewed-collection"
 );
 
+const recipesRatingsSchema = new mongoose.Schema({
+  auth0Id: { type: String, required: true, unique: true },
+  ratings: [
+    {
+      recipeId: { type: Number, required: true },
+      rating: { type: Number, required: true },
+      timestamp: { type: Date, default: Date.now },
+    },
+  ],
+});
+
+const recipesRatingsModel = mongoose.model(
+  "RecipesRatings",
+  recipesRatingsSchema,
+  "recipes-ratings-collection"
+);
+
 // Database connection and methods
 const initializeDatabase = async () => {
   const maxRetries = 2; // Reduced from 3
@@ -430,6 +447,60 @@ const getViewedRecipesCount = async (auth0Id) => {
   }
 };
 
+// ratings database methods
+const getRecipesRatings = async () => {
+  try {
+    const ratings = await recipesRatingsModel.find({});
+    console.log(`[DB] Ratings retrieved:`, ratings);
+    return ratings || [];
+  } catch (error) {
+    console.error(`[DB] Error getting ratings:`, error.message);
+    throw new Error(`Error getting ratings: ${error.message}`);
+  }
+};
+
+const setRecipesRatings = async (auth0Id, recipeId, rating) => {
+  try {
+    console.log(`[DB] Setting rating for ${auth0Id}:`, { recipeId, rating });
+
+    // First, try to update an existing rating
+    const existingRating = await recipesRatingsModel.findOneAndUpdate(
+      { auth0Id, "ratings.recipeId": recipeId },
+      {
+        $set: { "ratings.$.rating": rating, "ratings.$.timestamp": new Date() },
+      },
+      { new: true }
+    );
+
+    // If found and updated, return it
+    if (existingRating) {
+      const ratings = await recipesRatingsModel.find({});
+      return ratings || [];
+    }
+
+    // Otherwise, push a new rating to the array (or create the document)
+    await recipesRatingsModel.findOneAndUpdate(
+      { auth0Id },
+      {
+        $push: {
+          ratings: {
+            recipeId,
+            rating,
+            timestamp: new Date(),
+          },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    const ratings = await recipesRatingsModel.find({});
+    return ratings || [];
+  } catch (error) {
+    console.error(`[DB] Error setting rating:`, error.message);
+    throw new Error(`Error setting rating: ${error.message}`);
+  }
+};
+
 module.exports = {
   // Database methods
   initializeDatabase,
@@ -457,4 +528,10 @@ module.exports = {
   setRecipeViewed,
   fetchViewedRecipes,
   getViewedRecipesCount,
+
+  // Recipes Ratings methods
+  recipesRatingsModel,
+  recipesRatingsSchema,
+  getRecipesRatings,
+  setRecipesRatings,
 };

@@ -169,6 +169,12 @@ interface IAutocompleteSuggestion {
   imageType: string;
 }
 
+interface IRecipeRating {
+  recipeId: number | string;
+  rating: number; // e.g., 1-5
+  timestamp: string; // ISO date string
+}
+
 export type {
   TUser,
   ILoadingProps,
@@ -184,4 +190,5 @@ export type {
   IRecipeSearchResponse,
   IRecipeDetailsResponse,
   IAutocompleteSuggestion,
+  IRecipeRating,
 };

@@ -62,14 +62,16 @@ export const API_ROUTES = {
     method: "GET",
     url: `${BASE_URL}/recipes/recipe/:recipeId`,
     protected: false,
-    description: "Get detailed information about a recipe (public, no tracking)",
+    description:
+      "Get detailed information about a recipe (public, no tracking)",
   },
 
   GET_RECIPE_DETAILS_PROTECTED: {
     method: "GET",
     url: `${BASE_URL}/recipes/recipe/:recipeId/view`,
     protected: true,
-    description: "Get detailed information about a recipe (protected, with view tracking)",
+    description:
+      "Get detailed information about a recipe (protected, with view tracking)",
   },
 
   GET_RECIPES_BULK_DETAILS: {
@@ -154,5 +156,19 @@ export const API_ROUTES = {
     url: `${BASE_URL}/recipes/viewed/count`,
     protected: true,
     description: "Get count of user's viewed recipes",
+  },
+
+  GET_RECIPES_RATINGS: {
+    method: "GET",
+    url: `${BASE_URL}/recipes/ratings`,
+    protected: true,
+    description: "Get user's recipe ratings",
+  },
+
+  SET_RECIPES_RATINGS: {
+    method: "POST",
+    url: `${BASE_URL}/recipes/ratings`,
+    protected: true,
+    description: "Set or update recipe ratings",
   },
 } as const;

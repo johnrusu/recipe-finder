@@ -137,6 +137,20 @@ const ROUTES = {
     protected: true,
     description: "Get count of user's viewed recipes",
   },
+
+  GET_RECIPES_RATINGS: {
+    method: "GET",
+    path: "/recipes/ratings",
+    protected: true,
+    description: "Get user's recipe ratings",
+  },
+
+  SET_RECIPES_RATINGS: {
+    method: "POST",
+    path: "/recipes/ratings",
+    protected: true,
+    description: "Set or update recipe ratings",
+  },
 };
 
 module.exports = { ROUTES };

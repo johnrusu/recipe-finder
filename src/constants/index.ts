@@ -139,6 +139,7 @@ const RECIPE_FINDER = {
   ],
 
   // Recipe card actions
+  RATE_RECIPES_REQUIRED_TOOLTIP: "Please log in to rate recipes",
   VIEW_RECIPE_BUTTON: "View Recipe",
   SAVE_RECIPE_TOOLTIP: "Save for later",
   SAVED_RECIPE_TOOLTIP: "Saved",

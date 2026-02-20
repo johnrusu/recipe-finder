@@ -74,7 +74,7 @@
             >
               <v-chip
                 v-for="meal in mealTypes"
-                :key="meal.value"
+                :key="`meal-${meal.value}`"
                 :value="meal.value"
                 variant="outlined"
                 filter
@@ -138,7 +138,7 @@
                     <v-chip-group v-model="dietaryPreferences" column multiple>
                       <v-chip
                         v-for="diet in dietaryOptions"
-                        :key="diet.value"
+                        :key="`diet-${diet.value}`"
                         :value="diet.value"
                         variant="outlined"
                         filter
@@ -159,7 +159,7 @@
                     <v-chip-group v-model="intolerances" column multiple>
                       <v-chip
                         v-for="intolerance in intoleranceOptions"
-                        :key="intolerance.value"
+                        :key="`intolerance-${intolerance.value}`"
                         :value="intolerance.value"
                         variant="outlined"
                         filter
@@ -391,73 +391,24 @@
             <v-row>
               <v-col
                 v-for="recipe in searchResults"
-                :key="recipe.id"
+                :key="`search-result-${recipe.id}`"
                 cols="12"
                 sm="6"
                 md="4"
                 lg="4"
               >
-                <v-card
-                  class="h-100 d-flex flex-column recipe-card"
-                  color="white"
-                  ripple
-                >
-                  <v-img
-                    :src="getImageUrl(recipe.image)"
-                    :alt="recipe.title"
-                    height="200px"
-                    cover
-                  />
-                  <v-card-text class="grow">
-                    <div class="text-h6 font-weight-bold line-clamp-2">
-                      {{ recipe.title }}
-                    </div>
-                    <div class="d-flex align-center gap-2 mt-2 text-caption">
-                      <v-icon size="small" icon="mdi-clock" />
-                      {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
-                    </div>
-                    <div class="d-flex align-center gap-2 text-caption">
-                      <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                      {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
-                    </div>
-                  </v-card-text>
-                  <v-card-actions class="pt-0 d-flex gap-2">
-                    <v-btn
-                      icon
-                      @click.stop="toggleFavorite(recipe)"
-                      :color="isFavorited(recipe) ? 'error' : 'default'"
-                      class="save-btn"
-                      :loading="loading && recipe.id == favoriteRecipeId"
-                    >
-                      <v-icon
-                        :icon="
-                          isFavorited(recipe)
-                            ? 'mdi-heart'
-                            : 'mdi-heart-outline'
-                        "
-                      />
-                      <v-tooltip activator="parent" location="top">
-                        {{
-                          !isAuthenticated
-                            ? RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP
-                            : isFavorited(recipe)
-                              ? RECIPE_FINDER.SAVED_RECIPE_TOOLTIP
-                              : RECIPE_FINDER.SAVE_RECIPE_TOOLTIP
-                        }}
-                      </v-tooltip>
-                    </v-btn>
-                    <v-btn
-                      variant="elevated"
-                      color="primary"
-                      size="large"
-                      @click.stop="handleGetRecipeDetails(recipe.id)"
-                      class="view-recipe-btn grow"
-                      append-icon="mdi-arrow-right"
-                    >
-                      {{ RECIPE_FINDER.VIEW_RECIPE_BUTTON }}
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
+                <AppRecipe
+                  :recipe="recipe"
+                  :rating="fetchRatingForRecipe(recipe.id)"
+                  :loading-app-recipe="loading && recipe.id == favoriteRecipeId"
+                  :favorite-recipe-id="favoriteRecipeId"
+                  :show-toggle-favorite="true"
+                  :is-favorited="isFavorited(recipe)"
+                  :is-authenticated="isAuthenticated"
+                  @toggle-favorite="toggleFavorite"
+                  @view-recipe-details="handleGetRecipeDetails"
+                  @rating-change="handleRatingChange"
+                />
               </v-col>
             </v-row>
             <v-infinite-scroll
@@ -526,11 +477,15 @@ import {
 } from "@/services";
 import { isArrayNotEmpty, isNilOrEmpty, debounce } from "@/utils";
 
+// composables
+import { useRecipeRating } from "@/composables/useRecipeRating";
+
 // components
 const RecipeAutocomplete = defineAsyncComponent(
   () => import("./RecipeAutocomplete.vue")
 );
 const AppLoading = defineAsyncComponent(() => import("./AppLoading.vue"));
+const AppRecipe = defineAsyncComponent(() => import("./AppRecipe.vue"));
 const RecipeDetailsModal = defineAsyncComponent(
   () => import("./RecipeDetailsModal.vue")
 );
@@ -578,10 +533,10 @@ const lastSearchParams = ref<IBaseRecipe | null>(null);
 // hooks
 const appStore = useAppStore();
 const { isAuthenticated, getAccessTokenSilently } = useAuth0();
-const route = useRoute();
 
-// constants
-const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
+// composables
+const { fetchRatingForRecipe, handleRatingChange } = useRecipeRating();
+const route = useRoute();
 
 const { xs } = useDisplay();
 
@@ -723,18 +678,6 @@ const handleAutoCompleteSearch = async () => {
 
 // Debounced version for autocomplete (300ms delay)
 const debouncedAutoCompleteSearch = debounce(handleAutoCompleteSearch, 300);
-
-const getImageUrl = (imageSrc: string): string => {
-  if (!imageSrc) {
-    return "";
-  }
-  // If it's already a full URL (starts with http), return as-is
-  if (imageSrc.startsWith("http")) {
-    return imageSrc;
-  }
-  // Otherwise, prepend the base URI
-  return `${imageBaseUri.value}${imageSrc}`;
-};
 
 const handleSearch = async () => {
   // Validate search query
@@ -1220,22 +1163,5 @@ onMounted(async () => {
   .action-btn {
     max-width: 300px;
   }
-}
-
-.save-btn {
-  transition: all 0.2s ease;
-}
-
-.save-btn:hover {
-  transform: scale(1.2);
-}
-
-.recipe-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.recipe-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 </style>

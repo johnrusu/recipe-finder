@@ -160,69 +160,22 @@
         <v-row v-else-if="favoriteRecipes.length > 0">
           <v-col
             v-for="recipe in favoriteRecipes.slice(0, 6)"
-            :key="recipe.id"
+            :key="`favorite-recipe-${recipe.id}`"
             cols="12"
             sm="6"
             md="4"
           >
-            <v-card
-              class="recipe-card h-100 d-flex flex-column"
-              color="white"
-              ripple
-            >
-              <v-img
-                :src="recipe.image"
-                :alt="recipe.title"
-                height="200px"
-                cover
-              >
-                <v-chip class="ma-2" color="error" variant="flat" size="small">
-                  <v-icon start icon="mdi-heart" size="small" />
-                  {{ DASHBOARD.FAVORITE_CHIP }}
-                </v-chip>
-              </v-img>
-              <v-card-text class="grow">
-                <h3 class="text-h6 font-weight-bold line-clamp-2 mb-2">
-                  {{ recipe.title }}
-                </h3>
-                <div class="d-flex align-center gap-4 text-caption">
-                  <div class="d-flex align-center gap-1">
-                    <v-icon size="small" icon="mdi-clock" />
-                    {{ recipe.readyInMinutes }} {{ DASHBOARD.RECIPE_TIME_UNIT }}
-                  </div>
-                  <div class="d-flex align-center gap-1">
-                    <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                    {{ recipe.servings }} {{ DASHBOARD.RECIPE_SERVINGS_UNIT }}
-                  </div>
-                </div>
-              </v-card-text>
-              <v-card-actions class="pt-0 d-flex gap-2">
-                <v-btn
-                  icon
-                  @click.stop="handleDeleteRecipeFavorites(recipe)"
-                  color="error"
-                  class="remove-btn"
-                  :loading="
-                    loadingToggleFavorite && recipe.id == favoriteRecipeId
-                  "
-                >
-                  <v-icon icon="mdi-heart-off" />
-                  <v-tooltip activator="parent" location="top">
-                    {{ FAVORITE_RECIPES.REMOVE_BUTTON }}
-                  </v-tooltip>
-                </v-btn>
-                <v-btn
-                  variant="elevated"
-                  color="primary"
-                  size="large"
-                  @click.stop="handleGetRecipeDetails(recipe)"
-                  class="view-recipe-btn grow"
-                  append-icon="mdi-arrow-right"
-                >
-                  {{ RECIPE_FINDER.VIEW_RECIPE_BUTTON }}
-                </v-btn>
-              </v-card-actions>
-            </v-card>
+            <AppRecipe
+              :rating="fetchRatingForRecipe(recipe.id)"
+              :recipe="recipe"
+              :loading-app-recipe="loadingAppRecipe"
+              :favorite-recipe-id="favoriteRecipeId"
+              :image-base-uri="imageBaseUri"
+              :is-authenticated="isAuthenticated"
+              @remove-favorite="handleDeleteRecipeFavorites"
+              @view-recipe-details="handleGetRecipeDetailsById"
+              @rating-change="handleRatingChange"
+            />
           </v-col>
         </v-row>
 
@@ -267,8 +220,9 @@
     <!-- Recipe Details Modal -->
     <RecipeDetailsModal
       :open="showRecipeModal"
+      :errorLoadingRecipe="viewDetailsError"
       :recipe="selectedRecipeDetails"
-      :isAddingFavorites="loadingForDetails"
+      :isAddingFavorites="loadingAppRecipe"
       :favorites="favoriteRecipes"
       :image-base-uri="imageBaseUri"
       @on-close="handleModalClose"
@@ -277,7 +231,9 @@
 
     <!-- Search History Section -->
     <v-card elevation="2">
-      <v-card-title class="pa-6 d-flex align-center justify-space-between">
+      <v-card-title
+        class="pa-6 d-flex flex-column flex-sm-row align-center justify-space-between gap-3"
+      >
         <div class="d-flex align-center gap-3">
           <v-icon icon="mdi-history" size="large" color="primary" />
           <h2 class="text-h5 font-weight-bold">
@@ -312,8 +268,8 @@
         <v-list v-else-if="searchHistory.length > 0" lines="two">
           <v-list-item
             v-for="(search, index) in visibleSearchHistory"
-            :key="index"
-            class="search-history-item"
+            :key="`search-history-${index}-${search._id}`"
+            class="search-history-item pl-0 pr-0"
           >
             <template #prepend>
               <v-avatar color="primary" variant="tonal">
@@ -438,9 +394,10 @@
 
     <RecipesListModal
       :open="isArrayNotEmpty(listOfViewedRecipes)"
+      :errorLoadingRecipe="errorViewedRecipes"
       :recipes="listOfViewedRecipes"
       :loading="loadingViewedRecipes"
-      :loadingForDetails="loadingForDetails"
+      :loading-app-recipe="loadingAppRecipe"
       :loadingToggleFavorite="loadingToggleFavorite"
       :favorites="favoriteRecipes"
       :image-base-uri="imageBaseUri"
@@ -466,18 +423,21 @@ import { useAuth0 } from "@auth0/auth0-vue";
 import { pathOr } from "ramda";
 
 // constants
-import {
-  LOADING_CONFIG,
-  DASHBOARD,
-  RECIPE_FINDER,
-  FAVORITE_RECIPES,
-} from "@/constants";
+import { LOADING_CONFIG, DASHBOARD, RECIPE_FINDER } from "@/constants";
 
 // types
-import type { IRecipe, IRecipeDetails, IRecipeSearchParams } from "@/types";
+import type {
+  IRecipe,
+  IRecipeDetails,
+  IRecipeSearchParams,
+  IRecipeRating,
+} from "@/types";
 
 // utils
 import { isArrayNotEmpty, isNilOrEmpty } from "@/utils";
+
+// composables
+import { useRecipeRating } from "@/composables/useRecipeRating";
 
 // services
 import {
@@ -489,6 +449,8 @@ import {
   setFavoriteRecipes,
   fetchRecipesSearchHistory,
   removeRecipesSearchHistory,
+  getRecipesRatings,
+  setRecipesRatings,
 } from "@/services";
 
 // stores
@@ -498,6 +460,7 @@ import { useAppStore } from "@/stores";
 import AppLoading from "@/components/AppLoading.vue";
 import RecipeDetailsModal from "@/components/RecipeDetailsModal.vue";
 import RecipesListModal from "@/components/RecipesListModal.vue";
+import AppRecipe from "@/components/AppRecipe.vue";
 
 // auth
 const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
@@ -507,6 +470,9 @@ const router = useRouter();
 
 // store
 const appStore = useAppStore();
+
+// composables
+const { fetchRatingForRecipe, handleRatingChange } = useRecipeRating();
 
 // state
 const favoriteRecipes = ref<IRecipe[]>([]);
@@ -533,7 +499,7 @@ const ITEMS_PER_PAGE = 2;
 // recipe details modal state
 const showRecipeModal = ref(false);
 const selectedRecipeDetails = ref<IRecipeDetails | null>(null);
-const loadingForDetails = ref(false);
+const loadingAppRecipe = ref(false);
 const favoriteRecipeId = ref<number | null>(null);
 
 // computed
@@ -666,7 +632,7 @@ const fetchFavorites = async () => {
 };
 
 const handleGetRecipeDetails = async (recipe: IRecipe) => {
-  loadingForDetails.value = true;
+  loadingAppRecipe.value = true;
   showRecipeModal.value = true;
   viewDetailsError.value = null;
 
@@ -700,7 +666,15 @@ const handleGetRecipeDetails = async (recipe: IRecipe) => {
     viewDetailsError.value = errorMessage;
     console.error("Get recipe details error:", err);
   } finally {
-    loadingForDetails.value = false;
+    loadingAppRecipe.value = false;
+  }
+};
+
+// Handler for AppRecipe component which emits recipeId
+const handleGetRecipeDetailsById = async (recipeId: number) => {
+  const recipe = favoriteRecipes.value.find((r) => r.id === recipeId);
+  if (recipe) {
+    await handleGetRecipeDetails(recipe);
   }
 };
 
@@ -716,7 +690,7 @@ const handleToggleFavorite = (recipe: IRecipe) => {
 const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
   favoriteRecipeId.value = recipe.id;
   loadingToggleFavorite.value = true;
-  loadingForDetails.value = true;
+  loadingAppRecipe.value = true;
 
   try {
     let token = "";
@@ -747,13 +721,13 @@ const handleDeleteRecipeFavorites = async (recipe: IRecipe) => {
     console.error("Error removing favorite:", error);
   } finally {
     loadingToggleFavorite.value = false;
-    loadingForDetails.value = false;
+    loadingAppRecipe.value = false;
   }
 };
 
 const handleAddRecipeFavorites = async (recipe: IRecipe) => {
   loadingToggleFavorite.value = true;
-  loadingForDetails.value = true;
+  loadingAppRecipe.value = true;
   favoriteRecipeId.value = recipe.id;
   try {
     let token = "";
@@ -778,14 +752,14 @@ const handleAddRecipeFavorites = async (recipe: IRecipe) => {
     console.error("Error updating favorites:", error);
   } finally {
     loadingToggleFavorite.value = false;
-    loadingForDetails.value = false;
+    loadingAppRecipe.value = false;
   }
 };
 
 const handleModalClose = () => {
   showRecipeModal.value = false;
   selectedRecipeDetails.value = null;
-  loadingForDetails.value = false;
+  loadingAppRecipe.value = false;
 };
 
 const fetchListOfViewedRecipes = async () => {
@@ -864,7 +838,7 @@ const handleCloseRecipesListModal = () => {
 };
 
 const handleViewRecipeDetails = async (recipe: IRecipe) => {
-  loadingForDetails.value = true;
+  loadingAppRecipe.value = true;
   errorViewedRecipes.value = null;
 
   try {
@@ -893,12 +867,57 @@ const handleViewRecipeDetails = async (recipe: IRecipe) => {
     errorViewedRecipes.value = errorMessage;
     console.error("Get recipe details error:", err);
   } finally {
-    loadingForDetails.value = false;
+    loadingAppRecipe.value = false;
+  }
+};
+
+const fetchRatingsForRecipes = async () => {
+  let token = "";
+  if (
+    isAuthenticated.value === true &&
+    typeof getAccessTokenSilently === "function"
+  ) {
+    try {
+      token = (await getAccessTokenSilently()) || "";
+    } catch (authError) {
+      console.warn("Failed to get access token:", authError);
+      return;
+    }
+  }
+  try {
+    const responseFetchRatings: {
+      success: boolean;
+      ratings: IRecipeRating[];
+      message: string;
+    } = await getRecipesRatings(token);
+    if (!isNilOrEmpty(responseFetchRatings)) {
+      const success = pathOr(false, ["success"], responseFetchRatings);
+      if (!success) {
+        console.error("Failed to fetch ratings for recipes");
+        return;
+      }
+      const ratings: IRecipeRating[] = pathOr(
+        [],
+        ["ratings"],
+        responseFetchRatings
+      );
+      if (isArrayNotEmpty(ratings)) {
+        appStore.setRecipesRatings(ratings);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching ratings for recipes:", error);
+    return [];
   }
 };
 
 // lifecycle
 onMounted(async () => {
+  if (!isArrayNotEmpty(appStore.recipesRatings)) {
+    if (isAuthenticated.value) {
+      await fetchRatingsForRecipes();
+    }
+  }
   if (!isArrayNotEmpty(appStore.favoritesRecipes)) {
     await fetchFavorites();
   } else {
@@ -967,23 +986,6 @@ watch(
   transform: translateY(-4px);
 }
 
-.recipe-card {
-  transition: transform 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.recipe-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .search-history-item {
   transition: background-color 0.2s;
 }
@@ -1014,38 +1016,10 @@ watch(
   color: rgb(244, 67, 54);
 }
 
-.remove-btn {
-  transition: all 0.2s ease-in-out;
-}
-
-.remove-btn:active {
-  transform: scale(0.95);
-}
-
-.view-recipe-btn {
-  transition: all 0.2s ease-in-out;
-}
-
 /* Mobile optimizations */
 @media (max-width: 960px) {
   .profile-card {
     margin-bottom: 1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .recipe-card {
-    border-radius: 8px;
-  }
-
-  .recipe-card :deep(.v-card__actions) {
-    padding: 8px 8px;
-  }
-
-  .remove-btn,
-  .view-recipe-btn {
-    font-size: 0.875rem;
-    text-transform: none;
   }
 }
 </style>

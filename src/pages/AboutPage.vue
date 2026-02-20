@@ -82,7 +82,7 @@
         <div class="flex flex-wrap gap-2">
           <v-chip
             v-for="(tech, index) in ABOUT_PAGE.TECHNOLOGIES.STACK"
-            :key="index"
+            :key="`tech-${index}-${tech}`"
             color="primary"
           >
             {{ tech }}

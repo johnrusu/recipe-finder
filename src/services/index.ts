@@ -11,6 +11,7 @@ import type {
   IAutocompleteSuggestion,
   IRecipe,
   IBaseRecipe,
+  IRecipeRating,
 } from "@/types";
 
 // ===== USER SERVICES =====
@@ -444,5 +445,59 @@ export const getViewedRecipesCount = async (
     success: boolean;
     message: string;
     count: number;
+  }>;
+};
+
+/**
+ * Get ratings for user's recipes
+ *
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const getRecipesRatings = async (
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  ratings: IRecipeRating[];
+}> => {
+  return apiRequest(
+    API_ROUTES.GET_RECIPES_RATINGS.url,
+    {
+      method: API_ROUTES.GET_RECIPES_RATINGS.method,
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    ratings: IRecipeRating[];
+  }>;
+};
+
+/**
+ * Set ratings for user's recipes
+ *
+ * @param {string | null} token - Auth0 JWT token
+ * @returns {Promise<any>} - Response data
+ */
+export const setRecipesRatings = async (
+  { recipeId, rating }: IRecipeRating,
+  token: string
+): Promise<{
+  success: boolean;
+  message: string;
+  ratings: IRecipeRating;
+}> => {
+  return apiRequest(
+    API_ROUTES.SET_RECIPES_RATINGS.url,
+    {
+      method: API_ROUTES.SET_RECIPES_RATINGS.method,
+      body: JSON.stringify({ recipeId, rating }),
+    },
+    token
+  ) as Promise<{
+    success: boolean;
+    message: string;
+    ratings: IRecipeRating;
   }>;
 };

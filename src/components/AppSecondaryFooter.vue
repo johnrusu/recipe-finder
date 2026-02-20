@@ -19,7 +19,11 @@
         <v-col cols="12" md="4" class="footer-column">
           <h3 class="footer-heading mb-4">{{ FOOTER.QUICK_LINKS.HEADING }}</h3>
           <ul class="footer-links">
-            <li v-for="route in menuRoutes" :key="route.path" class="mb-3">
+            <li
+              v-for="(route, index) in menuRoutes"
+              :key="`route-${index}-${route.path}`"
+              class="mb-3"
+            >
               <router-link :to="route.path" class="footer-link">
                 <v-icon v-if="route.icon" size="small" class="mr-2">{{
                   route.icon
@@ -38,8 +42,8 @@
           </p>
           <div class="social-links mb-6">
             <v-btn
-              v-for="social in socialLinks"
-              :key="social.name"
+              v-for="(social, index) in socialLinks"
+              :key="`social-${index}-${social.name}`"
               :icon="social.icon"
               variant="text"
               color="white"

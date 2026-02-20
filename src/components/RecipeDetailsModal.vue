@@ -75,7 +75,7 @@
             <v-list>
               <v-list-item
                 v-for="(ingredient, index) in recipe.extendedIngredients"
-                :key="index"
+                :key="`ingredient-${index}-${ingredient.id}`"
                 density="compact"
               >
                 <template v-slot:prepend>
@@ -166,6 +166,21 @@
           </v-btn>
         </v-card-actions>
       </template>
+      <template v-else-if="errorLoadingRecipe">
+        <v-card-text class="flex">
+          {{ errorLoadingRecipe }}
+        </v-card-text>
+        <v-card-actions class="pa-6 d-flex justify-center">
+          <v-btn
+            variant="flat"
+            @click="$emit('on-close')"
+            prepend-icon="mdi-close"
+          >
+            {{ RECIPE_MODAL.CLOSE_BUTTON }}
+          </v-btn>
+        </v-card-actions>
+      </template>
+
       <template v-else>
         <v-card-text class="flex justify-center">
           <AppLoading :config="LOADING_CONFIG" />
@@ -194,11 +209,13 @@ interface Props {
   favorites: IRecipe[];
   imageBaseUri: string;
   isAddingFavorites: boolean;
+  errorLoadingRecipe?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
   isAddingFavorites: false,
+  errorLoadingRecipe: null,
 });
 
 // Emits

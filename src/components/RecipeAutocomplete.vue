@@ -26,7 +26,7 @@
       <v-list class="gap-2 flex flex-col autocomplete-menu-list">
         <v-list-item
           v-for="(suggestion, index) in props.suggestionsAutocomplete"
-          :key="index"
+          :key="`suggestion-${index}-${getSuggestionTitle(suggestion)}`"
           @click="selectSuggestion(suggestion)"
           class="cursor-pointer"
         >

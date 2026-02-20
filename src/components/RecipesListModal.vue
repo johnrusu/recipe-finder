@@ -7,7 +7,7 @@
     <v-card class="d-flex flex-column modal-card">
       <v-progress-linear
         indeterminate
-        v-if="loadingForDetails"
+        v-if="loadingAppRecipe"
         class="absolute top-0 left-0 w-full"
       ></v-progress-linear>
       <v-card-title
@@ -25,9 +25,7 @@
           </v-chip>
           <v-btn icon variant="text" @click="$emit('on-close')">
             <v-icon icon="mdi-close" />
-            <v-tooltip activator="parent" location="bottom">
-              {{ RECIPE_MODAL.CLOSE_BUTTON }}
-            </v-tooltip>
+            <v-tooltip activator="parent" location="bottom"> Close </v-tooltip>
           </v-btn>
         </div>
       </v-card-title>
@@ -40,66 +38,32 @@
           <AppLoading :config="LOADING_CONFIG" />
         </div>
 
+        <v-alert v-else-if="errorLoadingRecipe" type="error" variant="tonal">
+          {{ errorLoadingRecipe }}
+        </v-alert>
+
         <!-- Recipes Grid -->
         <v-row v-else-if="recipes.length > 0">
           <v-col
             v-for="recipe in recipes"
-            :key="recipe.id"
+            :key="`recipe-${recipe.id}`"
             cols="12"
             sm="6"
             md="4"
             lg="3"
           >
-            <v-card
-              class="h-100 d-flex flex-column recipe-card"
-              color="white"
-              ripple
-            >
-              <v-img
-                :src="getImageUrl(recipe.image)"
-                :alt="recipe.title"
-                height="200px"
-                cover
-              />
-              <v-card-text class="grow">
-                <div class="text-h6 font-weight-bold line-clamp-2">
-                  {{ recipe.title }}
-                </div>
-                <div class="d-flex align-center gap-2 mt-2 text-caption">
-                  <v-icon size="small" icon="mdi-clock" />
-                  {{ recipe.readyInMinutes }} {{ RECIPE_MODAL.TIME_UNIT }}
-                </div>
-                <div class="d-flex align-center gap-2 text-caption">
-                  <v-icon size="small" icon="mdi-silverware-fork-knife" />
-                  {{ recipe.servings }} {{ RECIPE_MODAL.SERVINGS_LABEL }}
-                </div>
-              </v-card-text>
-              <v-card-actions class="pt-0 d-flex gap-2">
-                <v-btn
-                  icon
-                  @click.stop="toggleFavorite(recipe)"
-                  :color="isFavorited(recipe) ? 'error' : 'default'"
-                  class="save-btn"
-                  :loading="isLoading(recipe)"
-                >
-                  <v-icon
-                    :icon="
-                      isFavorited(recipe) ? 'mdi-heart' : 'mdi-heart-outline'
-                    "
-                  />
-                </v-btn>
-                <v-btn
-                  variant="elevated"
-                  color="primary"
-                  size="large"
-                  @click.stop="handleViewDetails(recipe)"
-                  class="view-recipe-btn grow"
-                  append-icon="mdi-arrow-right"
-                >
-                  {{ LABELS.VIEW_RECIPE }}
-                </v-btn>
-              </v-card-actions>
-            </v-card>
+            <AppRecipe
+              :recipe="recipe"
+              :rating="fetchRatingForRecipe(recipe.id)"
+              :loading-app-recipe="isLoading(recipe)"
+              :show-toggle-favorite="true"
+              :is-favorited="isFavorited(recipe)"
+              :is-authenticated="true"
+              :view-recipe-button-label="LABELS.VIEW_RECIPE"
+              @toggle-favorite="toggleFavorite"
+              @view-recipe-details="handleViewRecipeDetails"
+              @rating-change="handleRatingChange"
+            />
           </v-col>
         </v-row>
 
@@ -141,9 +105,12 @@ import {
 const AppLoading = defineAsyncComponent(
   () => import("@/components/AppLoading.vue")
 );
+const AppRecipe = defineAsyncComponent(
+  () => import("@/components/AppRecipe.vue")
+);
 
-// constants
-const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
+// composables
+import { useRecipeRating } from "@/composables/useRecipeRating";
 
 // props
 const props = withDefaults(
@@ -151,7 +118,7 @@ const props = withDefaults(
     open: boolean;
     recipes: IRecipe[];
     loading?: boolean;
-    loadingForDetails: boolean;
+    loadingAppRecipe: boolean;
     loadingToggleFavorite: boolean;
     favorites?: IRecipe[];
     imageBaseUri?: string;
@@ -163,10 +130,11 @@ const props = withDefaults(
     emptyIcon?: string;
     emptyTitle?: string;
     emptyMessage?: string;
+    errorLoadingRecipe?: string | null;
   }>(),
   {
     loading: false,
-    loadingForDetails: false,
+    loadingAppRecipe: false,
     loadingToggleFavorite: false,
     favorites: () => [],
     imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
@@ -177,6 +145,7 @@ const props = withDefaults(
     emptyIcon: "mdi-format-list-text",
     emptyTitle: RECIPE_FINDER.NO_RECIPES_TITLE,
     emptyMessage: RECIPE_FINDER.THE_LIST_IS_EMPTY,
+    errorLoadingRecipe: null,
   }
 );
 
@@ -187,18 +156,13 @@ const emit = defineEmits<{
   (e: "on-toggle-favorite", recipe: IRecipe): void;
 }>();
 
+// composables
+const { fetchRatingForRecipe, handleRatingChange } = useRecipeRating();
+
 // ref
 const favoriteRecipeSelected = ref<IRecipe>();
 
 // methods
-const getImageUrl = (imageSrc: string): string => {
-  if (!imageSrc) return "";
-  if (imageSrc.startsWith("http")) {
-    return imageSrc;
-  }
-  return `${props.imageBaseUri}${imageSrc}`;
-};
-
 const isLoading = (recipe: IRecipe) => {
   return (
     props.loadingToggleFavorite &&
@@ -207,16 +171,24 @@ const isLoading = (recipe: IRecipe) => {
 };
 
 const isFavorited = (recipe: IRecipe) => {
-  return props.favorites?.find((fav) => fav.id === recipe.id);
+  return props.favorites?.find((fav) => fav.id === recipe.id) !== undefined;
+};
+
+const toggleFavorite = (recipe: IRecipe) => {
+  favoriteRecipeSelected.value = recipe;
+  emit("on-toggle-favorite", recipe);
 };
 
 const handleViewDetails = (recipe: IRecipe) => {
   emit("on-view-details", recipe);
 };
 
-const toggleFavorite = (recipe: IRecipe) => {
-  favoriteRecipeSelected.value = recipe;
-  emit("on-toggle-favorite", recipe);
+// Wrapper to convert recipeId to recipe object for AppRecipe emit
+const handleViewRecipeDetails = (recipeId: number) => {
+  const recipe = props.recipes.find((r) => r.id === recipeId);
+  if (recipe) {
+    handleViewDetails(recipe);
+  }
 };
 </script>
 
@@ -234,33 +206,5 @@ const toggleFavorite = (recipe: IRecipe) => {
 .scrollable-content {
   overflow-y: auto;
   flex: 1;
-}
-
-.recipe-card {
-  transition: transform 0.2s ease-in-out;
-}
-
-.recipe-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.remove-btn {
-  transition: all 0.2s ease-in-out;
-}
-
-.remove-btn:active {
-  transform: scale(0.95);
-}
-
-.view-recipe-btn {
-  transition: all 0.2s ease-in-out;
 }
 </style>

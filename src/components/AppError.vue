@@ -1,40 +1,72 @@
 <template>
-  <div v-if="error" class="flex items-center justify-center h-full">
-    <div class="text-center max-w-md p-6">
-      <div class="text-3xl font-bold mb-2">
-        {{ LABELS.ERROR_TITLE }}
+  <v-container class="py-12">
+    <div class="w-full">
+      <!-- Error Icon & Title -->
+      <div class="text-center mb-6">
+        <v-icon size="56" color="error" class="mb-4">
+          mdi-alert-circle-outline
+        </v-icon>
+        <h1 class="text-3xl font-bold text-error mb-2">
+          {{ LABELS.ERROR_TITLE }}
+        </h1>
       </div>
-      <div class="text-lg mb-2">
-        {{ LABELS.ERROR_MESSAGE }}
-      </div>
-      <div class="text-sm">
-        {{ error?.message }}
-      </div>
-      <div class="text-sm mt-2 text-center">
-        <v-code block>
-          {{ JSON.stringify(error) }}
-        </v-code>
-      </div>
+
+      <!-- Error Message -->
+      <v-card class="mb-6" color="error-light">
+        <v-card-text class="text-center">
+          <p class="text-base font-semibold mb-2">
+            {{ LABELS.ERROR_MESSAGE }}
+          </p>
+          <p class="text-sm opacity-75">
+            {{ error?.message || "Unknown error occurred" }}
+          </p>
+        </v-card-text>
+      </v-card>
+
+      <!-- Error Details (Collapsible) -->
+      <v-expansion-panels class="mb-6">
+        <v-expansion-panel title="Technical Details">
+          <template #text>
+            <div
+              v-for="err in arrEror"
+              :key="`err-${err[0]}`"
+              class="flex mb-4 flex-col gap-2"
+            >
+              <div class="text-lg text-error">
+                <strong class="uppercase">{{ err[0] }}:</strong>
+              </div>
+              <div>
+                <p>{{ err[1] || "No data available" }}</p>
+              </div>
+            </div>
+          </template>
+        </v-expansion-panel>
+      </v-expansion-panels>
+
+      <!-- Info Alert -->
       <v-alert
         icon="mdi-information-outline"
         :title="LABELS.FIX_AUTH_ISSUE"
-        :text="`${LABELS.REMOVE_STORAGE}
-                  ${LABELS.RELOGIN}`"
+        :text="`${LABELS.REMOVE_STORAGE}\n${LABELS.RELOGIN}`"
         type="info"
-        class="text-left mt-4"
+        class="mb-6"
       />
-      <v-btn color="primary" class="mt-4" @click="handleClearStorage">
+
+      <!-- Action Button -->
+      <v-btn block size="large" color="error" @click="handleClearStorage">
         {{ LABELS.CLEAR_STORAGE_AND_RELOGIN }}
       </v-btn>
     </div>
-  </div>
+  </v-container>
 </template>
 <script setup lang="ts">
 // constants
 import { LABELS } from "@/constants";
-defineProps<{
+const props = defineProps<{
   error: Error | null;
 }>();
+
+const arrEror = props.error ? Object.entries(props.error) : [];
 
 function handleClearStorage() {
   window.localStorage.clear();

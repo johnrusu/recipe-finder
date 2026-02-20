@@ -2,7 +2,12 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 
 // types
-import type { TUser, IRecipe, IRecipeSearchParams } from "@/types";
+import type {
+  TUser,
+  IRecipe,
+  IRecipeSearchParams,
+  IRecipeRating,
+} from "@/types";
 
 export const useAppStore = defineStore("app", () => {
   const loading = ref(false);
@@ -13,6 +18,7 @@ export const useAppStore = defineStore("app", () => {
   const favoritesRecipes = ref<IRecipe[]>([]);
   const recentRecipes = ref<IRecipe[]>([]);
   const searchHistory = ref<IRecipeSearchParams[]>([]);
+  const recipesRatings = ref<IRecipeRating[]>([]);
 
   const setError = (value: Error | null) => {
     error.value = value;
@@ -46,6 +52,10 @@ export const useAppStore = defineStore("app", () => {
     searchHistory.value = historyData;
   };
 
+  const setRecipesRatings = (ratingsData: IRecipeRating[]) => {
+    recipesRatings.value = ratingsData;
+  };
+
   return {
     loading,
     setLoading,
@@ -63,5 +73,7 @@ export const useAppStore = defineStore("app", () => {
     setRecentRecipes,
     searchHistory,
     setSearchHistory,
+    recipesRatings,
+    setRecipesRatings,
   };
 });
