@@ -450,7 +450,6 @@ import {
   fetchRecipesSearchHistory,
   removeRecipesSearchHistory,
   getRecipesRatings,
-  setRecipesRatings,
 } from "@/services";
 
 // stores
