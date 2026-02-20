@@ -146,9 +146,7 @@ const confirmGuestBrowse = () => {
 // lifecycle
 onMounted(async () => {
   if (!isArrayNotEmpty(appState.recipesRatings)) {
-    if (isAuthenticated.value) {
-      await fetchRatingsForRecipes();
-    }
+    await fetchRatingsForRecipes();
   }
 });
 </script>
