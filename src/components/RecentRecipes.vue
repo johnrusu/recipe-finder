@@ -68,6 +68,7 @@
 
     <!-- Recipe Details Modal -->
     <RecipeDetailsModal
+      :rating="fetchRatingForRecipe(selectedRecipeDetails?.id || 0)"
       :open="showRecipeModal"
       :recipe="selectedRecipeDetails"
       :isAddingFavorites="loading"
@@ -75,6 +76,7 @@
       :image-base-uri="imageBaseUri"
       @on-close="handleModalClose"
       @on-toggle-favorite="handleFavoriteToggle"
+      @rating-change="handleRatingChange"
     />
   </div>
   <!-- Loading State -->

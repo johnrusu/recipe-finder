@@ -98,8 +98,6 @@ interface Props {
   removeButtonLabel?: string;
   viewRecipeButtonLabel?: string;
   imageBaseUri?: string;
-  rating?: number;
-  readonlyRating?: boolean;
   // Toggle favorite  button props
   showToggleFavorite?: boolean;
   isFavorited?: boolean;
@@ -107,7 +105,10 @@ interface Props {
   favoriteTooltip?: string;
   unfavoriteTooltip?: string;
   loginRequiredTooltip?: string;
+  // rating props
   rateRecipesRequiredTooltip?: string;
+  rating?: number;
+  readonlyRating?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -118,8 +119,6 @@ const props = withDefaults(defineProps<Props>(), {
   removeButtonLabel: FAVORITE_RECIPES.REMOVE_BUTTON,
   viewRecipeButtonLabel: RECIPE_FINDER.VIEW_RECIPE_BUTTON,
   imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
-  rating: 0,
-  readonlyRating: false,
   showToggleFavorite: false,
   isFavorited: false,
   isAuthenticated: false,
@@ -127,6 +126,8 @@ const props = withDefaults(defineProps<Props>(), {
   unfavoriteTooltip: RECIPE_FINDER.SAVE_RECIPE_TOOLTIP,
   loginRequiredTooltip: RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP,
   rateRecipesRequiredTooltip: RECIPE_FINDER.RATE_RECIPES_REQUIRED_TOOLTIP,
+  rating: 0,
+  readonlyRating: false,
 });
 
 // Computed values for template

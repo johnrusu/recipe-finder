@@ -25,7 +25,9 @@
           </v-chip>
           <v-btn icon variant="text" @click="$emit('on-close')">
             <v-icon icon="mdi-close" />
-            <v-tooltip activator="parent" location="bottom"> Close </v-tooltip>
+            <v-tooltip activator="parent" location="bottom">
+              {{ RECIPE_FINDER.RECIPE_MODAL.CLOSE_BUTTON }}
+            </v-tooltip>
           </v-btn>
         </div>
       </v-card-title>

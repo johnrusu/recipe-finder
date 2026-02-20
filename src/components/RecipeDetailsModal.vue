@@ -30,7 +30,7 @@
           </h2>
 
           <!-- Info Chips -->
-          <div class="d-flex flex-wrap gap-2 mb-6">
+          <div class="d-flex flex-wrap gap-2 mb-4">
             <v-chip
               v-if="recipe.readyInMinutes"
               prepend-icon="mdi-clock"
@@ -55,6 +55,22 @@
             >
               {{ RECIPE_MODAL.HEALTH_LABEL }} {{ recipe.healthScore }}
             </v-chip>
+          </div>
+
+          <!-- Rating -->
+          <div class="d-flex align-center gap-2 mb-6">
+            <v-rating
+              :hover="showRatingHover"
+              :model-value="rating"
+              :readonly="!isAuthenticated && readonlyRating"
+              :length="5"
+              color="warning"
+              active-color="warning"
+              density="compact"
+              @update:model-value="handleRatingChange"
+              v-tooltip="showRatingTooltip"
+            >
+            </v-rating>
           </div>
 
           <!-- Summary -->
@@ -134,9 +150,11 @@
             >
               <v-tooltip activator="parent" location="top">
                 {{
-                  isFavorited(recipe)
-                    ? SAVED_RECIPE_TOOLTIP
-                    : SAVE_RECIPE_TOOLTIP
+                  !isAuthenticated
+                    ? LOGIN_REQUIRED_TOOLTIP
+                    : isFavorited(recipe)
+                      ? SAVED_RECIPE_TOOLTIP
+                      : SAVE_RECIPE_TOOLTIP
                 }}
               </v-tooltip>
               <span class="text-wrap">
@@ -202,6 +220,16 @@ import { RECIPE_FINDER, LOADING_CONFIG, LABELS } from "@/constants";
 // types
 import type { IRecipe, IRecipeDetails } from "@/types";
 
+// auth0
+import { useAuth0 } from "@auth0/auth0-vue";
+import { pathOr } from "ramda";
+
+// utils
+import { isNilOrEmpty } from "@/utils";
+
+// hooks
+const { isAuthenticated } = useAuth0();
+
 // Props
 interface Props {
   open: boolean;
@@ -210,18 +238,26 @@ interface Props {
   imageBaseUri: string;
   isAddingFavorites: boolean;
   errorLoadingRecipe?: string | null;
+  // rating props
+  rateRecipesRequiredTooltip?: string;
+  rating?: number;
+  readonlyRating?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   imageBaseUri: RECIPE_FINDER.IMAGE_BASE_URI,
   isAddingFavorites: false,
   errorLoadingRecipe: null,
+  rating: 0,
+  rateRecipesRequiredTooltip: RECIPE_FINDER.RATE_RECIPES_REQUIRED_TOOLTIP,
+  readonlyRating: false,
 });
 
 // Emits
 const emit = defineEmits<{
   (e: "on-toggle-favorite", recipe: IRecipe): void;
   (e: "on-close"): void;
+  (e: "ratingChange", recipeId: string | number, rating: number): void;
 }>();
 
 // Computed
@@ -234,12 +270,33 @@ const isOpen = computed({
   },
 });
 
+const showRatingTooltip = computed(() =>
+  isAuthenticated.value ? "" : props.rateRecipesRequiredTooltip
+);
+
+const showRatingHover = computed(() => isAuthenticated.value);
+
 // Constants
 const SAVED_RECIPE_TOOLTIP = RECIPE_FINDER.SAVED_RECIPE_TOOLTIP;
 const SAVE_RECIPE_TOOLTIP = RECIPE_FINDER.SAVE_RECIPE_TOOLTIP;
 const RECIPE_MODAL = RECIPE_FINDER.RECIPE_MODAL;
+const LOGIN_REQUIRED_TOOLTIP = RECIPE_FINDER.LOGIN_REQUIRED_TOOLTIP;
 
 // Methods
+const handleRatingChange = (newRating: string | number) => {
+  if (!isAuthenticated.value) {
+    return;
+  }
+  const ratingValue =
+    typeof newRating === "string" ? parseFloat(newRating) : newRating;
+  if (!isNilOrEmpty(ratingValue) && !isNilOrEmpty(props.recipe)) {
+    const id = pathOr("", ["id"], props.recipe);
+    if (!isNilOrEmpty(id)) {
+      emit("ratingChange", id, ratingValue);
+    }
+  }
+};
+
 const getImageUrl = (imageSrc: string): string => {
   if (!imageSrc) {
     return "";

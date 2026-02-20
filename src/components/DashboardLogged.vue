@@ -219,6 +219,7 @@
 
     <!-- Recipe Details Modal -->
     <RecipeDetailsModal
+      :rating="fetchRatingForRecipe(selectedRecipeDetails?.id || 0)"
       :open="showRecipeModal"
       :errorLoadingRecipe="viewDetailsError"
       :recipe="selectedRecipeDetails"
@@ -227,6 +228,7 @@
       :image-base-uri="imageBaseUri"
       @on-close="handleModalClose"
       @on-toggle-favorite="handleToggleFavorite"
+      @rating-change="handleRatingChange"
     />
 
     <!-- Search History Section -->
@@ -513,7 +515,6 @@ const hasMoreSearchHistory = computed(
 );
 
 // methods
-
 const fetchSearchHistoryForRecipes = async () => {
   loadingSearchHistory.value = true;
   searchHistoryError.value = null;
