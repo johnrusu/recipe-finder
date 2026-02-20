@@ -454,20 +454,14 @@ export const getViewedRecipesCount = async (
  * @param {string | null} token - Auth0 JWT token
  * @returns {Promise<any>} - Response data
  */
-export const getRecipesRatings = async (
-  token: string
-): Promise<{
+export const getRecipesRatings = async (): Promise<{
   success: boolean;
   message: string;
   ratings: IRecipeRating[];
 }> => {
-  return apiRequest(
-    API_ROUTES.GET_RECIPES_RATINGS.url,
-    {
-      method: API_ROUTES.GET_RECIPES_RATINGS.method,
-    },
-    token
-  ) as Promise<{
+  return apiRequest(API_ROUTES.GET_RECIPES_RATINGS.url, {
+    method: API_ROUTES.GET_RECIPES_RATINGS.method,
+  }) as Promise<{
     success: boolean;
     message: string;
     ratings: IRecipeRating[];

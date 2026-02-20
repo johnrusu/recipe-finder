@@ -75,8 +75,7 @@ import HomePageNonAuthGreentings from "@/components/HomePageNonAuthGreentings.vu
 import HomePageConfirmAuthDialog from "@/components/HomePageConfirmAuthDialog.vue";
 import { pathOr } from "ramda";
 
-const { loginWithRedirect, isAuthenticated, getAccessTokenSilently } =
-  useAuth0();
+const { loginWithRedirect, isAuthenticated } = useAuth0();
 
 const statusIsVisibleNonAuthGreentings = computed(() => {
   return !isAuthenticated.value && isVisibleHomePageNonAuthGreentings.value;
@@ -97,24 +96,12 @@ const handleBrowse = () => {
 };
 
 const fetchRatingsForRecipes = async () => {
-  let token = "";
-  if (
-    isAuthenticated.value === true &&
-    typeof getAccessTokenSilently === "function"
-  ) {
-    try {
-      token = (await getAccessTokenSilently()) || "";
-    } catch (authError) {
-      console.warn("Failed to get access token:", authError);
-      return;
-    }
-  }
   try {
     const responseFetchRatings: {
       success: boolean;
       ratings: IRecipeRating[];
       message: string;
-    } = await getRecipesRatings(token);
+    } = await getRecipesRatings();
     if (!isNilOrEmpty(responseFetchRatings)) {
       const success = pathOr(false, ["success"], responseFetchRatings);
       if (!success) {

@@ -871,24 +871,12 @@ const handleViewRecipeDetails = async (recipe: IRecipe) => {
 };
 
 const fetchRatingsForRecipes = async () => {
-  let token = "";
-  if (
-    isAuthenticated.value === true &&
-    typeof getAccessTokenSilently === "function"
-  ) {
-    try {
-      token = (await getAccessTokenSilently()) || "";
-    } catch (authError) {
-      console.warn("Failed to get access token:", authError);
-      return;
-    }
-  }
   try {
     const responseFetchRatings: {
       success: boolean;
       ratings: IRecipeRating[];
       message: string;
-    } = await getRecipesRatings(token);
+    } = await getRecipesRatings();
     if (!isNilOrEmpty(responseFetchRatings)) {
       const success = pathOr(false, ["success"], responseFetchRatings);
       if (!success) {
