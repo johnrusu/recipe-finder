@@ -913,9 +913,7 @@ const fetchRatingsForRecipes = async () => {
 // lifecycle
 onMounted(async () => {
   if (!isArrayNotEmpty(appStore.recipesRatings)) {
-    if (isAuthenticated.value) {
-      await fetchRatingsForRecipes();
-    }
+    await fetchRatingsForRecipes();
   }
   if (!isArrayNotEmpty(appStore.favoritesRecipes)) {
     await fetchFavorites();
